@@ -1,0 +1,52 @@
+{
+  "fetchedAt": "2026-09-23T15:46:48.821Z",
+  "schools_old": {
+    "label": "HISD Schools 2025–26",
+    "url": "https://services7.arcgis.com/YNiGsHEfQPYkIqX5/arcgis/rest/services/HISD_Schools/FeatureServer/6",
+    "count": 274,
+    "lastEditDate": "2026-03-18"
+  },
+  "schools_new": {
+    "label": "HISD Schools 2026–27",
+    "url": "https://services7.arcgis.com/YNiGsHEfQPYkIqX5/arcgis/rest/services/HISD_Schools_2026_2027/FeatureServer/1",
+    "count": 263,
+    "lastEditDate": "2026-09-01"
+  },
+  "zones_old": {
+    "label": "Elementary boundaries 2025–26",
+    "url": "https://services7.arcgis.com/YNiGsHEfQPYkIqX5/arcgis/rest/services/Elementary_School_Boundaries_2024_2025/FeatureServer/0",
+    "count": 163,
+    "lastEditDate": "2026-02-13"
+  },
+  "zones_new": {
+    "label": "Elementary boundaries 2026–27",
+    "url": "https://services7.arcgis.com/YNiGsHEfQPYkIqX5/arcgis/rest/services/Elementary_School_Boundaries_2026_2027/FeatureServer/1",
+    "count": 156,
+    "lastEditDate": "2026-07-08"
+  },
+  "rail": {
+    "label": "Texas Railroads (active)",
+    "url": "https://services7.arcgis.com/YNiGsHEfQPYkIqX5/arcgis/rest/services/Texas_Rainroads/FeatureServer/0",
+    "count": 851,
+    "lastEditDate": "2024-02-15"
+  },
+  "ped_hin": {
+    "label": "Vision Zero Ped Dangerous Roads (HIN 2022)",
+    "url": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Vision_Zero_Ped_Dangerous_Roads_(HIN_2022)_view/FeatureServer/23",
+    "count": 602,
+    "lastEditDate": "2025-08-11"
+  },
+  "hin": {
+    "label": "Vision Zero High Injury Network 2022",
+    "url": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_Vision_Zero_High_Injury_Network_2022_view/FeatureServer/19",
+    "count": 1261,
+    "lastEditDate": "2025-08-08"
+  },
+  "campus_grounds": {
+    "label": "OpenStreetMap school grounds",
+    "url": "https://www.openstreetmap.org/copyright",
+    "count": 22,
+    "lastEditDate": "2025-11-08",
+    "fetchedAt": "2026-09-26T17:43:48.583Z"
+  }
+}
