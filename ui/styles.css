@@ -71,6 +71,14 @@ b{font-weight:700}
 .lang-btn{border:0;background:transparent;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;transition:background var(--dur-fast) ease,color var(--dur-fast) ease}
 .lang-btn.is-on{background:var(--green);color:var(--white)}
 
+/* one-time offer of the other language */
+.langbar{position:sticky;top:60px;z-index:9;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 20px;background:var(--green-tint);border-bottom:1px solid var(--line);font-size:15px;transform:translateY(-8px);opacity:0;transition:transform var(--dur) var(--ease-out),opacity var(--dur) var(--ease-out)}
+.langbar.is-in{transform:none;opacity:1}
+.langbar-go{border:0;background:var(--green);color:var(--white);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.langbar-x{border:0;background:transparent;color:var(--mute);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.langbar-x:hover{background:var(--white);color:var(--ink)}
+@media (min-width:900px){.langbar{top:74px}}
+
 /* screens */
 .app{min-height:calc(100dvh - 60px)}
 .app.is-loading{opacity:.6}

@@ -6,7 +6,8 @@
   const app=$('#app'), sheetRoot=$('#sheet-root'), printRoot=$('#print-root');
   const G=WCGeo;
   const ss=(k,v)=>v===undefined?sessionStorage.getItem('wc.'+k):sessionStorage.setItem('wc.'+k,v);
-  const state={lang:ss('lang')||'en',addr:ss('addr')||'',pt:ss('pt')?JSON.parse(ss('pt')):null,prek:ss('prek')==='1',geocoded:ss('geo')==='1',res:null,shared:false};
+  const savedLang=(()=>{try{return localStorage.getItem('wc.lang');}catch(_){return null;}})();
+  const state={lang:savedLang||((navigator.language||'').toLowerCase().startsWith('es')?'es':'en'),addr:ss('addr')||'',pt:ss('pt')?JSON.parse(ss('pt')):null,prek:ss('prek')==='1',geocoded:ss('geo')==='1',res:null,shared:false};
   const isPhone=()=>matchMedia('(max-width:899px)').matches;
   const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
   const today=()=>new Date().toLocaleDateString(state.lang==='es'?'es-US':'en-US',{year:'numeric',month:'long',day:'numeric'});
@@ -31,6 +32,7 @@
       plan_shuttle:(from,addr,m,x)=>`<b>Free HISD shuttle through 2027–28.</b> Pickup at ${from}, ${addr}, ${m} mi from home. The walk there ${x}. Stop and times: ask the school or call HISD, ${WC.hisdLine}.`,plan_xnone:'crosses nothing on the City’s lists',plan_xsome:l=>`crosses ${l}`,
       plan_bring:(school,who,phone)=>`<b>Want a bus stop or a school zone?</b> Bring this page to the front office of ${school} and ask for ${who}${phone?' · '+phone:''}.`,plan_principal:'the principal',plan_foot:'Straight lines, not streets. Traffic lights only; guards and painted crosswalks are not on public maps.',plan_dates:(a,b)=>`City crash lists 2022 · HISD rail ${a} · signals read ${b}`,
       src_use:['Campus points and addresses','The seven closed zones','Which school an address walks to now','Roads marked “dangerous for people walking”, with crash counts','High-injury roads, with crash counts','Train tracks','“Cross at the traffic light at…”','“Cross the tracks at the public crossing on…”','Whether a street can get a school zone on paper','Where on campus a shuttle can stop'],
+      other_lang:'¿Prefiere español?',other_go:'Cambiar a español',dismiss:'Cerrar',
       closed:'Schools that closed',closed_b:'Each closed school, and the school its families walk to now.',see:'See the walk',how:['Type your address','See what the walk crosses and where to cross','Give your principal the request'],
       staff_h:'For City and HISD staff',staff_b:'The same data, sorted for the people who can change the walks.',
       staff:[{h:'Closed zones data',b:'Per closed zone: how much farther the walk is, and what share now crosses a dangerous road or active rail.',href:'#/data'},{h:'Corridors',b:'Every road and track a new walk crosses, sorted so the places with no traffic light come first, with what the City can do there.',href:'#/corridors'},{h:'Before April 15',b:'The streets by receiving school, the City’s written paths for a school zone, and a filled-in draft application for each principal.',href:'#/april15'}],
@@ -93,6 +95,7 @@
       plan_shuttle:(from,addr,m,x)=>`<b>Autobús gratis de HISD hasta 2027–28.</b> Recoge en ${from}, ${addr}, a ${m} millas de casa. El camino hasta ahí ${x}. Parada y horarios: pregunte en la escuela o llame a HISD, ${WC.hisdLine}.`,plan_xnone:'no cruza nada de las listas de la Ciudad',plan_xsome:l=>`cruza ${l}`,
       plan_bring:(school,who,phone)=>`<b>¿Quiere una parada de autobús o una zona escolar?</b> Lleve esta página a la oficina de ${school} y pregunte por ${who}${phone?' · '+phone:''}.`,plan_principal:'el director o la directora',plan_foot:'Líneas rectas, no calles. Solo semáforos; los guardias y los pasos pintados no están en mapas públicos.',plan_dates:(a,b)=>`Listas de choques de la Ciudad 2022 · vías HISD ${a} · semáforos leídos ${b}`,
       src_use:['Puntos y direcciones de los planteles','Las siete zonas cerradas','A qué escuela camina ahora una dirección','Calles marcadas “peligrosas para peatones”, con conteos de choques','Calles con muchos choques, con conteos','Vías de tren','“Cruce en el semáforo de…”','“Cruce las vías por el cruce público de…”','Si una calle puede tener zona escolar según las reglas','Dónde puede parar el autobús en el plantel'],
+      other_lang:'Prefer English?',other_go:'Switch to English',dismiss:'Close',
       closed:'Escuelas que cerraron',closed_b:'Cada escuela cerrada, y la escuela a la que sus familias caminan ahora.',see:'Ver el camino',how:['Escriba su dirección','Vea qué cruza el camino y dónde cruzar','Entregue la solicitud a su director'],
       staff_h:'Para personal de la Ciudad y de HISD',staff_b:'Los mismos datos, ordenados para quienes pueden cambiar los caminos.',
       staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],
@@ -467,9 +470,16 @@
   }
   addEventListener('resize',fitPapers);
   const navText=()=>{const a=document.querySelectorAll('.topnav a');if(a[0])a[0].textContent=t('nav_zones');if(a[1])a[1].textContent=t('nav_staff');};
-  document.querySelectorAll('.lang-btn').forEach(b=>b.onclick=()=>{state.lang=b.dataset.lang;ss('lang',state.lang);document.documentElement.lang=state.lang;navText();document.querySelectorAll('.lang-btn').forEach(x=>{const on=x===b;x.classList.toggle('is-on',on);x.setAttribute('aria-pressed',on);});route();});
+  document.querySelectorAll('.lang-btn').forEach(b=>b.onclick=()=>{state.lang=b.dataset.lang;try{localStorage.setItem('wc.lang',state.lang);}catch(_){}sessionStorage.removeItem('wc.langbar');document.documentElement.lang=state.lang;navText();document.querySelectorAll('.lang-btn').forEach(x=>{const on=x===b;x.classList.toggle('is-on',on);x.setAttribute('aria-pressed',on);});route();});
   const lb=document.querySelector(`.lang-btn[data-lang="${state.lang}"]`);if(lb){document.documentElement.lang=state.lang;document.querySelectorAll('.lang-btn').forEach(x=>{const on=x===lb;x.classList.toggle('is-on',on);x.setAttribute('aria-pressed',on);});}
   navText();
+  (function langBar(){ if(savedLang||ss('langbar'))return; ss('langbar','1');
+    const other=state.lang==='en'?'es':'en';const bar=document.createElement('div');bar.className='langbar';bar.setAttribute('role','status');
+    bar.innerHTML=`<span>${t('other_lang')}</span><button class="langbar-go">${t('other_go')}</button><button class="langbar-x" aria-label="${t('dismiss')}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>`;
+    document.getElementById('top').insertAdjacentElement('afterend',bar);requestAnimationFrame(()=>bar.classList.add('is-in'));
+    const close=()=>{bar.classList.remove('is-in');setTimeout(()=>bar.remove(),300);};
+    bar.querySelector('.langbar-go').onclick=()=>{document.querySelector(`.lang-btn[data-lang="${other}"]`).click();close();};
+    bar.querySelector('.langbar-x').onclick=close;setTimeout(close,12000);})();
   if('scrollRestoration' in history)history.scrollRestoration='manual';
   addEventListener('hashchange',route);
   addEventListener('scroll',()=>document.getElementById('top').classList.toggle('is-scrolled',scrollY>4),{passive:true});
