@@ -116,6 +116,13 @@ doesn't exist yet, and no sibling topic existed as of 00:01.
 - Model: the claude-api skill says to default to `claude-opus-5`. Haiku 4.5 / Sonnet 5 are the team's cost choice;
   present them as options.
 
-## Not done yet
-- Write the four report files plus sources.md, then update README.md and memory.
-- Nothing in the app changed except this file.
+## Status (2026-09-27, continued in the hh-cstb repo)
+- **Report written** to `docs/ai-assistant/` in this repo: `Report.md`, `idea-catalog.md`, `evidence.md`,
+  `build-notes.md`, `sources.md`. The frontmatter and cross-links follow the plan, so the folder can be copied to
+  `site/content/Idea Research/Closed-School Travel Burden/Reports/ai-assistant/` unchanged.
+- This repo holds only the app. The site folder, `research/` (README and script), the plan file and
+  `Reports/warning-families/` aren't here, so the style was matched from the description above, not the file.
+- **Still to do where the site lives:** copy the folder over, add a row to the Topics table in `research/README.md`,
+  and add the research-folder memory line.
+- Build notes add an Opus 5.5 column (Opus 5 × 0.8, not from the script).
+- Nothing in the app changed.
