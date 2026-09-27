@@ -44,7 +44,7 @@ export function Data() {
       <Back />
       <Eyebrow />
       <h1>Closed zones</h1>
-      <p className="lede muted">{T.points.toLocaleString()} grid points, {T.spacingM} m apart. Straight lines to old and new school.</p>
+      <p className="lede muted">{T.points.toLocaleString()} grid points, {Math.round((T.spacingM * 3.28084) / 10) * 10} ft apart. Straight lines to old and new school.</p>
       <dl className="facts three">
         <div><dt>{Math.round(T.pctOver2New * 10) / 10}%</dt><dd>2+ mi from school</dd></div>
         <div><dt>{Math.round(T.hazardNew.combined)}%</dt><dd>cross a dangerous road or rail (was {Math.round(T.hazardOld.combined)}%)</dd></div>
@@ -183,7 +183,8 @@ export function Corridors() {
 }
 
 const pathOf = (s: StreetRequest) => (s.path === "borders" ? "Borders the school" : s.path === "thoroughfare-collector" ? "Thoroughfare or collector" : "Neither, on paper");
-const lights = (s: StreetRequest) => (s.lights.within500 ? `${s.lights.within500} within 500 m · median ${s.lights.medianM} m away` : "None within 500 m");
+// The street facts count lights within 500 m (1,640 ft); shown in feet.
+const lights = (s: StreetRequest) => (s.lights.within500 ? `${s.lights.within500} within 1,640 ft${s.lights.medianM != null ? ` · median ${ft(s.lights.medianM)} ft away` : ""}` : "None within 1,640 ft");
 const cls = (s: StreetRequest) => (s.streetClass?.type ? `${s.streetClass.type} · ${s.streetClass.owner ?? ""}` : "Local street (not on the thoroughfare plan)");
 
 export function April15() {
@@ -210,7 +211,7 @@ export function April15() {
         suggestions={[
           "Which receiving schools have a street on a written path to a school zone, and which streets?",
           "Which streets are on neither path, and what can the school ask for there instead?",
-          "Which school's new walkers cross the most streets with no traffic light within 500 m?",
+          "Which school's new walkers cross the most streets with no traffic light within 1,640 ft?",
         ]}
         pick={rowPicker(ids)}
       />
