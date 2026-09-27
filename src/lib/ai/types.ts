@@ -1,5 +1,5 @@
-// The one contract between the page and the AI proxy (functions/api/ai.ts). Plain types and limits only, so the
-// Cloudflare function can import this file without pulling in React.
+// The one contract between the page and the AI proxy (worker/ai.ts). Plain types and limits only, so the
+// Worker can import this file without pulling in React.
 
 export type AiLang = "en" | "es";
 

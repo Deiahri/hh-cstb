@@ -1,13 +1,13 @@
-// POST /api/ai — the one server piece of Walk Check (Cloudflare Pages Function). It holds the API key, builds the
+// POST /api/ai — the one server piece of Walk Check (in the Cloudflare Worker, worker/index.ts). It holds the API key, builds the
 // prompts, runs the checks in guard.ts on every answer, and stores nothing: no address, no messages, no IP.
 // GET /api/ai says whether the AI features are on, so the page can hide them when there's no key.
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiLang, AiRequest, AiResponse, AiTurn } from "../../src/lib/ai/types";
-import { forbiddenWords, stripUnknownCitations, tooHard, unknownCitations, validateRequest } from "../_lib/guard";
-import { mockReply } from "../_lib/mock";
-import { FALLBACK, explainSystem, narrativeInstruction, staffData, staffSystem, walkwaySystem } from "../_lib/prompts";
+import type { AiLang, AiRequest, AiResponse, AiTurn } from "../src/lib/ai/types";
+import { forbiddenWords, stripUnknownCitations, tooHard, unknownCitations, validateRequest } from "./lib/guard";
+import { mockReply } from "./lib/mock";
+import { FALLBACK, explainSystem, narrativeInstruction, staffData, staffSystem, walkwaySystem } from "./lib/prompts";
 
-interface Env {
+export interface Env {
   ANTHROPIC_API_KEY?: string;
   /** Default claude-opus-5. claude-sonnet-5 or claude-haiku-4-5 cost less; test them on sample addresses first. */
   AI_MODEL?: string;
@@ -16,7 +16,7 @@ interface Env {
   ASSETS: { fetch: (req: Request | string) => Promise<Response> };
 }
 
-type Ctx = { request: Request; env: Env };
+export type Ctx = { request: Request; env: Env };
 
 const json = (body: AiResponse | { available: boolean; mock: boolean }, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });

@@ -6,7 +6,7 @@ import type { AppData } from "../data";
 import { analyzeWalk } from "../walk";
 import { walkGrounding } from "./grounding";
 import { LIMITS } from "./types";
-import { forbiddenWords, validateRequest } from "../../../functions/_lib/guard";
+import { forbiddenWords, validateRequest } from "../../../worker/lib/guard";
 
 // The same files loadAppData() fetches, read from disk.
 const read = (f: string) => JSON.parse(readFileSync(`public/data/${f}`, "utf8"));

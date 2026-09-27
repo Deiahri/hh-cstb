@@ -23,7 +23,7 @@ npm run compute   # grid-sample the closed zones → zones.json, corridors.json,
 npm run dev       # http://localhost:5173
 npm run build     # static site in dist/ (HashRouter, relative paths — host anywhere)
 npm test          # AI guardrails, request checks, and the AI grounding on each closed zone's sample point
-npm run dev:full  # build + `wrangler pages dev` on :8788: the site plus the AI proxy (needs a .dev.vars, see below)
+npm run dev:full  # build + `wrangler dev` on :8788: the site plus the AI proxy, as deployed (needs a .dev.vars, see below)
 ```
 
 The snapshot in `public/data` is already there, so `npm run dev` works offline without the fetch steps.
@@ -155,8 +155,9 @@ stays static and works without it; the AI parts appear only when `GET /api/ai` a
   from `corridors.json`, `zone_requests.json` and `zones.json`, which the proxy reads from the site itself. Every number carries
   its row id; ids are chips that scroll to and light the row, and ids that aren't in the data are dropped before the answer arrives.
 
-**The proxy** is one Cloudflare Pages Function, `functions/api/ai.ts`, deployed with the site (`wrangler.toml`). It holds the
-key, builds the prompts on the server (`functions/_lib/prompts.ts`), and checks every answer in code (`functions/_lib/guard.ts`):
+**The proxy** lives in the Cloudflare Worker that serves the site (`wrangler.jsonc`: the Worker `hh-cstb`, with `dist/` as its
+static assets and `worker/index.ts` for `/api/ai`, handled in `worker/ai.ts`). It holds the key, builds the prompts on the
+server (`worker/lib/prompts.ts`), and checks every answer in code (`worker/lib/guard.ts`):
 the copy rules' words ("safe", "qualifies", "seguro", "califica"…), a reading-level check on family answers, and staff
 citations. A failed check gets one retry with a note, then a fixed answer that points to HISD's closure line. It stores
 nothing and logs only the mode, the outcome and the retry count. Model: `claude-opus-5` unless `AI_MODEL` says otherwise
@@ -164,8 +165,10 @@ nothing and logs only the mode, the outcome and the retry count. Model: `claude-
 `docs/ai-assistant/build-notes.md`.
 
 To run it: copy `.dev.vars.example` to `.dev.vars`, set `ANTHROPIC_API_KEY` (or `AI_MOCK=1` for canned demo answers with no
-key), then `npm run dev:full`. `npm run dev` proxies `/api` to it on :8788. To deploy: `npx wrangler pages secret put
-ANTHROPIC_API_KEY`, and add a Cloudflare rate-limiting rule on `/api/ai`, since anyone can call it (the proxy only refuses other
+key), then `npm run dev:full`. `npm run dev` proxies `/api` to it on :8788. To deploy: Workers Builds runs `npm run build`
+then `npx wrangler deploy` on the production branch. Set the key with `npx wrangler secret put ANTHROPIC_API_KEY` (or in the
+dashboard: Worker → Settings → Variables and Secrets; `AI_MOCK=1` as a variable gives the demo), and add a Cloudflare
+rate-limiting rule on `/api/ai`, since anyone can call it (the proxy only refuses other
 websites' pages). The "this is AI" notice shows before the first message (Texas HB 149 §552.051 asks that of a government's AI;
 it's shown either way). Spanish answers sit under the page's existing "not professionally reviewed" banner.
 - **Not verified yet:** answer quality from the real model. The build was tested end to end with `AI_MOCK=1` and unit tests;
@@ -192,7 +195,8 @@ it's shown either way). Spanish answers sit under the page's existing "not profe
   (schools that closed, one zone, sources), Staff (data, corridors, Before April 15, one school's draft).
 - `src/ui.css`: `ui/styles.css`, plus the AI panels. `src/lib/i18n.ts`: the language switch, the copy rules, and the packet
   and AI strings.
-- `functions/api/ai.ts`, `functions/_lib/`: the AI proxy, its prompts, checks and demo replies. `src/lib/ai/`: the request
+- `wrangler.jsonc`, `worker/index.ts`: the Cloudflare Worker (static assets from `dist/`, `/api/ai`). `worker/ai.ts`,
+  `worker/lib/`: the AI proxy, its prompts, checks and demo replies. `src/lib/ai/`: the request
   types, the page's grounding for one home, the walkway sentence, and the client. `src/components/AiPanel.tsx`,
   `AskResult.tsx`, `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
 
