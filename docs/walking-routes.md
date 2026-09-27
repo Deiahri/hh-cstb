@@ -194,5 +194,7 @@ This is the same baseline bundle inspected previously, not the walking-route imp
 The production build, all 11 focused tests and the production-browser integration suite were rerun
 and passed. No duplicate routing implementation or unrelated code change was needed. The refreshed
 package retains the full implementation against this exact base and all 16 unchanged data files.
-GitHub now reports push permission; that change in access does not imply deployment access or a
-configured ORS key. The handoff records the actual branch/PR publication outcome.
+GitHub reports repository push permission, but the integration rejected the attempted Git tree write
+with HTTP 403, "Resource not accessible by integration." No remote branch or PR was created. This
+permission metadata does not establish integration write access, deployment access or a configured
+ORS key. Publish from an authenticated local clone as described in the handoff.
