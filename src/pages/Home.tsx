@@ -23,13 +23,14 @@ export function daysToApril15(): [number, number] {
 export const sampleLabel = (zone: string, lang: "en" | "es") =>
   lang === "es" ? `Punto de muestra en la zona de ${short(zone)}` : `Sample point in the old ${short(zone)} area`;
 
-/** Where a home goes: its walk, or the "not a closed zone" screen. */
+/** Where a home goes: its walk, or the "not in an HISD elementary zone" screen. */
 function useGoHome() {
   const d = useData();
   const nav = useNavigate();
   return (p: LngLat, addr: string, geocoded = false) => {
     const r = analyzeAddress(p, d.ds);
-    nav(r.closedZone ? walkLink(p, addr, { geocoded }) : `/nozone?${new URLSearchParams({ addr })}`);
+    // Any HISD elementary zone gets its walk; the closed zones' walks add last year and the shuttle.
+    nav(r.now ? walkLink(p, addr, { geocoded }) : `/nozone?${new URLSearchParams({ addr })}`);
   };
 }
 

@@ -5,7 +5,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from "react";
 import { useData } from "../../lib/data";
 import type { LngLat } from "../../lib/geo";
-import { type UiResult, closedZones, short } from "../../lib/ui/model";
+import { type UiCheck, type UiCrossing, type UiResult, type UiZone, closedZones, short } from "../../lib/ui/model";
 import { isPhone, reduced, useUi } from "./bits";
 
 const STYLE = "https://tiles.openfreemap.org/styles/positron";
@@ -81,11 +81,19 @@ export function usePhone(): boolean {
 interface Props {
   kind: "walk" | "pick" | "zones" | "print";
   height: number;
+  /** The walk to draw (walk and print): a closed-zone home's result, or any other home's check. */
   r?: UiResult;
+  c?: UiCheck;
   onPick?: (p: LngLat) => void;
 }
 
-export function WcMap({ kind, height, r, onPick }: Props) {
+/** What the walk map draws, from either shape. `closed` (closed-zone homes only) adds the old zone and the shuttle pickup. */
+interface Drawn { home: LngLat; recv: { name: string; loc: LngLat }; now: UiCrossing[]; closed: UiZone | null; path: LngLat[] | null; pathBefore: LngLat[] | null }
+const drawnOf = (r?: UiResult, c?: UiCheck): Drawn | null =>
+  r ? { home: r.home, recv: r.recv, now: r.now, closed: r.closed, path: r.path, pathBefore: r.pathBefore }
+    : c ? { home: c.home, recv: c.school, now: c.crossings, closed: c.closed, path: c.path, pathBefore: c.pathBefore } : null;
+
+export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
   const d = useData();
   const { lang, L } = useUi();
   const el = useRef<HTMLDivElement>(null);
@@ -120,14 +128,15 @@ export function WcMap({ kind, height, r, onPick }: Props) {
     const zones = closedZones(d);
     let raf = 0;
 
+    const r = drawnOf(result, check);
     m.on("load", () => {
       if ((kind === "walk" || kind === "print") && r) {
-        addLine(m, "zone", fc([lineF(r.closed.rings[0])]), { "line-color": "#1F6E5A", "line-width": 1.5, "line-dasharray": [2, 3], "line-opacity": 0.7 });
+        if (r.closed) addLine(m, "zone", fc([lineF(r.closed.rings[0])]), { "line-color": "#1F6E5A", "line-width": 1.5, "line-dasharray": [2, 3], "line-opacity": 0.7 });
         const names = new Set(r.now.filter((c) => c.kind === "road").map((c) => c.key.slice(5)));
         const roads = [...d.ds.hin, ...d.ds.pedHin].filter((l) => names.has((l.props.Full_Name ?? "").trim().toUpperCase())).map((l) => l.feature as Feat);
         addLine(m, "roads", fc(roads), { "line-color": "#D9822B", "line-width": 5, "line-opacity": 0.85 });
         if (r.now.some((c) => c.kind === "rail")) addLine(m, "rails", d.raw.rail as unknown as GeoJSON.FeatureCollection, { "line-color": "#22302C", "line-width": 2, "line-dasharray": [3, 3], "line-opacity": 0.8 });
-        addLine(m, "pick", fc([lineF(r.pathBefore ?? [r.home, r.closed.loc])]), { "line-color": "#1F6E5A", "line-width": 3, "line-dasharray": [0.2, 2.2], "line-opacity": 0.85 });
+        if (r.closed) addLine(m, "pick", fc([lineF(r.pathBefore ?? [r.home, r.closed.loc])]), { "line-color": "#1F6E5A", "line-width": 3, "line-dasharray": [0.2, 2.2], "line-opacity": 0.85 });
         const animate = kind === "walk" && !reduced();
         // The walking route when there is one (null: the straight line).
         const walkLine = r.path ?? [r.home, r.recv.loc];
@@ -143,10 +152,10 @@ export function WcMap({ kind, height, r, onPick }: Props) {
           layout: { "text-field": ["get", "n"], "text-size": 11, "text-variable-anchor": ["left", "right", "bottom", "top"], "text-radial-offset": 0.9, "text-justify": "auto", "text-font": ["Noto Sans Regular"] },
           paint: { "text-color": "#164F41", "text-halo-color": "#fff", "text-halo-width": 1.5 },
         });
-        marker(m, r.closed.loc, "bus", "P", r.closed.name);
+        if (r.closed) marker(m, r.closed.loc, "bus", "P", r.closed.name);
         marker(m, r.recv.loc, "school", "S", r.recv.name);
         marker(m, r.home, "home", "", lang === "es" ? "Casa" : "Home");
-        m.fitBounds(bounds([r.home, r.recv.loc, r.closed.loc, ...walkLine, ...(r.pathBefore ?? [])]), {
+        m.fitBounds(bounds([r.home, r.recv.loc, ...walkLine, ...(r.closed ? [r.closed.loc, ...(r.pathBefore ?? [])] : [])]), {
           padding: phone ? { top: 72, bottom: 48, left: 44, right: 44 } : { top: 56, bottom: kind === "print" ? 40 : 132, left: 44, right: 44 },
           duration: 0,
         });
@@ -216,22 +225,23 @@ export function WcMap({ kind, height, r, onPick }: Props) {
     };
     // One map per result and language; the rest is read once.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kind, r, lang, d]);
+  }, [kind, result, check, lang, d]);
 
   return <div ref={el} className="map" data-map={kind} style={{ height }} role="img" aria-label="Map" />;
 }
 
 /** The walk map with its key, as the walk page shows it. */
-export function WalkMap({ r, height }: { r: UiResult; height: number }) {
+export function WalkMap({ r, c, height }: { r?: UiResult; c?: UiCheck; height: number }) {
+  const w = drawnOf(r, c);
   const { L } = useUi();
   return (
     <div className="mapwrap">
-      <WcMap kind="walk" r={r} height={height} />
+      <WcMap kind="walk" r={r} c={c} height={height} />
       <details className="maplegend" open={!isPhone()}>
         <summary>{L.key}</summary>
         <ul>
-          <li><i className="l-walk" />{r.path ? L.map_walk : L.map_line}</li>
-          <li><i className="l-pick" />{L.map_pick}</li>
+          <li><i className="l-walk" />{w?.path ? L.map_walk : L.map_line}</li>
+          {w?.closed && <li><i className="l-pick" />{L.map_pick}</li>}
           <li><i className="l-x">1</i>{L.map_x}</li>
           <li><i className="l-light" />{L.map_light}</li>
           <li><i className="l-road" />{L.map_road}</li>

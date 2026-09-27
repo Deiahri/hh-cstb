@@ -21,7 +21,7 @@ const en = {
       shuttle_line:(from: A)=>`Free shuttle from ${from} until 2028`,askbus:'Ask for a bus',details:'Full details',
       d_nolight:'No light',d_nox:'No rail crossing',d_light:(f: A)=>`Light ${f}`,d_gate:(f: A)=>`Gate ${f}`,d_xing:(f: A)=>`Rail crossing ${f}`,dir:(d: A)=>d,
       rail_name:'Train tracks',mi_walk:(m: A)=>`${m} mi straight line`,
-      nz_h:'Not in one of the 7 closed zones',another:'Try another address',
+      nz_h:'Not in an HISD elementary zone',another:'Try another address',
       // nav, about
       nav_check:'Check',nav_schools:'Schools',nav_about:'About',nav_staff:'Staff',
       about_h:'About',about_b:['HISD closed 7 elementary schools in 2026.','Kids now walk farther, across busier roads.','This site shows each walk. Public data only.'],
@@ -99,7 +99,7 @@ const es: UiDict = {
       shuttle_line:(from: A)=>`Autobús gratis desde ${from} hasta 2028`,askbus:'Pedir autobús',details:'Todos los detalles',
       d_nolight:'Sin semáforo',d_nox:'Sin cruce de vías',d_light:(f: A)=>`Semáforo ${f}`,d_gate:(f: A)=>`Barrera ${f}`,d_xing:(f: A)=>`Cruce de vías ${f}`,dir:(d: A)=>DIR_ES_SHORT[d] ?? d,
       rail_name:'Vías de tren',mi_walk:(m: A)=>`${m} mi en línea recta`,
-      nz_h:'Fuera de las 7 zonas cerradas',another:'Otra dirección',
+      nz_h:'Fuera de las zonas de primaria de HISD',another:'Otra dirección',
       nav_check:'Revisar',nav_schools:'Escuelas',nav_about:'Acerca',nav_staff:'Personal',
       about_h:'Acerca',about_b:['HISD cerró 7 primarias en 2026.','Los niños caminan más lejos, por calles más peligrosas.','Este sitio muestra cada camino. Solo datos públicos.'],
       about_links:'Más',
