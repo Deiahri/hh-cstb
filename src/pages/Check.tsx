@@ -11,6 +11,7 @@ import { AskResult } from "../components/AskResult";
 import { tel, useUi } from "../components/ui/bits";
 import { useShare } from "../components/ui/ShareSheet";
 import { WalkMap, WalkMapProvider, usePhone, useWalkMapCtl } from "../components/ui/WcMap";
+import { Checking } from "../components/ui/Checking";
 
 /** A link to /check for a home. */
 export function checkLink(p: [number, number], addr: string) {
@@ -52,6 +53,7 @@ export default function Check() {
   const w = useWalk();
   const c = useMemo(() => (w ? toCheck(d, w) : null), [d, w]);
   if (!w) return <Navigate to="/" replace />;
+  if (w.pending) return <Checking />;
   if (!c) return <Navigate to={`/nozone?${new URLSearchParams({ addr: w.addr })}`} replace />;
   return (
     <WalkMapProvider>

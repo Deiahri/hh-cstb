@@ -9,6 +9,7 @@ import { ActionBar, Back, PrintDoc, useUi } from "../components/ui/bits";
 import { PlanDoc } from "../components/ui/docs";
 import { useShare } from "../components/ui/ShareSheet";
 import { WalkMap, WalkMapProvider, usePhone, useWalkMapCtl } from "../components/ui/WcMap";
+import { Checking } from "../components/ui/Checking";
 
 /** The message the Share button sends: where the walk goes, what it crosses, and the link back. */
 export function shareMessage(u: UiWalk, r: UiResult, lang: "en" | "es") {
@@ -65,6 +66,7 @@ function useScrollSpy(list: React.RefObject<HTMLOListElement | null>, phone: boo
 export default function WalkScreen() {
   const u = useUiWalk();
   if (!u) return <Navigate to="/" replace />;
+  if (u.w.pending) return <Checking />;
   if (!u.r) return <Navigate to={`/nozone?${new URLSearchParams({ addr: u.addr })}`} replace />;
   return (
     <WalkMapProvider>
@@ -139,8 +141,8 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
           <p>{L.shuttle_b(r.closed.name, r.closed.address, mi(r.distBeforeM), xb)}</p>
           <p className="muted">{L.shuttle_c}</p>
           <h2>{L.after_h}</h2>
-          <p>{L.after_b(to, mi(r.distNowM))}</p>
-          <p className="small muted foot">{L.note_lines} {L.note_lights}</p>
+          <p>{L.after_b(to, mi(r.lineNowM))}</p>
+          <p className="small muted foot">{r.path ? L.note_route : L.note_lines} {L.note_lights}</p>
           <p className="small muted foot">
             {L.dates}: {lang === "es" ? "listas de choques de la Ciudad" : "City crash lists"} {dates.crash} · HISD {lang === "es" ? "vías" : "rail"} {dates.rail} ·{" "}
             {lang === "es" ? "límites" : "boundaries"} {dates.zones} · {lang === "es" ? "semáforos" : "traffic lights"} {dates.signals} ·{" "}

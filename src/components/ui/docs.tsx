@@ -61,7 +61,7 @@ export function PlanDoc({ r, addr, dates }: { r: UiResult; addr: string; dates: 
       </ol>
       <div className="doc-note" dangerouslySetInnerHTML={{ __html: L.plan_shuttle(esc(r.closed.name), esc(r.closed.address), mi(r.distBeforeM), esc(xb)) }} />
       <div className="doc-note outline" dangerouslySetInnerHTML={{ __html: L.plan_bring(esc(r.recv.name), esc(L.plan_principal), undefined) }} />
-      <footer className="doc-foot"><span>{L.plan_foot}</span><span>{L.plan_dates(dates.rail, dates.signals)}</span></footer>
+      <footer className="doc-foot"><span>{r.path ? L.plan_foot_route : L.plan_foot}</span><span>{L.plan_dates(dates.rail, dates.signals)}</span></footer>
     </article>
   );
 }
@@ -82,7 +82,7 @@ export function BusDoc({ r, addr, walkway }: { r: UiResult; addr: string; walkwa
         <dt>Home area</dt><dd>{addr}</dd>
         <dt>Former campus</dt><dd>{r.closed.name}, {r.closed.address} (closed June 2026)</dd>
         <dt>Receiving campus</dt><dd>{r.recv.name}, {r.recv.address}</dd>
-        <dt>Straight-line distance</dt><dd>{mi(r.distNowM)} mi (inside the 2-mile rule; {r.closed.pctOver2New}% of the former zone is 2+ mi)</dd>
+        <dt>Straight-line distance</dt><dd>{mi(r.lineNowM)} mi (inside the 2-mile rule; {r.closed.pctOver2New}% of the former zone is 2+ mi)</dd>
       </dl>
       <h2>Conditions on this walk</h2>
       <p>

@@ -14,6 +14,24 @@ const fc = (features: Feat[]): GeoJSON.FeatureCollection => ({ type: "FeatureCol
 const lineF = (c: LngLat[], properties = {}): Feat => ({ type: "Feature", properties, geometry: { type: "LineString", coordinates: c } });
 const polyF = (rings: LngLat[][], properties = {}): Feat => ({ type: "Feature", properties, geometry: { type: "Polygon", coordinates: rings } });
 const ptF = (p: LngLat, properties = {}): Feat => ({ type: "Feature", properties, geometry: { type: "Point", coordinates: p } });
+/** The first `k` (0–1) of a line, by length: the walk drawing itself in. */
+function partial(line: LngLat[], k: number): LngLat[] {
+  const seg = line.slice(1).map((p, i) => Math.hypot(p[0] - line[i][0], p[1] - line[i][1]));
+  let left = seg.reduce((a, b) => a + b, 0) * k;
+  const out: LngLat[] = [line[0]];
+  for (let i = 0; i < seg.length; i++) {
+    const a = line[i], b = line[i + 1];
+    if (left >= seg[i]) {
+      out.push(b);
+      left -= seg[i];
+      continue;
+    }
+    const f = seg[i] ? left / seg[i] : 0;
+    out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+    break;
+  }
+  return out.length > 1 ? out : [line[0], line[0]];
+}
 const bounds = (pts: LngLat[]): [LngLat, LngLat] => {
   const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
   return [[Math.min(...xs), Math.min(...ys)], [Math.max(...xs), Math.max(...ys)]];
@@ -75,10 +93,14 @@ interface Props {
   onPick?: (p: LngLat) => void;
 }
 
-/** What the walk map draws, from either shape. `closed` adds the old zone and the shuttle pickup. */
-interface Drawn { home: LngLat; school: { name: string; loc: LngLat }; now: UiCrossing[]; closed: UiZone | null }
+/**
+ * What the walk map draws, from either shape. `closed` adds the old zone and the shuttle pickup. `path`/`pathBefore` are the
+ * walking routes (to the school, to the pickup); null draws a straight line.
+ */
+interface Drawn { home: LngLat; school: { name: string; loc: LngLat }; now: UiCrossing[]; closed: UiZone | null; path: LngLat[] | null; pathBefore: LngLat[] | null }
 const drawnOf = (r?: UiResult, c?: UiCheck): Drawn | null =>
-  r ? { home: r.home, school: r.recv, now: r.now, closed: r.closed } : c ? { home: c.home, school: c.school, now: c.crossings, closed: c.closed } : null;
+  r ? { home: r.home, school: r.recv, now: r.now, closed: r.closed, path: r.path, pathBefore: r.pathBefore }
+    : c ? { home: c.home, school: c.school, now: c.crossings, closed: c.closed, path: c.path, pathBefore: c.pathBefore } : null;
 
 export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
   const d = useData();
@@ -123,10 +145,13 @@ export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
         const roads = [...d.ds.hin, ...d.ds.pedHin].filter((l) => names.has((l.props.Full_Name ?? "").trim().toUpperCase())).map((l) => l.feature as Feat);
         addLine(m, "roads", fc(roads), { "line-color": "#D7261E", "line-width": 6, "line-opacity": 0.9 });
         if (r.now.some((c) => c.kind === "rail")) addLine(m, "rails", d.raw.rail as unknown as GeoJSON.FeatureCollection, { "line-color": "#111111", "line-width": 2, "line-dasharray": [3, 3], "line-opacity": 0.8 });
-        if (r.closed) addLine(m, "pick", fc([lineF([r.home, r.closed.loc])]), { "line-color": "#111111", "line-width": 3, "line-dasharray": [0.2, 2.2], "line-opacity": 0.7 });
+        if (r.closed) addLine(m, "pick", fc([lineF(r.pathBefore ?? [r.home, r.closed.loc])]), { "line-color": "#111111", "line-width": 3, "line-dasharray": [0.2, 2.2], "line-opacity": 0.7 });
         const animate = kind === "walk" && !reduced();
         const to = r.school.loc;
-        addLine(m, "walk", fc([lineF(animate ? [r.home, r.home] : [r.home, to])]), { "line-color": "#111111", "line-width": 4, "line-opacity": 0.95 });
+        const walkLine = r.path ?? [r.home, to];
+        // A route starts and ends on the street network, a little off the pins: those gaps, thin and dashed.
+        if (r.path) addLine(m, "walk-gap", fc([lineF([r.home, r.path[0]]), lineF([r.path[r.path.length - 1], to])]), { "line-color": "#111111", "line-width": 1.5, "line-dasharray": [2, 2], "line-opacity": 0.6 });
+        addLine(m, "walk", fc([lineF(animate ? [r.home, r.home] : walkLine)]), { "line-color": "#111111", "line-width": 4, "line-opacity": 0.95 });
         const marks = r.now.map((c, i) => marker(m, c.at, `x${c.kind === "rail" ? " rail" : ""}`, String(i + 1)));
         const lights = r.now.filter((c) => c.control.has && c.control.loc);
         m.addSource("lights", { type: "geojson", data: fc(lights.map((c) => ptF(c.control.loc!, { n: c.control.name }))) });
@@ -139,7 +164,7 @@ export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
         if (r.closed) marker(m, r.closed.loc, "bus", BUS, r.closed.name);
         marker(m, to, "school", "S", r.school.name);
         marker(m, r.home, "home", "", lang === "es" ? "Casa" : "Home");
-        m.fitBounds(bounds([r.home, to, ...(r.closed ? [r.closed.loc] : [])]), {
+        m.fitBounds(bounds([r.home, to, ...walkLine, ...(r.closed ? [r.closed.loc, ...(r.pathBefore ?? [])] : [])]), {
           padding: phone ? { top: 72, bottom: 48, left: 44, right: 44 } : { top: 56, bottom: kind === "print" ? 40 : 132, left: 44, right: 44 },
           duration: 0,
         });
@@ -148,7 +173,7 @@ export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
           const t0 = performance.now() + 250, dur = 1100, ease = (x: number) => 1 - Math.pow(1 - x, 3);
           const step = (now: number) => {
             const k = Math.min(1, ease(Math.max(0, now - t0) / dur));
-            src.setData(fc([lineF([r.home, [r.home[0] + (to[0] - r.home[0]) * k, r.home[1] + (to[1] - r.home[1]) * k]])]));
+            src.setData(fc([lineF(partial(walkLine, k))]));
             if (k < 1) raf = requestAnimationFrame(step);
           };
           raf = requestAnimationFrame(step);
@@ -218,13 +243,14 @@ export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
 export function WalkMap({ r, c, height }: { r?: UiResult; c?: UiCheck; height: number }) {
   const { L } = useUi();
   const closed = !!(r?.closed ?? c?.closed);
+  const routed = !!(r?.path ?? c?.path);
   return (
     <div className="mapwrap">
       <WcMap kind="walk" r={r} c={c} height={height} />
       <details className="maplegend" open={!isPhone()}>
         <summary>{L.key}</summary>
         <ul>
-          <li><i className="l-walk" />{L.map_walk}</li>
+          <li><i className="l-walk" />{routed ? L.map_walk : L.map_line}</li>
           {closed && <li><i className="l-pick" />{L.map_pick}</li>}
           {closed && <li><i className="l-bus" />{L.map_bus}</li>}
           <li><i className="l-x">1</i>{L.map_x}</li>

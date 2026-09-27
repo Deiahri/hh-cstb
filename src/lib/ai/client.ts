@@ -1,10 +1,9 @@
 // The page's side of /api/ai. The proxy holds the key; this sends the question and the page's own result.
 import { useEffect, useState } from "react";
+import { apiUrl } from "../api";
 import type { AiRequest, AiResponse } from "./types";
 
-// The API is a separate service (server/). VITE_API_URL is its base URL, baked in at build time; unset, the page asks its own
-// origin, which in `npm run dev` vite proxies to the local server.
-const API = `${(import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "")}/api/ai`;
+const API = apiUrl("/api/ai");
 
 export interface AiStatus { available: boolean; mock: boolean }
 const OFF: AiStatus = { available: false, mock: false };

@@ -30,7 +30,7 @@ export function WalkwayHelper() {
     if (cameForIt && ai.available) box.current?.scrollIntoView({ block: "start" });
   }, [cameForIt, ai.available]);
 
-  if (!ai.available || !context) return null;
+  if (!ai.available || !context || w?.pending) return null;
   const all = [...turns.filter((m) => m.role === "user").map((m) => m.text)].join(" · ");
 
   async function write() {

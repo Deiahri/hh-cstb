@@ -186,6 +186,18 @@ it's shown either way). Spanish answers sit under the page's existing "not profe
 - **Not verified yet:** answer quality from the real model. The build was tested end to end with `AI_MOCK=1` and unit tests;
   no API key was available. Try each closed zone's sample point in English and Spanish before a demo.
 
+## Walking routes (2026-09-27, from Murphy Amos's PR #1)
+
+The walk to school (and to the shuttle pickup) is a walking route when the API has an OpenRouteService key: `POST /api/walk`
+(`server/walk.ts`) asks ORS's **foot-walking** profile for the home → school route, checks it (Houston area, endpoints within
+250 m of the pins, length within 15% of ORS's distance) and caches it for 5 minutes. The page (`src/lib/routing.ts`,
+`useWalkingAddress.ts`) checks it again, draws that exact line, and finds the crossings along every segment of it
+(`route-hazards.ts`, the same grouping and counts as `hazardsOnRoute`), in the order the walk meets them. Distances shown
+are along the route; the 2-mile bus rule stays on the straight line. The screens wait ("Checking…", up to 12 s) so a verdict
+never changes after it shows. With no key, an error or a timeout, the walks are straight lines as before and the map key says
+so. To turn it on: set `ORS_API_KEY` on `hh-cstb-api` (and in `server/.env` locally). Home coordinates go to our API and
+on to ORS; nothing is stored. Method and limits: `docs/walking-routes.md`.
+
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.
@@ -207,14 +219,16 @@ it's shown either way). Spanish answers sit under the page's existing "not profe
   (schools that closed, one zone, sources), Staff (data, corridors, Before April 15, one school's draft).
 - `src/ui.css`: `ui/styles.css`, plus the AI panels. `src/lib/i18n.ts`: the language switch, the copy rules, and the packet
   and AI strings.
-- `server/`: the AI API, a separate Node service (own `package.json`). `index.ts`: HTTP, CORS, rate limit; `ai.ts`, `lib/`:
-  the proxy, its prompts, checks and demo replies. `render.yaml`: the two Render services. `src/lib/ai/`: the request
+- `server/`: the API, a separate Node service (own `package.json`). `index.ts`: HTTP, CORS, rate limit; `ai.ts`, `lib/`:
+  the AI proxy, its prompts, checks and demo replies; `walk.ts`: the walking-route proxy. `render.yaml`: the two Render services. `src/lib/ai/`: the request
   types, the page's grounding for one home, the walkway sentence, and the client. `src/components/AiPanel.tsx`,
   `AskResult.tsx`, `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
 
 ## Limits (also shown in the UI)
 
-- Routes are straight lines, so every result is a floor. A street route crosses at least as many hazards.
+- Without `ORS_API_KEY` routes are straight lines, so every result is a floor. A street route crosses at least as many
+  hazards. With it, routes follow OpenStreetMap's mapped walkways, which nobody has checked on foot. Zone-wide shares (Zones,
+  Staff) are always straight lines.
 - Shares are of zone **area**, not students or homes. Next step: weight by HCAD residential parcels.
 - The tool produces evidence, not an eligibility decision. §48.151 also needs "no walkway", and Houston publishes no sidewalk data.
 - Crash data is the City's HIN 2022, the newest the City publishes. The railroad layer was last edited 2024-02-15.

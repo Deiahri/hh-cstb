@@ -7,6 +7,7 @@ import {
   crossings, haversine, indexLines, indexPolygons, polygonAt,
 } from "./geo";
 import type { RailXing, Signal } from "./crossings";
+import type { RoutingState } from "./routing";
 
 export interface SchoolProps { Campus_Nbr: number; Campus_Sho: string; Street_Add: string; Grades_Tau?: string }
 export interface ZoneProps { Campus__Number: number; Campus_Short_Name: string; Street_Address: string }
@@ -80,11 +81,11 @@ export interface Hazard {
   pedCrashes: number;    // summed over the crossed segment(s)
   pedDeaths: number;
   totalCrashes: number;
-  at: LngLat;            // where the straight line crosses it
+  at: LngLat;            // where the walk (walking route, or else the straight line) crosses it
   lineIds: { layer: "rail" | "pedHin" | "hin"; id: number }[];
 }
 
-const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase()).replace(/\bSsgt\b/, "SSgt");
+export const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase()).replace(/\bSsgt\b/, "SSgt");
 
 export function hazardsOnRoute(a: LngLat, b: LngLat, ds: Dataset): Hazard[] {
   const byKey = new Map<string, Hazard>();
@@ -143,7 +144,13 @@ export const flags = (hs: Hazard[]) => ({
 
 // ---- Address analysis ------------------------------------------------------
 
-export interface RouteResult { school: School; distance: number; hazards: Hazard[] }
+export interface RouteResult {
+  school: School;
+  /** Original straight-line metres, retained for research and existing distance-rule messaging. */
+  distance: number;
+  hazards: Hazard[];
+  routing?: RoutingState;
+}
 
 export interface AddressResult {
   point: LngLat;

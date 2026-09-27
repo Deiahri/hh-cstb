@@ -1,11 +1,13 @@
-// The Walk Check API: a plain Node server for /api/ai (ai.ts). The site itself is a static build hosted separately, so
+// The Walk Check API: a plain Node server for /api/ai (ai.ts) and /api/walk (walk.ts). The site itself is a static build hosted separately, so
 // this answers CORS for the site's origin, caps request size, and rate-limits the calls that cost money.
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { type Env, allowedOrigins, onRequestGet, onRequestPost } from "./ai";
+import { createWalkRoute } from "./walk";
 
-const env = process.env as Env;
+const env = process.env as Env & { ORS_API_KEY?: string; ROUTING_REQUESTS_PER_MINUTE?: string };
 const PORT = Number(process.env.PORT) || 8788;
 const MAX_BODY = 64 * 1024;
+const walk = createWalkRoute({ apiKey: env.ORS_API_KEY, perMinute: Number(env.ROUTING_REQUESTS_PER_MINUTE) || 30 });
 
 // ---- Rate limit, in memory: per IP over ten minutes, and for everyone over an hour ----
 const PER_IP = 20, IP_WINDOW = 10 * 60_000, HOUR = 60 * 60_000;
@@ -52,13 +54,13 @@ function send(res: ServerResponse, status: number, headers: Record<string, strin
 const jsonError = (error: "failed" | "bad_request", message?: string) => JSON.stringify({ ok: false, error, ...(message ? { message } : {}) });
 const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-store" };
 
-/** The body, or null past MAX_BODY. */
-async function readBody(req: IncomingMessage): Promise<Buffer | null> {
+/** The body, or null past `max`. */
+async function readBody(req: IncomingMessage, max = MAX_BODY): Promise<Buffer | null> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
     size += (c as Buffer).length;
-    if (size > MAX_BODY) return null;
+    if (size > max) return null;
     chunks.push(c as Buffer);
   }
   return Buffer.concat(chunks);
@@ -68,6 +70,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
   const h = cors(req);
   if (url.pathname === "/healthz") return send(res, 200, { "content-type": "text/plain" }, "ok");
+  if (url.pathname === "/api/walk") return handleWalk(req, res, h);
   if (url.pathname !== "/api/ai") return send(res, 404, { "content-type": "text/plain" }, "Not found");
   if (req.method === "OPTIONS") return send(res, 204, h);
   if (req.method !== "GET" && req.method !== "POST") return send(res, 405, { ...h, allow: "GET, POST, OPTIONS" });
@@ -85,9 +88,26 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   send(res, out.status, { ...h, ...Object.fromEntries(out.headers) }, await out.text());
 }
 
+/** A walking route. Its own upstream cap in walk.ts, so routes never use up the AI's per-IP allowance. */
+async function handleWalk(req: IncomingMessage, res: ServerResponse, h: Record<string, string>) {
+  if (req.method === "OPTIONS") return send(res, 204, h);
+  if (req.method !== "POST") return send(res, 405, { ...h, ...JSON_HEADERS, allow: "POST, OPTIONS" }, JSON.stringify({ error: "method" }));
+  if (!String(req.headers["content-type"] ?? "").startsWith("application/json")) return send(res, 415, { ...h, ...JSON_HEADERS }, JSON.stringify({ error: "content_type" }));
+  const body = await readBody(req, 2048);
+  if (!body) return send(res, 413, { ...h, ...JSON_HEADERS, connection: "close" }, JSON.stringify({ error: "too_large" }));
+  let input: unknown;
+  try {
+    input = JSON.parse(body.toString("utf8"));
+  } catch {
+    return send(res, 400, { ...h, ...JSON_HEADERS }, JSON.stringify({ error: "invalid_json" }));
+  }
+  const out = await walk(input);
+  send(res, out.status, { ...h, ...JSON_HEADERS, ...out.headers }, JSON.stringify(out.body));
+}
+
 createServer((req, res) => {
   handle(req, res).catch((e) => {
     console.error("server:", e instanceof Error ? e.name : "unknown");
     if (!res.headersSent) send(res, 500, JSON_HEADERS, jsonError("failed"));
   });
-}).listen(PORT, () => console.log(`Walk Check API on :${PORT}`));
+}).listen(PORT, () => console.log(`Walk Check API on :${PORT}; walking routes ${env.ORS_API_KEY ? "on" : "off (no ORS_API_KEY)"}`));

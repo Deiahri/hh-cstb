@@ -118,8 +118,14 @@ export interface UiResult {
   recv: { nbr: number; name: string; address: string; loc: LngLat };
   now: UiCrossing[];
   before: UiCrossing[];
+  /** Walking-route metres when /api/walk gave a route, else straight-line. */
   distNowM: number;
   distBeforeM: number;
+  /** Straight-line metres to this year's school: what the 2-mile bus rule is measured on here. */
+  lineNowM: number;
+  /** The walking routes' lines, when there are routes; null draws the straight line. */
+  path: LngLat[] | null;
+  pathBefore: LngLat[] | null;
   roads: number;
   rails: number;
 }
@@ -153,6 +159,11 @@ function crossing(d: AppData, step: CrossingStep): UiCrossing {
   };
 }
 
+/** A walk's length: along the walking route when there is one, else straight. */
+export const walkM = (r: RouteResult) => (r.routing?.status === "ready" ? r.routing.route.distanceM : r.distance);
+/** The walking route's line, or null for a straight-line walk. */
+export const walkPath = (r?: RouteResult) => (r?.routing?.status === "ready" ? r.routing.route.coordinates : null);
+
 /** The whole answer for one home in a closed zone, or null outside them. */
 export function toUiResult(d: AppData, w: Walk): UiResult | null {
   const { r } = w;
@@ -169,8 +180,11 @@ export function toUiResult(d: AppData, w: Walk): UiResult | null {
     recv: { nbr: s.nbr, name: s.name, address: s.address, loc: s.loc },
     now,
     before,
-    distNowM: r.now.distance,
-    distBeforeM: old?.distance ?? 0,
+    distNowM: walkM(r.now),
+    distBeforeM: old ? walkM(old) : 0,
+    lineNowM: r.now.distance,
+    path: walkPath(r.now),
+    pathBefore: walkPath(old),
     roads: now.filter((c) => c.kind === "road").length,
     rails: now.filter((c) => c.kind === "rail").length,
   };
@@ -208,7 +222,13 @@ export interface UiCheck {
   home: LngLat;
   school: { nbr: number; name: string; address: string; loc: LngLat };
   crossings: UiCrossing[];
+  /** Walking-route metres when there's a route, else straight-line. */
   distM: number;
+  /** Straight-line metres: the 2-mile bus rule. */
+  lineM: number;
+  path: LngLat[] | null;
+  /** The walk to the closed school's shuttle pickup (closed zones only). */
+  pathBefore: LngLat[] | null;
   closed: UiZone | null;
   verdict: Verdict;
 }
@@ -230,7 +250,10 @@ export function toCheck(d: AppData, w: Walk): UiCheck | null {
     home: w.home,
     school: { nbr: s.nbr, name: s.name, address: s.address, loc: s.loc },
     crossings,
-    distM: r.now.distance,
+    distM: walkM(r.now),
+    lineM: r.now.distance,
+    path: walkPath(r.now),
+    pathBefore: closed ? walkPath(r.old) : null,
     closed,
     verdict: verdictOf(crossings),
   };

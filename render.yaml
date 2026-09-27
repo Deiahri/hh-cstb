@@ -36,6 +36,11 @@ services:
         value: "22"
       - key: ANTHROPIC_API_KEY
         sync: false
+      # OpenRouteService key for walking routes. Unset, the site falls back to straight lines.
+      - key: ORS_API_KEY
+        sync: false
+      - key: ROUTING_REQUESTS_PER_MINUTE
+        value: "30"
       # The site's URL, e.g. https://hh-cstb.onrender.com.
       - key: ALLOWED_ORIGINS
         sync: false

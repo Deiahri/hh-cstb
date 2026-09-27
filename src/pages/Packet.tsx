@@ -12,6 +12,7 @@ import { useT } from "../lib/i18n";
 import { reverseGeocode } from "../lib/geocode";
 import { type UiResult } from "../lib/ui/model";
 import { useUiWalk } from "../lib/ui/useUiWalk";
+import { Checking } from "../components/ui/Checking";
 import { WalkwayHelper } from "../components/WalkwayHelper";
 import { ActionBar, Back, Paper, PrintDoc, useUi } from "../components/ui/bits";
 
@@ -19,6 +20,8 @@ import { ActionBar, Back, Paper, PrintDoc, useUi } from "../components/ui/bits";
 // (read 2026-09-25; see the measuring-the-request report).
 const FAMILY_FORM = "https://portal.laserfiche.com/a6882/forms/TSRFParent";
 
+const LINE_NOTE = "Routes are straight lines, so a walk on streets crosses at least these.";
+const ROUTE_NOTE = "Routes are walking routes on mapped streets (OpenRouteService), not checked on foot.";
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 // The evidence and the pasted text are English whatever the family reads: HISD staff read them.
 const DIRS: Record<Dir, string> = { n: "north", ne: "northeast", e: "east", se: "southeast", s: "south", sw: "southwest", w: "west", nw: "northwest" };
@@ -93,11 +96,11 @@ function PacketDoc({ r, plan, swPlan, addr, walkway, stopLabel }: { r: UiResult;
         <dt>Student ID (S + 7 digits) · grade</dt><dd className="doc-blank">&nbsp;</dd>
         <dt>Parent / guardian and phone</dt><dd className="doc-blank">&nbsp;</dd>
         <dt>Home address</dt><dd>{addr}</dd>
-        <dt>2025–26 zoned school</dt><dd>{r.closed.name}, {r.closed.address}: closed after 2025–26. {miles(r.distBeforeM)} straight-line.</dd>
-        <dt>2026–27 zoned school</dt><dd>{r.recv.name}, {r.recv.address}. {miles(r.distNowM)} straight-line.</dd>
+        <dt>2025–26 zoned school</dt><dd>{r.closed.name}, {r.closed.address}: closed after 2025–26. {miles(r.distBeforeM)} {r.pathBefore ? "walking route" : "straight-line"}.</dd>
+        <dt>2026–27 zoned school</dt><dd>{r.recv.name}, {r.recv.address}. {miles(r.distNowM)} {r.path ? "walking route" : "straight-line"}.</dd>
       </dl>
       <h2>Roads and railroads the walk to school crosses</h2>
-      {plan.steps.length ? <Table p={plan} /> : <p>The straight-line walk crosses no road on the City's High Injury Network and no active railroad.</p>}
+      {plan.steps.length ? <Table p={plan} /> : <p>The {r.path ? "walking route" : "straight-line walk"} crosses no road on the City's High Injury Network and no active railroad.</p>}
       {swPlan && (
         <>
           <h2>Walk to the closure shuttle pickup (2026–27 and 2027–28)</h2>
@@ -110,7 +113,7 @@ function PacketDoc({ r, plan, swPlan, addr, walkway, stopLabel }: { r: UiResult;
       <h2>Proposed bus stop</h2>
       <p>{stopLabel ?? addr}</p>
       <footer className="doc-foot">
-        <span>Routes are straight lines, so a walk on streets crosses at least these. Tex. Educ. Code §48.151 also asks about walkways; Houston publishes no sidewalk data. HISD decides.</span>
+        <span>{r.path ? ROUTE_NOTE : LINE_NOTE} Tex. Educ. Code §48.151 also asks about walkways; Houston publishes no sidewalk data. HISD decides.</span>
         <span>Sources: HISD 2026–27 boundaries; City of Houston Vision Zero HIN 2022; TranStar signals; FRA crossings; snapshot {d.meta.fetchedAt.slice(0, 10)}</span>
       </footer>
     </article>
@@ -156,20 +159,20 @@ export default function Packet() {
   useEffect(() => {
     if (home) reverseGeocode(home).then(setStopLabel);
   }, [home?.[0], home?.[1]]);
+  if (u?.w.pending) return <Checking />;
   if (!u?.r || !u.w.nowPlan) return <Navigate to="/" replace />;
   const { w, r, addr } = u;
   const plan = w.nowPlan!;
-  const now = w.r.now!;
   const copyText = [
     `Walk Route Concerns: walk to ${r.recv.name}, 2026–27.`,
     `Home address: ${addr}.`,
     `This address was zoned to ${r.closed.name}, which closed after 2025–26. It is now zoned to ${r.recv.name}.`,
-    `Walk to ${r.recv.name}: ${miles(now.distance)} in a straight line. It crosses ${crossList(plan)}.`,
-    w.sw && w.swPlan && `While HISD's closure shuttle runs (2026–27 and 2027–28), the walk to its pickup at ${r.closed.name} is ${miles(w.sw.distance)} in a straight line and crosses ${crossList(w.swPlan)}.`,
+    `Walk to ${r.recv.name}: ${miles(r.distNowM)} ${r.path ? "along a walking route" : "in a straight line"}. It crosses ${crossList(plan)}.`,
+    w.sw && w.swPlan && `While HISD's closure shuttle runs (2026–27 and 2027–28), the walk to its pickup at ${r.closed.name} is ${miles(r.distBeforeM)} ${r.pathBefore ? "along a walking route" : "in a straight line"} and crosses ${crossList(w.swPlan)}.`,
     walkway && `Walkway conditions (family's description): ${walkway}`,
     `Proposed bus stop: ${stopLabel ?? addr}.`,
     `Sources: HISD 2026–27 elementary boundaries and campus points; HISD Texas Railroads layer; City of Houston Vision Zero High Injury Network 2022; ` +
-      `traffic signals from Houston TranStar's signal map; FRA Crossing Inventory. Routes are straight lines, so a walk on streets crosses at least these. ` +
+      `traffic signals from Houston TranStar's signal map; FRA Crossing Inventory. ${r.path ? ROUTE_NOTE : LINE_NOTE} ` +
       `The family has a printed copy.`,
   ].filter(Boolean).join("\n");
   const doc = <PacketDoc r={r} plan={plan} swPlan={w.sw ? w.swPlan : undefined} addr={addr} walkway={walkway} stopLabel={stopLabel} />;

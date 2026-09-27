@@ -4,6 +4,7 @@ import { useWalkway } from "../lib/ai/walkway";
 import { type UiResult } from "../lib/ui/model";
 import { type UiWalk, useUiWalk } from "../lib/ui/useUiWalk";
 import { WalkwayHelper } from "../components/WalkwayHelper";
+import { Checking } from "../components/ui/Checking";
 import { ActionBar, Back, Paper, PrintDoc, Steps, WhoCard, useUi } from "../components/ui/bits";
 import { BusDoc, ZoneDoc, zoneDocFromWalk } from "../components/ui/docs";
 import { useShare } from "../components/ui/ShareSheet";
@@ -11,14 +12,16 @@ import { daysToApril15 } from "./Home";
 import { shareMessage } from "./Walk";
 
 /** The walk screens after the answer need a home in a closed zone; without one, start over. */
-function useRequestWalk(): { u: UiWalk; r: UiResult } | null {
+function useRequestWalk(): { u: UiWalk; r: UiResult } | null | "pending" {
   const u = useUiWalk();
+  if (u?.w.pending) return "pending";
   return u?.r ? { u, r: u.r } : null;
 }
 
 export function Help() {
   const x = useRequestWalk();
   const { L } = useUi();
+  if (x === "pending") return <Checking />;
   if (!x) return <Navigate to="/" replace />;
   const { u, r } = x;
   return (
@@ -48,7 +51,8 @@ export function Bus() {
   const x = useRequestWalk();
   const { lang, L } = useUi();
   const share = useShare();
-  const [walkway] = useWalkway(x ? `${x.u.w.home[0]},${x.u.w.home[1]}` : "");
+  const [walkway] = useWalkway(x && x !== "pending" ? `${x.u.w.home[0]},${x.u.w.home[1]}` : "");
+  if (x === "pending") return <Checking />;
   if (!x) return <Navigate to="/" replace />;
   const { u, r } = x;
   const doc = <BusDoc r={r} addr={u.addr} walkway={walkway} />;
@@ -85,6 +89,7 @@ export function SchoolZone() {
   const { lang, L } = useUi();
   const share = useShare();
   const nav = useNavigate();
+  if (x === "pending") return <Checking />;
   if (!x) return <Navigate to="/" replace />;
   const { u, r } = x;
   const roads = r.now.filter((c) => c.kind === "road");
