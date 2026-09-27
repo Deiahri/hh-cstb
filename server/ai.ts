@@ -7,7 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AiLang, AiRequest, AiResponse, AiTurn } from "../src/lib/ai/types";
 import { forbiddenWords, stripUnknownCitations, tooHard, unknownCitations, validateRequest } from "./lib/guard";
 import { mockReply } from "./lib/mock";
-import { FALLBACK, explainSystem, narrativeInstruction, staffData, staffSystem, walkwaySystem } from "./lib/prompts";
+import { FALLBACK, dispatchSystem, explainSystem, narrativeInstruction, staffData, staffSystem, walkwaySystem } from "./lib/prompts";
 
 export interface Env {
   ANTHROPIC_API_KEY?: string;
@@ -56,7 +56,7 @@ type Generate = (system: Anthropic.Beta.BetaTextBlockParam[], turns: AiTurn[]) =
 function realGenerate(env: Env, req: AiRequest): Generate {
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1, timeout: 45_000 });
   const model = env.AI_MODEL || "claude-opus-5";
-  const staff = req.mode === "staff" || req.mode === "narrative";
+  const staff = req.mode === "staff" || req.mode === "narrative" || req.mode === "dispatch";
   return async (system, turns) => {
     const res = await client.beta.messages.create({
       model,
@@ -92,7 +92,7 @@ export const onRequestPost = async ({ request, env }: Ctx) => {
   const v = validateRequest(body);
   if (!v.ok) return json({ ok: false, error: "bad_request", message: v.reason }, 400);
   const req = v.req;
-  const lang: AiLang = req.mode === "staff" || req.mode === "narrative" ? "en" : req.lang;
+  const lang: AiLang = req.mode === "staff" || req.mode === "narrative" || req.mode === "dispatch" ? "en" : req.lang;
   const mock = !env.ANTHROPIC_API_KEY;
   let retries = 0;
   let status = "ok";
@@ -103,7 +103,13 @@ export const onRequestPost = async ({ request, env }: Ctx) => {
     let turns = req.messages;
     let known: Set<string> | null = null;
     let staffHint: Parameters<typeof mockReply>[4];
-    if (req.mode === "explain" || req.mode === "walkway") {
+    if (req.mode === "dispatch") {
+      const log = req.log!;
+      known = new Set([...log.matchAll(/^\[(E\d+)\]/gm)].map((m) => m[1]));
+      system = [{ type: "text", text: dispatchSystem() }];
+      turns = turns.map((m, i) => (i === 0 ? { ...m, text: `LOG\n${log}\n\nREQUEST\n${m.text}` } : m));
+      staffHint = { firstId: [...known][0] ?? "E1" };
+    } else if (req.mode === "explain" || req.mode === "walkway") {
       system = [{ type: "text", text: req.mode === "explain" ? explainSystem(lang) : walkwaySystem() }];
       const head = `RESULT\n${JSON.stringify(req.context)}\n\n${req.mode === "walkway" ? "FAMILY'S WORDS\n" : "QUESTION\n"}`;
       turns = turns.map((m, i) => (i === 0 ? { ...m, text: head + m.text } : m));

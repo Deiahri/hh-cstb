@@ -1,0 +1,1194 @@
+{
+ "generatedAt": "2026-09-27T19:35:58.823Z",
+ "trainWatchAt": "2026-09-27T19:31:51.435Z",
+ "source": {
+  "label": "Train Watch, City of Houston",
+  "page": "https://www.houstontx.gov/trainwatch/",
+  "layer": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/Train_Watch_Layer/FeatureServer/0"
+ },
+ "method": "~110 m grid over the closed zones (scripts/grid.ts). For each rail crossing on a point's walk to its 2025–26 campus and to its 2026–27 school, the public crossing the walk plan names (nearest on that track, within 1000 m). Counts are sample points, not households.",
+ "totals": {
+  "points": 1664,
+  "railPoints": 1095,
+  "railSteps": 1615,
+  "stepsWithSensor": 451,
+  "stepsToldToUseSensor": 77,
+  "pointsWithSensor": 314,
+  "crossingsUsed": 56,
+  "atGradeUsed": 39,
+  "monitoredUsed": 1,
+  "sensorsCitywide": 56
+ },
+ "crossings": [
+  {
+   "id": "758739G",
+   "label": "Cavalcade St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": true,
+   "points": 77,
+   "pickup": 46,
+   "school": 31,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES"
+   ],
+   "loc": [
+    -95.3426056,
+    29.8021563
+   ]
+  },
+  {
+   "id": "449910R",
+   "label": "Pleasantville Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 277,
+   "pickup": 1,
+   "school": 276,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.276777,
+    29.7681092
+   ]
+  },
+  {
+   "id": "287963P",
+   "label": "Cornell",
+   "railroad": "BNSF Railway Company",
+   "kind": "gates",
+   "canBlock": true,
+   "monitored": false,
+   "points": 102,
+   "pickup": 76,
+   "school": 26,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.388742,
+    29.8193109
+   ]
+  },
+  {
+   "id": "758740B",
+   "label": "Jensen Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 98,
+   "pickup": 68,
+   "school": 30,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES"
+   ],
+   "loc": [
+    -95.3422257,
+    29.8030942
+   ]
+  },
+  {
+   "id": "869785P",
+   "label": "Dorsett St",
+   "railroad": "Port Terminal Railroad Association",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 88,
+   "pickup": 44,
+   "school": 44,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.2869337,
+    29.7527767
+   ]
+  },
+  {
+   "id": "755644N",
+   "label": "Schweikhardt St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 87,
+   "pickup": 58,
+   "school": 29,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.323248,
+    29.766188
+   ]
+  },
+  {
+   "id": "755643G",
+   "label": "Clinton Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 69,
+   "pickup": 13,
+   "school": 56,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.326333,
+    29.76545
+   ]
+  },
+  {
+   "id": "287962H",
+   "label": "North Main",
+   "railroad": "BNSF Railway Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 57,
+   "pickup": 36,
+   "school": 21,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.393561,
+    29.8192608
+   ]
+  },
+  {
+   "id": "758257G",
+   "label": "Gillespie St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 44,
+   "pickup": 0,
+   "school": 44,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.328682,
+    29.767477
+   ]
+  },
+  {
+   "id": "288331K",
+   "label": "Sherman St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 30,
+   "pickup": 0,
+   "school": 30,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.296711,
+    29.736074
+   ]
+  },
+  {
+   "id": "287998R",
+   "label": "Mccarty St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 28,
+   "pickup": 28,
+   "school": 0,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.283825,
+    29.767966
+   ]
+  },
+  {
+   "id": "287961B",
+   "label": "Courtland St",
+   "railroad": "BNSF Railway Company",
+   "kind": "gates",
+   "canBlock": true,
+   "monitored": false,
+   "points": 27,
+   "pickup": 6,
+   "school": 21,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.39661,
+    29.8192195
+   ]
+  },
+  {
+   "id": "922404S",
+   "label": "Avenue I",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 22,
+   "pickup": 0,
+   "school": 22,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.294152,
+    29.739302
+   ]
+  },
+  {
+   "id": "859538V",
+   "label": "70TH St Golf Course",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "lights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 21,
+   "pickup": 10,
+   "school": 11,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.3029911,
+    29.7337555
+   ]
+  },
+  {
+   "id": "288067E",
+   "label": "Caplin St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 15,
+   "pickup": 0,
+   "school": 15,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.351141,
+    29.815817
+   ]
+  },
+  {
+   "id": "288001E",
+   "label": "Port Houston St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 13,
+   "pickup": 13,
+   "school": 0,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.2809805,
+    29.7679966
+   ]
+  },
+  {
+   "id": "288336U",
+   "label": "Avenue J",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 12,
+   "pickup": 5,
+   "school": 7,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.2936825,
+    29.7399357
+   ]
+  },
+  {
+   "id": "288335M",
+   "label": "Canal St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 11,
+   "pickup": 1,
+   "school": 10,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.295116,
+    29.738046
+   ]
+  },
+  {
+   "id": "287970A",
+   "label": "West Hardy Rd",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 10,
+   "pickup": 1,
+   "school": 9,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.352094,
+    29.818692
+   ]
+  },
+  {
+   "id": "755646C",
+   "label": "Lockwood Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 9,
+   "pickup": 9,
+   "school": 0,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.3155325,
+    29.7646921
+   ]
+  },
+  {
+   "id": "288337B",
+   "label": "Navigation Blvd",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "lights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 8,
+   "pickup": 5,
+   "school": 3,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.2922839,
+    29.7417622
+   ]
+  },
+  {
+   "id": "758266F",
+   "label": "Drennan St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 8,
+   "pickup": 3,
+   "school": 5,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.32825,
+    29.756144
+   ]
+  },
+  {
+   "id": "869787D",
+   "label": "Stedman St",
+   "railroad": "Port Terminal Railroad Association",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 6,
+   "pickup": 2,
+   "school": 4,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.2847598,
+    29.751427
+   ]
+  },
+  {
+   "id": "288071U",
+   "label": "Cavalcade St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 6,
+   "pickup": 3,
+   "school": 3,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES"
+   ],
+   "loc": [
+    -95.347936,
+    29.803231
+   ]
+  },
+  {
+   "id": "287969F",
+   "label": "West Hardy Rd",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 6,
+   "pickup": 0,
+   "school": 6,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.352392,
+    29.819737
+   ]
+  },
+  {
+   "id": "288329J",
+   "label": "North 71st St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 5,
+   "pickup": 3,
+   "school": 2,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.299662,
+    29.735786
+   ]
+  },
+  {
+   "id": "288327V",
+   "label": "South Sergeant Macario Garcia Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 5,
+   "pickup": 3,
+   "school": 2,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.303967,
+    29.737102
+   ]
+  },
+  {
+   "id": "288328C",
+   "label": "70th St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 4,
+   "pickup": 2,
+   "school": 2,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.30202,
+    29.736504
+   ]
+  },
+  {
+   "id": "755641T",
+   "label": "Waco St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 4,
+   "pickup": 2,
+   "school": 2,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.326536,
+    29.766145
+   ]
+  },
+  {
+   "id": "758258N",
+   "label": "Cline St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 4,
+   "pickup": 0,
+   "school": 4,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.32857,
+    29.766814
+   ]
+  },
+  {
+   "id": "288334F",
+   "label": "Avenue F",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 3,
+   "pickup": 1,
+   "school": 2,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.2956952,
+    29.737272
+   ]
+  },
+  {
+   "id": "288338H",
+   "label": "Avenue North",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 3,
+   "pickup": 0,
+   "school": 3,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.291664,
+    29.7423695
+   ]
+  },
+  {
+   "id": "288330D",
+   "label": "North 72nd St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 2,
+   "pickup": 1,
+   "school": 1,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.297487,
+    29.735673
+   ]
+  },
+  {
+   "id": "288326N",
+   "label": "Wayside Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 2,
+   "pickup": 0,
+   "school": 2,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.305968,
+    29.737712
+   ]
+  },
+  {
+   "id": "287960U",
+   "label": "Yale St",
+   "railroad": "BNSF Railway Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 2,
+   "pickup": 0,
+   "school": 2,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.400119,
+    29.8191794
+   ]
+  },
+  {
+   "id": "287996C",
+   "label": "Market St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 2,
+   "pickup": 2,
+   "school": 0,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.290071,
+    29.77286
+   ]
+  },
+  {
+   "id": "023225U",
+   "label": "Donoho",
+   "railroad": "BNSF Railway Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 1,
+   "pickup": 1,
+   "school": 0,
+   "zones": [
+    "Alcott ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.326434,
+    29.6780707
+   ]
+  },
+  {
+   "id": "755391H",
+   "label": "Hedrick St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "none",
+   "canBlock": true,
+   "monitored": false,
+   "points": 1,
+   "pickup": 1,
+   "school": 0,
+   "zones": [
+    "Franklin ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.2936533,
+    29.7452209
+   ]
+  },
+  {
+   "id": "869788K",
+   "label": "Mccarty St",
+   "railroad": "Port Terminal Railroad Association",
+   "kind": "gatesLights",
+   "canBlock": true,
+   "monitored": false,
+   "points": 1,
+   "pickup": 0,
+   "school": 1,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.283499,
+    29.750562
+   ]
+  },
+  {
+   "id": "755396S",
+   "label": "US 90A",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 71,
+   "pickup": 71,
+   "school": 0,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.2945965,
+    29.75704
+   ]
+  },
+  {
+   "id": "859540W",
+   "label": "75TH St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 53,
+   "pickup": 5,
+   "school": 48,
+   "zones": [
+    "Briscoe ES",
+    "Franklin ES"
+   ],
+   "receiving": [
+    "Carrillo ES",
+    "Gallegos ES"
+   ],
+   "loc": [
+    -95.293269,
+    29.730145
+   ]
+  },
+  {
+   "id": "288006N",
+   "label": "Airline Dr",
+   "railroad": "BNSF Railway Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 42,
+   "pickup": 12,
+   "school": 30,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.3832186,
+    29.819395
+   ]
+  },
+  {
+   "id": "758256A",
+   "label": "I 10",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 31,
+   "pickup": 0,
+   "school": 31,
+   "zones": [
+    "Henderson NQ ES"
+   ],
+   "receiving": [
+    "Bruce ES"
+   ],
+   "loc": [
+    -95.328603,
+    29.772013
+   ]
+  },
+  {
+   "id": "859539C",
+   "label": "Forest Hill Blvd",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 30,
+   "pickup": 19,
+   "school": 11,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.298051,
+    29.732203
+   ]
+  },
+  {
+   "id": "755395K",
+   "label": "North Wayside Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 27,
+   "pickup": 25,
+   "school": 2,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.294847,
+    29.757252
+   ]
+  },
+  {
+   "id": "288008C",
+   "label": "us0090 / North Wayside Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 27,
+   "pickup": 23,
+   "school": 4,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [
+    "Pleasantville ES"
+   ],
+   "loc": [
+    -95.2945817,
+    29.7659187
+   ]
+  },
+  {
+   "id": "922539X",
+   "label": "Collingsworth St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 16,
+   "pickup": 5,
+   "school": 11,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES"
+   ],
+   "loc": [
+    -95.346222,
+    29.793671
+   ]
+  },
+  {
+   "id": "288068L",
+   "label": "ih0610 Southbound Main Ln",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 13,
+   "pickup": 0,
+   "school": 13,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.350468,
+    29.813165
+   ]
+  },
+  {
+   "id": "755394D",
+   "label": "Harbor Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 11,
+   "pickup": 11,
+   "school": 0,
+   "zones": [
+    "Port Houston ES"
+   ],
+   "receiving": [],
+   "loc": [
+    -95.293763,
+    29.746436
+   ]
+  },
+  {
+   "id": "288005G",
+   "label": "IH0045 main lanes",
+   "railroad": "BNSF Railway Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 10,
+   "pickup": 0,
+   "school": 10,
+   "zones": [
+    "Burrus ES"
+   ],
+   "receiving": [
+    "Kennedy ES"
+   ],
+   "loc": [
+    -95.3779775,
+    29.8194801
+   ]
+  },
+  {
+   "id": "859537N",
+   "label": "69TH St",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 9,
+   "pickup": 1,
+   "school": 8,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.30561,
+    29.734579
+   ]
+  },
+  {
+   "id": "758741H",
+   "label": "I 610",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 7,
+   "pickup": 1,
+   "school": 6,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES"
+   ],
+   "loc": [
+    -95.339773,
+    29.809193
+   ]
+  },
+  {
+   "id": "907834P",
+   "label": "Hardy Toll Rd Southbound",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 5,
+   "pickup": 2,
+   "school": 3,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Dogan ES",
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.350244,
+    29.812187
+   ]
+  },
+  {
+   "id": "288069T",
+   "label": "ih0610 Northbound Main Ln",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 4,
+   "pickup": 0,
+   "school": 4,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.3503036,
+    29.8126627
+   ]
+  },
+  {
+   "id": "859536G",
+   "label": "Wayside Dr",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "underpass",
+   "canBlock": false,
+   "monitored": false,
+   "points": 3,
+   "pickup": 0,
+   "school": 3,
+   "zones": [
+    "Briscoe ES"
+   ],
+   "receiving": [
+    "Carrillo ES"
+   ],
+   "loc": [
+    -95.307068,
+    29.735038
+   ]
+  },
+  {
+   "id": "907833H",
+   "label": "Hardy Toll Rd Northbound",
+   "railroad": "Union Pacific Railroad Company",
+   "kind": "bridge",
+   "canBlock": false,
+   "monitored": false,
+   "points": 1,
+   "pickup": 0,
+   "school": 1,
+   "zones": [
+    "Ross ES"
+   ],
+   "receiving": [
+    "Roosevelt ES"
+   ],
+   "loc": [
+    -95.350479,
+    29.813146
+   ]
+  }
+ ],
+ "nearbySensors": [
+  {
+   "id": "755640L",
+   "street": "HIRSCH ROAD",
+   "xing": "Hirsch Road"
+  }
+ ]
+}

@@ -10,12 +10,12 @@ import { ZoneDoc } from "../components/ui/docs";
 import { WcMap, usePhone } from "../components/ui/WcMap";
 import { daysToApril15 } from "./Home";
 
-function Eyebrow({ extra }: { extra?: string }) {
+export function Eyebrow({ extra }: { extra?: string }) {
   const { lang, L } = useUi();
   return <p className="eyebrow">{L.staff_h}{lang === "es" ? ` · ${L.staff_only}` : ""}{extra ? ` · ${extra}` : ""}</p>;
 }
 
-function StaffNav() {
+export function StaffNav() {
   const { L } = useUi();
   return (
     <nav className="staffnav" aria-label="Staff pages">
@@ -23,6 +23,8 @@ function StaffNav() {
       <NavLink to="/data">Closed zones data</NavLink>
       <NavLink to="/corridors">Corridors</NavLink>
       <NavLink to="/april15">Before April 15</NavLink>
+      <NavLink to="/sensors">Rail sensors</NavLink>
+      <NavLink to="/sim">Shuttle simulation</NavLink>
     </nav>
   );
 }

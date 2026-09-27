@@ -8,9 +8,10 @@ export type AiLang = "en" | "es";
  * walkway   — a family describes the walk in their words; the reply is one English sentence for HISD's form (idea #3).
  * staff     — City or HISD staff ask about the corridor and zone-request data (idea #6).
  * narrative — staff ask for a first draft of one receiving school's school-zone narrative (idea #6).
+ * dispatch  — staff ask for the day report (or a question) over the shuttle simulation's route log (/sim).
  */
-export type AiMode = "explain" | "walkway" | "staff" | "narrative";
-export const AI_MODES: readonly AiMode[] = ["explain", "walkway", "staff", "narrative"];
+export type AiMode = "explain" | "walkway" | "staff" | "narrative" | "dispatch";
+export const AI_MODES: readonly AiMode[] = ["explain", "walkway", "staff", "narrative", "dispatch"];
 
 export interface AiTurn {
   role: "user" | "assistant";
@@ -24,6 +25,8 @@ export interface AiRequest {
   context?: WalkGrounding;
   /** narrative: the receiving school's campus number. */
   nbr?: number;
+  /** dispatch: the agent's route log, one "[E12] 7:15 am kind (source): text" line per entry. Simulated; no student data. */
+  log?: string;
   messages: AiTurn[];
 }
 
@@ -39,6 +42,8 @@ export const LIMITS = {
   maxMessageChars: 1500,
   /** Serialized context. The largest result in the closed zones is about 1,900 characters. */
   maxContextChars: 8000,
+  /** The simulation's route log for a morning of 13 buses runs about 5,000 characters. */
+  maxLogChars: 20000,
 } as const;
 
 /** One crossing on a walk, as the page states it. Names and distances only; no coordinates. */

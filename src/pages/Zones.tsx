@@ -116,6 +116,7 @@ const SOURCES: [key: string, label: string][] = [
   ["rail", "Texas railroads, active (HISD map layer)"],
   ["signals", "Traffic signals (City, TxDOT, Harris County, via Houston TranStar)"],
   ["rail_crossings", "FRA crossing inventory, open public crossings, Harris County"],
+  ["trainwatch", "Train Watch rail-crossing sensors (City of Houston)"],
   ["mtfp", "City of Houston Major Thoroughfare and Freeway Plan"],
   ["campus_grounds", "OpenStreetMap school grounds"],
 ];

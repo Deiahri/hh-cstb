@@ -16,6 +16,7 @@ const zj = read("zones.json");
 const d: AppData = {
   raw, ds: buildDataset(raw), meta: read("meta.json"), totals: zj.totals, zones: zj.zones,
   corridors: read("corridors.json"), shuttles: read("shuttles.json"), zoneRequests: read("zone_requests.json"),
+  trainwatch: null, sensorGaps: null, liveHistory: null,
 };
 
 for (const z of d.zones.filter((z) => z.demoPoint)) {
