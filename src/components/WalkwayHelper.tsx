@@ -1,6 +1,6 @@
 // Idea #3: the family describes the walk in their own words and language; the assistant drafts one English sentence
 // for the Description box of HISD's form. Their words and the draft sit side by side, and nothing reaches the copy box
-// or the printed page until they tap "Use this sentence". The family pastes and submits; this submits nothing.
+// or the printed request until they tap "Use this sentence". The family pastes and submits; this submits nothing.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { askAI, useAiStatus } from "../lib/ai/client";
@@ -9,10 +9,12 @@ import { type AiTurn, LIMITS } from "../lib/ai/types";
 import { useData } from "../lib/data";
 import { useT } from "../lib/i18n";
 import { useWalk } from "../lib/walk";
+import { useWalkway } from "../lib/ai/walkway";
 
-export function WalkwayHelper({ used, onUse }: { used: string | null; onUse: (sentence: string | null) => void }) {
+export function WalkwayHelper() {
   const d = useData();
   const w = useWalk();
+  const [used, onUse] = useWalkway(w ? `${w.home[0]},${w.home[1]}` : "");
   const { lang, t } = useT();
   const ai = useAiStatus();
   const context = useMemo(() => (w ? walkGrounding(d, w, lang) : null), [d, w, lang]);
@@ -93,7 +95,7 @@ export function WalkwayHelper({ used, onUse }: { used: string | null; onUse: (se
           <button type="button" className={`btn${result?.kind === "draft" ? " secondary" : ""}`} disabled={busy || !words.trim()} onClick={write}>
             {busy ? t.ai.thinking : result?.kind === "draft" ? t.ai.walkwayAgain : t.ai.walkwayWrite}
           </button>
-          {error && <p className="error">{t.ai.error}</p>}
+          {error && <p className="err">{t.ai.error}</p>}
         </>
       )}
     </section>

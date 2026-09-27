@@ -9,7 +9,8 @@ import { useT } from "../lib/i18n";
 import type { Walk } from "../lib/walk";
 import { AiPanel } from "./AiPanel";
 
-export function AskResult({ w }: { w: Walk }) {
+/** `bus`: the bus-request screen for this home, where the walkway helper lives. */
+export function AskResult({ w, bus }: { w: Walk; bus: string }) {
   const d = useData();
   const { lang, t } = useT();
   const ai = useAiStatus();
@@ -18,7 +19,7 @@ export function AskResult({ w }: { w: Walk }) {
   return (
     <>
       <AiPanel key={lang} mode="explain" title={t.ai.askTitle} intro={t.ai.askIntro} suggestions={t.ai.suggestions} context={context} mock={ai.mock} />
-      <Link className="linkbtn no-print" to={`/packet?${w.params}`} state={{ walkway: true }}>{t.ai.walkwayLink} ›</Link>
+      <Link className="linkbtn no-print" to={bus} state={{ walkway: true }}>{t.ai.walkwayLink} ›</Link>
     </>
   );
 }

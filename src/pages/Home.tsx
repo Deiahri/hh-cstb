@@ -1,119 +1,175 @@
-import { useState } from "react";
+// Home, the map picker, the Pre-K question and "not a closed zone": the first screens of Walk Check.
+import { type FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { analyzeAddress } from "../lib/analyze";
 import { useData } from "../lib/data";
-import { type Candidate, geocode } from "../lib/geocode";
-import { type LngLat, pointInRings } from "../lib/geo";
-import { useT } from "../lib/i18n";
-import { firstScreen } from "../lib/walk";
-import { Caveats } from "../components/Notes";
-import { nextDeadline } from "./April15";
+import { geocode } from "../lib/geocode";
+import type { LngLat } from "../lib/geo";
+import { closedZones, short } from "../lib/ui/model";
+import { walkLink } from "../lib/ui/useUiWalk";
+import { Arrow, Back, Steps, useUi } from "../components/ui/bits";
+import { useShare } from "../components/ui/ShareSheet";
+import { WcMap } from "../components/ui/WcMap";
 
-/** A point inside each closed zone for the demo shortcuts: the vertex average, nudged inside if needed. */
-function zoneSamplePoint(rings: LngLat[][]): LngLat {
-  const outer = rings[0];
-  const c: LngLat = [outer.reduce((a, p) => a + p[0], 0) / outer.length, outer.reduce((a, p) => a + p[1], 0) / outer.length];
-  if (pointInRings(c, rings)) return c;
-  return outer[Math.floor(outer.length / 2)];
+/** Days to the next April 15, and its year. */
+export function daysToApril15(): [number, number] {
+  const n = new Date();
+  let d = new Date(n.getFullYear(), 3, 15);
+  if (d < n) d = new Date(n.getFullYear() + 1, 3, 15);
+  return [Math.ceil((d.getTime() - n.getTime()) / 864e5), d.getFullYear()];
 }
 
-export const schoolName = (s: string) => s.replace(/ NQ ES$| ES$/, "");
+/** The sample point's label, in the page's language. */
+export const sampleLabel = (zone: string, lang: "en" | "es") =>
+  lang === "es" ? `Punto de muestra en la zona de ${short(zone)}` : `Sample point in the old ${short(zone)} area`;
 
-/** Step one: the address. A closed-zone home goes on to the Pre-K question; any other goes straight to its walk. */
+/** Where a home goes: its walk, or the "not a closed zone" screen. */
+function useGoHome() {
+  const d = useData();
+  const nav = useNavigate();
+  return (p: LngLat, addr: string, geocoded = false) => {
+    const r = analyzeAddress(p, d.ds);
+    nav(r.closedZone ? walkLink(p, addr, { geocoded }) : `/nozone?${new URLSearchParams({ addr })}`);
+  };
+}
+
 export default function Home() {
   const d = useData();
-  const { t } = useT();
-  const w = t.wc, tl = t.lookup;
-  const nav = useNavigate();
+  const { lang, L } = useUi();
+  const go = useGoHome();
   const [params] = useSearchParams();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<"noMatch" | "searchDown" | null>(null);
-  const [cands, setCands] = useState<Candidate[]>([]);
-
-  // Links shared before the redesign put the address on the home page: send them to the walk.
+  const [err, setErr] = useState(false);
+  // Links from before the redesign put the address on the home page.
   if (params.has("lat") && params.has("lng")) return <Navigate to={`/walk?${params}`} replace />;
+  const zones = closedZones(d);
+  const [days] = daysToApril15();
 
-  const go = (p: LngLat, label: string) => nav(firstScreen(p, label, d));
-
-  async function onSearch(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!q.trim()) return;
+    const v = q.trim();
+    if (!v) return;
     setBusy(true);
-    setErr(null);
-    setCands([]);
+    setErr(false);
     try {
-      const found = await geocode(/houston/i.test(q) ? q : `${q}, Houston, TX`);
-      if (!found.length) setErr("noMatch");
-      else if (found.length === 1 || found[0].score >= 98) go(found[0].loc, found[0].address);
-      else setCands(found);
+      const found = await geocode(/houston|tx\b|texas/i.test(v) ? v : `${v}, Houston, TX`);
+      if (found[0]) return go(found[0].loc, found[0].address.replace(/, Houston, Texas.*$/, "").replace(/, TX.*$/, ""), true);
+      setErr(true);
     } catch {
-      setErr("searchDown");
+      setErr(true);
     } finally {
       setBusy(false);
     }
   }
 
-  const pairs = d.zones.map((z) => ({ z, to: z.receiving.map((r) => schoolName(r.name)).join(" / ") }));
-
   return (
     <section className="screen">
       <div className="hero">
-        <div style={{ display: "grid", gap: 14 }}>
-          <h1>{w.h1}</h1>
-          <p className="lede-wc">{w.lede}</p>
-          <ol className="steps">{w.how.map((s) => <li key={s}>{s}</li>)}</ol>
+        <div className="hero-copy">
+          <h1>{L.home_h}</h1>
+          <p className="lede muted">{L.home_b}</p>
+          <Steps list={L.how} />
         </div>
-        <form className="form" onSubmit={onSearch} role="search">
+        <form className="form" onSubmit={submit}>
           <div className="field">
-            <label className="label" htmlFor="addr">{w.addr}</label>
-            <input className="input" id="addr" value={q} onChange={(e) => setQ(e.target.value)} placeholder={w.addrPlaceholder} autoComplete="street-address" />
+            <label className="label" htmlFor="addr">{L.addr}</label>
+            <input className="input" id="addr" name="addr" autoComplete="street-address" placeholder={L.addr_ph} value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
-          <button className="btn" type="submit" disabled={busy}>{busy ? tl.searching : w.check}</button>
-          {err && <p className="error" role="alert">{tl[err]}</p>}
-          {cands.length > 0 && (
-            <ul className="cands">
-              {cands.map((c) => (
-                <li key={c.address}><button type="button" className="list-row" style={{ width: "100%", font: "inherit", cursor: "pointer" }} onClick={() => go(c.loc, c.address)}>
-                  <span>{c.address}</span><span>›</span>
-                </button></li>
-              ))}
-            </ul>
-          )}
-          <Link className="linkbtn" to="/pick">{w.pickMap}</Link>
+          <button className="btn" type="submit" disabled={busy}>{busy ? L.finding : L.check}</button>
+          {err && <p className="err">{L.notfound}</p>}
+          <Link className="linkbtn" to="/pick">{L.pick}</Link>
+          <p className="small muted try">{L.trya}</p>
           <div className="chips">
-            <span className="small muted">{w.tryZone}</span>
-            {d.zones.map((z) => (
-              <button key={z.nbr} type="button" className="chip" onClick={() => go(z.demoPoint ?? zoneSamplePoint(z.rings), tl.samplePoint(schoolName(z.name)))}>
-                {schoolName(z.name)}
-              </button>
+            {zones.map((z) => (
+              <button key={z.nbr} type="button" className="chip" onClick={() => go(z.demo, sampleLabel(z.name, lang))}>{short(z.name)}</button>
             ))}
           </div>
         </form>
       </div>
 
-      <h2>{w.closed}</h2>
+      <div className="sec"><h2>{L.closed}</h2><p className="muted">{L.closed_b}</p></div>
       <div className="list grid4">
-        {pairs.map(({ z, to }) => (
-          <Link key={z.nbr} className="list-row" to={`/schools/${z.nbr}`}><span>{w.pair(schoolName(z.name), to)}</span><span>{w.see} ›</span></Link>
-        ))}
-      </div>
-      <div className="sec">
-        <h2>{w.staffH}</h2>
-        <p className="muted">{w.staffSub}</p>
-      </div>
-      <div className="staffgrid">
-        {w.staffCards.map((c) => (
-          <Link key={c.to} className="staffcard" to={c.to}>
-            <h3>{c.h}{c.to === "/april-15" && <span className="muted"> · {w.daysLeft(nextDeadline().days)}</span>}</h3>
-            <p className="muted">{c.b}</p>
+        {zones.map((z) => (
+          <Link key={z.nbr} className="list-row pair-row" to={`/zone/${z.nbr}`}>
+            <span className="pair"><span className="was">{short(z.name)}</span><span className="arrow" aria-hidden="true">→</span><span className="now">{z.receiving.map((r) => short(r.name)).join(" / ")}</span></span>
+            <span className="go">{L.see} <Arrow /></span>
           </Link>
         ))}
       </div>
-      <div className="sec">
-        <h2>{w.srcH}</h2>
-        <p className="muted">{w.srcSub} <Link to="/sources">{w.srcLink} ›</Link></p>
+
+      <div className="sec"><h2>{L.staff_h}</h2><p className="muted">{L.staff_b}</p></div>
+      <div className="staffgrid">
+        {L.staff.map((s: { h: string; b: string; href: string }) => (
+          <Link key={s.href} className="staffcard" to={s.href.replace(/^#/, "")}>
+            <h3>{s.h}{s.href === "#/april15" && <span className="muted"> · {L.days(days)}</span>}</h3>
+            <p className="muted">{s.b}</p>
+          </Link>
+        ))}
       </div>
-      <Caveats />
+
+      <div className="sec"><h2>{L.src_h}</h2><p className="muted">{L.src_b} <Link to="/sources">{L.src_link} ›</Link></p></div>
+    </section>
+  );
+}
+
+export function Pick() {
+  const { L } = useUi();
+  const go = useGoHome();
+  const [p, setP] = useState<LngLat | null>(null);
+  return (
+    <section className="screen">
+      <Back />
+      <h1>{L.pick_h}</h1>
+      <p className="muted lede">{L.pick_b}</p>
+      <WcMap kind="pick" height={matchMedia("(max-width:899px)").matches ? 420 : 520} onPick={setP} />
+      <div className="row"><button type="button" className="btn" disabled={!p} onClick={() => p && go(p, L.spot)}>{L.use}</button></div>
+    </section>
+  );
+}
+
+/** "Is your child in Pre-K?", for links that ask first. The walk page also has the toggle. */
+export function Prek() {
+  const { L } = useUi();
+  const nav = useNavigate();
+  const [params] = useSearchParams();
+  if (!params.has("lat")) return <Navigate to="/" replace />;
+  const pick = (yes: boolean) => {
+    const p = new URLSearchParams(params);
+    p.set("prek", yes ? "1" : "0");
+    nav(`/walk?${p}`);
+  };
+  return (
+    <section className="screen narrow">
+      <Back />
+      <p className="eyebrow">{params.get("addr")}</p>
+      <h1>{L.prek_h}</h1>
+      <p className="muted">{L.prek_why}</p>
+      <button type="button" className="choice" onClick={() => pick(false)}><b>{L.no}</b><span>{L.no_s}</span></button>
+      <button type="button" className="choice" onClick={() => pick(true)}><b>{L.yes}</b><span>{L.yes_s}</span></button>
+    </section>
+  );
+}
+
+export function NoZone() {
+  const { L } = useUi();
+  const share = useShare();
+  const [params] = useSearchParams();
+  const site = `${location.origin}${location.pathname}`;
+  return (
+    <section className="screen narrow">
+      <Back />
+      <p className="eyebrow">{params.get("addr")}</p>
+      <h1>{L.nz_h}</h1>
+      <p className="muted lede">{L.nz_b}</p>
+      <Link className="btn" to="/zones">{L.seeclosed}</Link>
+      <Link className="btn secondary" to="/">{L.another}</Link>
+      <p className="muted">
+        {L.know}{" "}
+        <button type="button" className="linkbtn" onClick={() => share(`Walk Check shows what a child’s walk to the new school crosses, where to cross, and how to ask for a bus or a school zone. ${site}`, L.share_h)}>
+          {L.share}
+        </button>
+      </p>
     </section>
   );
 }

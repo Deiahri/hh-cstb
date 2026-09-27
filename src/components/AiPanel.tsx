@@ -85,7 +85,7 @@ export function AiPanel({ mode, title, intro, suggestions, context, notice, rend
           </div>
         ))}
         {busy && <p className="muted ai-busy">{t.ai.thinking}</p>}
-        {error && <p className="error">{t.ai.error}</p>}
+        {error && <p className="err">{t.ai.error}</p>}
       </div>
       {turns.length === 0 && (
         <div className="chips">

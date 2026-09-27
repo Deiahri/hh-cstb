@@ -1,206 +1,164 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+// The answer: what the walk crosses, in order, where to cross each one, the shuttle, and what happens after it.
+import { useEffect, useRef, useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useData } from "../lib/data";
-import { METERS_PER_MILE } from "../lib/geo";
-import { mi } from "../lib/format";
-import { dataText, shareUrl, useT } from "../lib/i18n";
-import { type Walk, crossCounts, useWalk } from "../lib/walk";
-import { CrossingPlan, WhoCanChange } from "../components/CrossingPlan";
-import { FitTo, MapBase, MapLegend } from "../components/MapBase";
-import { DatesLine } from "../components/Notes";
-import { RouteLayers } from "../components/RouteLayers";
-import { shuttlePoints } from "../components/ShuttleLayer";
-import { Back, RouteStrip, ShareButton } from "../components/WalkCheck";
+import { type UiCrossing, type UiResult, crossList, crossingAdvice, dataDates, mi, short, whoFor } from "../lib/ui/model";
+import { type UiWalk, useUiWalk } from "../lib/ui/useUiWalk";
 import { AskResult } from "../components/AskResult";
-import { schoolName } from "./Home";
+import { ActionBar, Back, PrintDoc, useUi } from "../components/ui/bits";
+import { PlanDoc } from "../components/ui/docs";
+import { useShare } from "../components/ui/ShareSheet";
+import { WalkMap, WalkMapProvider, usePhone, useWalkMapCtl } from "../components/ui/WcMap";
 
-export function MissingWalk() {
-  const { t } = useT();
-  return (
-    <section className="screen">
-      <p>{t.plan.missing} <Link to="/">{t.plan.start}</Link>.</p>
-    </section>
-  );
+/** The message the Share button sends: where the walk goes, what it crosses, and the link back. */
+export function shareMessage(u: UiWalk, r: UiResult, lang: "en" | "es") {
+  const link = `${location.origin}${location.pathname}#${u.to("walk")}`;
+  const cross = r.now.length ? crossList(r.now, lang) : lang === "es" ? "nada de las listas de la Ciudad" : "nothing on the City’s lists";
+  return lang === "es"
+    ? `Walk Check: el camino de ${u.addr} a ${r.recv.name} cruza ${cross}. Autobús gratis desde ${r.closed.name} hasta 2028. Vea el camino: ${link}`
+    : `Walk Check: the walk from ${u.addr} to ${r.recv.name} crosses ${cross}. Free shuttle from ${r.closed.name} until 2028. See the walk: ${link}`;
 }
 
-/** Step two, for a closed-zone home: HISD's bus rules differ for Pre-K, so the answer screen needs to know. */
-export function Prek() {
-  const w = useWalk();
-  const { t } = useT();
-  const nav = useNavigate();
-  if (!w) return <MissingWalk />;
-  const pick = (yes: boolean) => {
-    const p = new URLSearchParams(w.params);
-    p.set("prek", yes ? "1" : "0");
-    nav(`/walk?${p}`);
-  };
+function CrossingRow({ c, i, r }: { c: UiCrossing; i: number; r: UiResult }) {
+  const { lang, L } = useUi();
+  const ctl = useWalkMapCtl();
+  const tags = c.kind === "rail" ? [L.tag_rail] : [c.ped ? L.tag_ped : null, L.tag_hin].filter(Boolean);
+  const { ask, who } = whoFor(c, r, L);
   return (
-    <section className="screen" style={{ maxWidth: 560 }}>
-      <Back />
-      <p className="addr-line">{w.addr}</p>
-      <h1>{t.wc.prekQ}</h1>
-      <p className="muted">{t.wc.prekWhy}</p>
-      <button type="button" className="choice" onClick={() => pick(true)}><b>{t.wc.yes}</b><span>{t.wc.yesSub}</span></button>
-      <button type="button" className="choice" onClick={() => pick(false)}><b>{t.wc.no}</b><span>{t.wc.noSub}</span></button>
-    </section>
-  );
-}
-
-/** The map of both walks. On phones it stays folded until asked for, so the answer comes first. */
-export function WalkMap({ w, stop, plans = true }: { w: Walk; stop?: boolean; plans?: boolean }) {
-  const d = useData();
-  const { t } = useT();
-  const [open, setOpen] = useState(false);
-  const { r, shuttle, sw } = w;
-  if (!r.now) return null;
-  const pts = [w.home, r.now.school.loc, ...(r.old ? [r.old.school.loc] : []), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])];
-  return (
-    <>
-      <button type="button" className="btn secondary mob-only no-print" aria-expanded={open} onClick={() => setOpen(!open)}>
-        {open ? t.lookup.hideMap : t.wc.showMap}
-      </button>
-      <div className={`walk-map${open ? "" : " folded"}`} role="img" aria-label={t.wc.mapAlt}>
-        <MapBase>
-          <RouteLayers d={d} r={r} shuttle={shuttle} plans={plans ? w.plans : undefined} stop={stop ? w.stop : undefined} />
-          <FitTo points={pts} />
-        </MapBase>
-        <MapLegend shuttle={!!shuttle} walks plan={plans} />
+    <li className={`xrow ${c.kind}`} data-x={i} onClick={(e) => !(e.target as HTMLElement).closest("details,a,button") && ctl.current?.show(i)}>
+      <span className="n">{i + 1}</span>
+      <div className="xbody">
+        <h3>
+          {c.kind === "rail" ? `${lang === "es" ? "Vías de tren" : "Train tracks"} · ${c.name}` : c.name}{" "}
+          <button type="button" className="showmap" onClick={(e) => { e.stopPropagation(); ctl.current?.show(i); }}>{L.showmap} ›</button>
+        </h3>
+        <p className="tags muted">{tags.join(" · ")}{c.kind === "road" ? ` · ${L.crashes(c.pc, c.pd)}` : ""}</p>
+        <p className="adv">{crossingAdvice(c, L)}</p>
+        <details className="who"><summary>{ask}</summary><p>{who}</p></details>
       </div>
-    </>
+    </li>
   );
 }
 
-function NotClosed({ w }: { w: Walk }) {
-  const d = useData();
-  const { lang, t } = useT();
-  const { r } = w;
-  const names = d.zones.map((z) => schoolName(z.name));
-  const namesText = `${names.slice(0, -1).join(", ")}${lang === "es" ? " o " : " or "}${names[names.length - 1]}`;
-  const all = new URLSearchParams(w.params);
-  all.set("all", "1");
-  if (!r.now)
-    return (
-      <section className="screen" style={{ maxWidth: 560 }}>
-        <Back />
-        <p className="addr-line">{w.addr}</p>
-        <h1>{t.wc.outside}</h1>
-        <Link className="btn secondary" to="/">{t.wc.another}</Link>
-      </section>
-    );
-  const same = r.old?.school.nbr === r.now.school.nbr;
-  return (
-    <section className="screen" style={{ maxWidth: 560 }}>
-      <Back />
-      <p className="addr-line">{w.addr}</p>
-      <h1>{t.wc.notClosed}</h1>
-      <div className="card tint">
-        <span className="k">{t.wc.zoned}</span>
-        <span className="v">{r.now.school.name}</span>
-        <span className="muted small">{same ? t.wc.same : r.old ? t.wc.was(r.old.school.name) : r.now.school.address}</span>
-      </div>
-      <Link className="btn" to={`/walk?${all}`}>{t.wc.seeWalk}</Link>
-      <Link className="btn secondary" to="/schools">{t.wc.seeClosed}</Link>
-      <Link className="btn secondary" to="/">{t.wc.another}</Link>
-      <div className="card" style={{ gap: 10 }}>
-        <span className="v">{t.wc.know(namesText)}</span>
-        <ShareButton title={t.wc.shareTitle} text={t.wc.msgSite(shareUrl(lang).replace(/#.*$/, ""))} label={t.wc.share} />
-      </div>
-    </section>
-  );
+/** On a desktop, the crossing nearest the reading line lights up on the map. */
+function useScrollSpy(list: React.RefObject<HTMLOListElement | null>, phone: boolean) {
+  const ctl = useWalkMapCtl();
+  useEffect(() => {
+    const ol = list.current;
+    if (phone || !ol) return;
+    const rows = [...ol.querySelectorAll<HTMLElement>(".xrow")];
+    let cur = -1, tick = false;
+    const spy = () => {
+      tick = false;
+      const line = innerHeight * 0.38;
+      let bi = -1;
+      rows.forEach((r, i) => { if (r.getBoundingClientRect().top <= line) bi = i; });
+      if (rows[0] && rows[0].getBoundingClientRect().top > innerHeight * 0.9) bi = -1;
+      if (bi !== cur) { cur = bi; ctl.current?.hot(bi); }
+    };
+    const onScroll = () => { if (!tick) { tick = true; requestAnimationFrame(spy); } };
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => removeEventListener("scroll", onScroll);
+  }, [list, phone, ctl]);
 }
 
-/** Step three: the answer. One sentence, then the walk in order, where to cross, the shuttle, and what to do. */
 export default function WalkScreen() {
-  const w = useWalk();
-  const { lang, t } = useT();
-  if (!w) return <MissingWalk />;
-  const { r, sw, shuttle } = w;
-  if (!r.now || (!r.closedZone && w.params.get("all") !== "1")) return <NotClosed w={w} />;
+  const u = useUiWalk();
+  if (!u) return <Navigate to="/" replace />;
+  if (!u.r) return <Navigate to={`/nozone?${new URLSearchParams({ addr: u.addr })}`} replace />;
+  return (
+    <WalkMapProvider>
+      <WalkBody u={u} r={u.r} />
+    </WalkMapProvider>
+  );
+}
 
-  const tr = t.result, wc = t.wc;
-  const now = r.now;
-  const nowName = now.school.name;
-  const oldName = r.old?.school.name ?? "";
-  const c = crossCounts(now.hazards);
-  const railOld = !!sw && crossCounts(sw.hazards).rail;
-  const beyond2 = now.distance >= 2 * METERS_PER_MILE;
-  const dest = shuttle ? shuttle.to.map((x) => (x.grades ? `${x.name} (${dataText(lang, x.grades)})` : x.name)).join(tr.and) : "";
-  const sms = wc.msg(w.addr, nowName, tr.crosses(c.rail, c.roads), shareUrl(lang));
+function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
+  const d = useData();
+  const { lang, L } = useUi();
+  const nav = useNavigate();
+  const share = useShare();
+  const phone = usePhone();
+  const dates = dataDates(d);
+  const list = useRef<HTMLOListElement>(null);
+  const anchor = useRef<HTMLHeadingElement>(null);
+  const [ctxOn, setCtxOn] = useState(false);
+  useScrollSpy(list, phone);
+  useEffect(() => {
+    const el = anchor.current;
+    if (!el || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(([en]) => setCtxOn(!en.isIntersecting && en.boundingClientRect.top < 0), { rootMargin: "-64px 0px 0px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const to = short(r.recv.name), from = short(r.closed.name);
+  const xb = r.before.length ? L.xsome(crossList(r.before, lang)) : L.xnone;
+  const mins = Math.round((r.distNowM / 1609.344 / 2.5) * 60);
+  const sample = !u.geocoded;
+  const setGrade = (prek: boolean) => nav(u.to("walk", { prek: prek ? "1" : "0" }), { replace: true });
+  const printLabel = u.prek ? L.print_plan : L.print;
 
   return (
     <section className="screen has-bar">
+      <PrintDoc><PlanDoc r={r} addr={u.addr} dates={dates} /></PrintDoc>
+      {u.shared && <p className="shared">{L.shared_h} <Link to="/">{L.shared_b} ›</Link></p>}
+      <div className={`ctx${ctxOn ? " is-on" : ""}`} aria-hidden="true">
+        <b>{L.walkto} {to}</b><span>{r.now.length ? L.crossings(r.now.length) : L.nothing} · {mi(r.distNowM)} mi</span>
+      </div>
       <Back />
-      <p className="addr-line">{w.addr}{w.prek ? " · Pre-K" : ""}</p>
-      <h1>{wc.verdict(nowName, c.rail, c.roads)}</h1>
-      {w.prek && (
-        <div className="card warm edge">
-          <span className="v">{wc.prekTitle}</span>
-          <span>{wc.prekBody}</span>
-        </div>
-      )}
+      <h1 ref={anchor}>{L.verdict(to, r.roads, r.rails)}</h1>
+      <p className="summary"><span>{mi(r.distNowM)} mi</span><span>{L.mins(mins)}</span><span>{r.now.length ? L.crossings(r.now.length) : L.nothing}</span><span>{L.shuttle_s}</span></p>
+      <p className="addr">
+        <span className="muted">{sample ? "" : `${L.found}: `}</span><b>{u.addr}</b> <Link to="/">{sample ? L.usemine : L.fix} ›</Link>
+      </p>
+      <div className="grade" role="group" aria-label={L.grade_q}>
+        <span className="muted">{L.grade_q}</span>
+        <button type="button" className={`seg${u.prek ? "" : " is-on"}`} aria-pressed={!u.prek} onClick={() => setGrade(false)}>{L.grade_k}</button>
+        <button type="button" className={`seg${u.prek ? " is-on" : ""}`} aria-pressed={u.prek} onClick={() => setGrade(true)}>{L.grade_pk}</button>
+      </div>
+      {u.prek && <p className="notice">{L.after_prek}</p>}
 
       <div className="cols">
         <div className="col">
-          {r.closedZone && r.old && (
-            <div className="cmp">
-              <div className="card tint">
-                <span className="k">{wc.lastYear}</span>
-                <span className="name">{schoolName(oldName)}</span>
-                <span className="muted small">{mi(r.old.distance)} · {wc.nCrossings(r.old.hazards.length)}</span>
-              </div>
-              <div className="card warm">
-                <span className="k">{wc.now}</span>
-                <span className="name">{schoolName(nowName)}</span>
-                <span className="muted small">{mi(now.distance)} · {wc.nCrossings(now.hazards.length)}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="route">
-            <span className="k">{wc.walk}</span>
-            <RouteStrip hazards={now.hazards} school={nowName} />
+          <div className="cmp">
+            <div className="cmp-row tint"><span className="k">{L.lastyear}</span><span className="name">{from}</span><span className="meta">{mi(r.distBeforeM)} mi · {r.before.length ? L.crossings(r.before.length) : L.nothing}</span></div>
+            <div className="cmp-row warm"><span className="k">{L.now}</span><span className="name">{to}</span><span className="meta">{mi(r.distNowM)} mi · {r.now.length ? L.crossings(r.now.length) : L.nothing}</span></div>
           </div>
-
-          <h2>{wc.whereToCross}</h2>
-          {w.nowPlan && <CrossingPlan plan={w.nowPlan} />}
-
-          {shuttle && !shuttle.sameSite && (
-            <div className="card tint shuttle-card" style={{ gap: 10 }}>
-              <span className="v">{wc.shuttleTitle}</span>
-              <span>{tr.shuttleBody(oldName, shuttle.from.address, dest)}</span>
-              <span className="small">{tr.notPublished}</span>
-              {shuttle.flags.length > 0 && <span className="small muted">{shuttle.flags.map((f) => dataText(lang, f)).join(" ")}</span>}
-              {sw && w.swPlan && (
-                <>
-                  <h2 style={{ fontSize: 18, marginTop: 6 }}>{wc.shuttleWalk(oldName)}</h2>
-                  <span><strong>{tr.crosses(railOld, crossCounts(sw.hazards).roads)}</strong> <span className="muted">({tr.miles(mi(sw.distance))})</span></span>
-                  {sw.hazards.length > 0 && <CrossingPlan plan={w.swPlan} />}
-                </>
-              )}
-            </div>
+          {phone && <div className="mob-only"><WalkMap r={r} height={340} /></div>}
+          <h2>{L.where}</h2>
+          {r.now.length ? (
+            <>
+              <p className="muted">{L.inorder}</p>
+              <ol className="xlist" ref={list}>{r.now.map((c, i) => <CrossingRow key={c.key} c={c} i={i} r={r} />)}</ol>
+            </>
+          ) : (
+            <p className="muted">{L.xnone[0].toUpperCase() + L.xnone.slice(1)}. {L.plan_anyway}</p>
           )}
-
-          <WhoCanChange plans={w.plans} school={nowName} />
-          <AskResult w={w} />
-
-          <div className={`card${beyond2 ? " tint" : ""}`}>
-            <span className="k">{!beyond2 && sw ? tr.cliffLabel : tr.distanceLabel}</span>
-            <span>{beyond2 ? tr.over2(mi(now.distance), nowName) : sw ? tr.cliff(mi(now.distance), nowName) : tr.under2(mi(now.distance), nowName)}</span>
-          </div>
-          {sw && railOld !== c.rail && <p className="note rail">{railOld ? tr.shuttleAddsRail(nowName) : tr.shuttleAvoidsRail(nowName)}</p>}
-          {(c.rail || railOld) && <p className="note rail"><strong>{tr.railLabel}:</strong> {tr.railNote}</p>}
-          {(now.hazards.length > 0 || (sw?.hazards.length ?? 0) > 0) && <p className="small muted">{t.cross.caveat}</p>}
-          <DatesLine />
+          <h2>{L.shuttle_h(r.closed.name)}</h2>
+          <p>{L.shuttle_b(r.closed.name, r.closed.address, mi(r.distBeforeM), xb)}</p>
+          <p className="muted">{L.shuttle_c}</p>
+          <h2>{L.after_h}</h2>
+          <p>{L.after_b(to, mi(r.distNowM))}</p>
+          <AskResult w={u.w} bus={u.to("bus")} />
+          <p className="small muted foot">{L.note_lines} {L.note_lights}</p>
+          <p className="small muted foot">
+            {L.dates}: {lang === "es" ? "listas de choques de la Ciudad" : "City crash lists"} {dates.crash} · HISD {lang === "es" ? "vías" : "rail"} {dates.rail} ·{" "}
+            {lang === "es" ? "límites" : "boundaries"} {dates.zones} · {lang === "es" ? "semáforos" : "traffic lights"} {dates.signals} ·{" "}
+            {lang === "es" ? "cruces de vías" : "rail crossings"} {dates.xings}. <Link to="/sources">{L.src_link} ›</Link>
+          </p>
         </div>
-
-        <div className="col side">
-          <WalkMap w={w} />
-          <div className="bar-fixed">
-            {/* Pre-K gets no HISD bus, so a school zone leads, when there's a road to ask about. */}
-            <Link className="btn primary" to={`/${w.prek && c.roads ? "schoolzone" : "help"}?${w.params}`}>{w.prek && c.roads ? wc.askZone : wc.ask}</Link>
-            <Link className="btn secondary" to={`/plan?${w.params}`} aria-label={wc.print}>{wc.printShort}</Link>
-            <ShareButton title={wc.shareTitle} text={sms} label={wc.share} />
-          </div>
+        <div className="col side sticky">
+          {!phone && <div className="desk-only"><WalkMap r={r} height={440} /></div>}
+          <ActionBar
+            btns={[
+              u.prek
+                ? { label: L.askzone, primary: true, onClick: () => nav(u.to("schoolzone")) }
+                : { label: L.gethelp, primary: true, onClick: () => nav(u.to("help")) },
+              { label: printLabel, icon: "print", onClick: () => window.print() },
+              { label: L.share, icon: "share", onClick: () => share(shareMessage(u, r, lang), L.share_h) },
+            ]}
+          />
         </div>
       </div>
     </section>

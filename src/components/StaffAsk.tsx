@@ -15,6 +15,21 @@ const STAFF_NOTICE =
 /** For a cited id, the action that selects its row on this page, or null when this page has no such row. */
 export type PickRow = (id: string) => (() => void) | null;
 
+/** The table row for a cited id, scrolled to and lit for a moment. Rows carry `data-row="<id>"`. */
+export function rowPicker(ids: Set<string>): PickRow {
+  return (id) => {
+    if (!ids.has(id)) return null;
+    return () => {
+      const tr = document.querySelector<HTMLElement>(`[data-row="${CSS.escape(id)}"]`);
+      if (!tr) return;
+      tr.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion:reduce)").matches ? "auto" : "smooth", block: "center" });
+      tr.classList.remove("is-hit");
+      void tr.offsetWidth;
+      tr.classList.add("is-hit");
+    };
+  };
+}
+
 /** A cited row id, as a chip: a link for a school, a button for a row this page can select, else a label. */
 export function useCiteChip(pick?: PickRow) {
   const d = useData();
@@ -26,7 +41,8 @@ export function useCiteChip(pick?: PickRow) {
     const label = corridor?.name ?? (street ? `${street.name}, ${d.zoneRequests.schools.find((s) => s.nbr === street.nbr)?.name}` : null)
       ?? (school ? d.zoneRequests.schools.find((s) => String(s.nbr) === school[1])?.name : null)
       ?? (zone ? `${d.zones.find((z) => String(z.nbr) === zone[1])?.name} zone` : null) ?? id;
-    if (school) return <Link className="cite" to={`/april-15/${school[1]}`} title={id}>{label}</Link>;
+    if (school) return <Link className="cite" to={`/draft/${school[1]}`} title={id}>{label}</Link>;
+    if (zone) return <Link className="cite" to={`/zone/${zone[1]}`} title={id}>{label}</Link>;
     const go = pick?.(id);
     if (go) return <button type="button" className="cite" title={id} onClick={go}>{label}</button>;
     return <span className="cite" title={id}>{label}</span>;
@@ -87,7 +103,7 @@ export function NarrativeDraft({ nbr }: { nbr: number }) {
         </>
       )}
       <button type="button" className="btn" disabled={busy} onClick={draft}>{busy ? "Drafting…" : text === null ? "Draft the narrative" : "Draft it again"}</button>
-      {error && <p className="error">The assistant isn't answering right now. The draft application below still works.</p>}
+      {error && <p className="err">The assistant isn't answering right now. The draft application below still works.</p>}
     </section>
   );
 }

@@ -118,25 +118,42 @@ rather than shipped beside it, so there's one engine (`analyzeAddress`/`planWalk
   source), the "is it safe?" headline and the "why this walk qualifies" line (copy rules 2 and 4), "ask again every fall"
   (no source), MapLibre and Nominatim (Leaflet and the ArcGIS geocoder already work here), and the scaled paper previews
   (the packet and draft pages are the documents).
-- **One codebase (2026-09-27, later).** The static build briefly shipped at the site root beside this app (`ui/`, with the
-  React app under `/app/`). It's gone: this app is the site again. Its last changes were ported: the splash draws the home dot
-  and the word in, the first visit follows the phone's language, and the per-zone table on `/zones` stacks into one card per
-  zone on phones. Its cooperative map gestures weren't: Leaflet here already zooms and pans by wheel, trackpad and touch, and
-  the walk map stays folded on phones. Its to-do list is in `docs/improvements.md`.
+
+## The Walk Check UI is the app (2026-09-27, later)
+
+The team's static build (`ui/`, plain JS) is now the app's look and screens, rebuilt in React on the app's own analysis,
+so there's one codebase and one set of numbers. This supersedes the screen lists in the sections above.
+- **Screens:** `/` home (address, map picker `/pick`, sample points) → `/walk` (the one-line answer, distance and minutes,
+  K–5 / Pre-K toggle, each crossing numbered with "Show on map" and who can change it, the shuttle, after the shuttle; Print
+  gives the one-page walk plan) → `/help` → `/bus` (HISD bus-stop request) and `/schoolzone` (City school-zone application),
+  each shown as the letter the principal gets, with Print and Share. `/bus` links to `/packet` for families who file HISD's
+  online form themselves. `/zones` and `/zone/:nbr` (schools that closed), `/sources`, `/nozone`, `/prek`.
+- **Staff (English):** `/data` (closed zones and the seven pickups), `/corridors`, `/april15`, `/draft/:nbr`.
+- **Maps:** MapLibre with OpenFreeMap's Positron basemap, as in `ui/`. Leaflet is gone.
+- **Kept from before:** the ArcGIS geocoder, the URL carrying the home (`?lat&lng&addr&prek`) so any walk screen can be
+  reloaded or shared, and the Spanish "not professionally reviewed" note.
+- **Changed from `ui/`, on purpose:** the "Is it safe?" headline, "Why this walk qualifies" and "Califica" lines (copy
+  rules 2 and 4), the hand-researched principal names, phones and Super Neighborhood meetings (no source: the screens say "the
+  principal of <school>" and "ask at the front office"), "ask again every fall" (no source), and the bus request's "a map of the
+  walk" (the letter has no map). Where to cross comes from `planWalk()`, so a road with no light within 1 km says so instead
+  of naming a far one.
+- **Removed:** the React-only screens (walk strip, pickup cards, `/plan`, the older staff layouts). Old links redirect:
+  `/schools` → `/zones`, `/april-15` → `/april15`, `/april-15/:nbr` → `/draft/:nbr`, `/plan` → `/walk`.
+- The static build's to-do list is in `docs/improvements.md`.
 
 ## AI assistant (2026-09-27)
 
 Built from the research in `docs/ai-assistant/` (ideas 1, 3 and 6, the ones it says to build). Everything else on the site
 stays static and works without it; the AI parts appear only when `GET /api/ai` answers that the proxy is on.
-- **Ask about this result** (`/walk`, idea 1): a chat box under "who can change it". It's grounded on the page's own result
+- **Ask about this result** (`/walk`, idea 1): a chat box under "After the shuttle ends". It's grounded on the page's own result
   for that home (`src/lib/ai/grounding.ts`): the schools, distances, each crossing and the page's "where to cross" sentence, the
   shuttle, the 2-mile rule, Pre-K. **No address and no coordinates are sent**; the proxy refuses a request that carries any.
-- **Describe the walk for HISD** (`/packet`, idea 3): the family writes what the walk is like in any language; the assistant
+- **Describe the walk for HISD** (`/bus`, and `/packet`; idea 3): the family writes what the walk is like in any language; the assistant
   drafts one English sentence for the Description box of HISD's form. Their words and the draft sit side by side, and only a tap
-  on "Use this sentence" adds it to the copy box and to the printed page's "Walkway conditions" block. Nothing is submitted.
-- **Ask the data** (`/corridors`, `/april-15`) and **Draft the narrative** (`/april-15/:nbr`), idea 6, for staff: answers
+  on "Use this sentence" adds it, as "Walkway conditions (family's description)", to the bus request and to `/packet`'s copy box and page. Nothing is submitted.
+- **Ask the data** (`/corridors`, `/april15`) and **Draft the narrative** (`/draft/:nbr`), idea 6, for staff: answers
   from `corridors.json`, `zone_requests.json` and `zones.json`, which the proxy reads from the site itself. Every number carries
-  its row id; ids are chips that select the row, and ids that aren't in the data are dropped before the answer arrives.
+  its row id; ids are chips that scroll to and light the row, and ids that aren't in the data are dropped before the answer arrives.
 
 **The proxy** is one Cloudflare Pages Function, `functions/api/ai.ts`, deployed with the site (`wrangler.toml`). It holds the
 key, builds the prompts on the server (`functions/_lib/prompts.ts`), and checks every answer in code (`functions/_lib/guard.ts`):
@@ -166,16 +183,18 @@ it's shown either way). Spanish answers sit under the page's existing "not profe
 - `src/lib/geo.ts`: point-in-polygon, haversine, segment intersection. Shared by the scripts and the browser.
 - `src/lib/analyze.ts`: `analyzeAddress()`, the single analysis the precompute and the UI both run.
 - `src/lib/crossings.ts`: which signals and rail crossings belong to a crossed road or track, `planWalk()` (the nearest control, direction and detour per crossing), and `zonePossible()`. Ported from `research/warning-families/crossing-options.mts`.
-- `src/lib/walk.ts`: `useWalk()`, the address in the URL analysed once for every screen, and `zoneStreets()`.
+- `src/lib/walk.ts`: `useWalk()`/`analyzeWalk()`, the address in the URL analysed once for every screen, and `zoneStreets()`.
+- `src/lib/ui/`: the screens' strings in English and Spanish (`strings.ts`, ported from `ui/app.js`), the result shape the
+  screens draw from (`model.ts`: `toUiResult`, `closedZones`, where-to-cross wording), `useUiWalk()`, and the sourced contacts.
+- `src/components/ui/`: the map (`WcMap.tsx`), the letters (`docs.tsx`: walk plan, bus request, school-zone application), the
+  share sheet, and the small pieces (action bar, paper preview, print root, who card, bars).
+- `src/pages/`: Home (home, map picker, Pre-K, not a closed zone), Walk, Requests (help, bus, school zone), Packet, Zones
+  (schools that closed, one zone, sources), Staff (data, corridors, Before April 15, one school's draft).
+- `src/ui.css`: `ui/styles.css`, plus the AI panels. `src/lib/i18n.ts`: the language switch, the copy rules, and the packet
+  and AI strings.
 - `functions/api/ai.ts`, `functions/_lib/`: the AI proxy, its prompts, checks and demo replies. `src/lib/ai/`: the request
-  types, the page's grounding for one home, and the client. `src/components/AiPanel.tsx`, `AskResult.tsx`,
-  `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
-- `src/components/WalkCheck.tsx` and `src/walkcheck.css`: the logo, splash, walk strip, bars and share sheet.
-- `src/components/CrossingPlan.tsx`: the where-to-cross list and the once-per-page "who can change this".
-- `src/components/ShuttleLayer.tsx`: the shuttle layer on the Closed zones map and the address check.
-- `src/lib/i18n.ts`: every family-facing sentence in English and Spanish, the copy rules, and display-time translation of the shuttle flags.
-- `src/pages/`: Home, Walk (Pre-K question, answer, not-a-closed-zone), Ask (help, bus, school zone), Schools, Plan (the family's walk plan, print), Packet (HISD, print), Overview (`/zones`), Corridors, April15 (`/april-15`).
-- `src/components/PickupCards.tsx` and `src/lib/pickups.ts`: the seven pickup cards and their fixed facts. `src/april15.css` styles both, apart from `styles.css`.
+  types, the page's grounding for one home, the walkway sentence, and the client. `src/components/AiPanel.tsx`,
+  `AskResult.tsx`, `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
 
 ## Limits (also shown in the UI)
 
