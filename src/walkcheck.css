@@ -27,12 +27,15 @@
 .splash.is-gone { opacity: 0; visibility: hidden; }
 .splash svg { border-radius: 26px; }
 .splash-word { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
-.splash .logo-road { stroke-dasharray: 110; stroke-dashoffset: 110; animation: wc-draw 700ms var(--ease-out) 120ms forwards; }
+.splash .logo-road { stroke-dasharray: 100; stroke-dashoffset: 100; animation: wc-draw 700ms var(--ease-out) 120ms forwards; }
 .splash .logo-dash { opacity: 0; animation: wc-fade 300ms var(--ease-out) 700ms forwards; }
+.splash .logo-home { transform-origin: 22px 54px; transform: scale(.6); opacity: 0; animation: wc-pop 260ms var(--ease-out) 60ms forwards; }
 .splash .logo-school { transform-origin: 78px 30px; transform: scale(.6); opacity: 0; animation: wc-pop 300ms var(--ease-out) 640ms forwards; }
+.splash .splash-word { opacity: 0; transform: translateY(6px); animation: wc-fade-up 400ms var(--ease-out) 820ms forwards; }
 @keyframes wc-draw { to { stroke-dashoffset: 0; } }
 @keyframes wc-fade { to { opacity: 1; } }
 @keyframes wc-pop { to { transform: scale(1); opacity: 1; } }
+@keyframes wc-fade-up { to { opacity: 1; transform: none; } }
 
 /* ---- header ---- */
 .top { position: sticky; top: 0; z-index: 1000; display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--paper);
@@ -247,7 +250,7 @@ a.bar:hover .hd b { color: var(--green); }
 
 @media (prefers-reduced-motion: reduce) {
   .screen, .bar-fixed, .splash, .splash *, .bar .fill { animation: none !important; }
-  .splash .logo-road { stroke-dashoffset: 0; } .splash .logo-dash, .splash .logo-school { opacity: 1; transform: none; }
+  .splash .logo-road { stroke-dashoffset: 0; } .splash .logo-dash, .splash .logo-home, .splash .logo-school, .splash .splash-word { opacity: 1; transform: none; }
   .bar .fill { transform: none; }
   .sheet, .scrim { transition: none; }
 }

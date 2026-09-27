@@ -80,7 +80,7 @@ export default function Overview() {
       </div>
 
       <div className="table-scroll">
-        <table className="data">
+        <table className="data stack">
           <caption>Per closed zone. All percentages are shares of zone area.</caption>
           <thead>
             <tr>
@@ -92,22 +92,22 @@ export default function Overview() {
             {zones.map((z) => (
               <tr key={z.nbr}>
                 <th scope="row">{z.name}</th>
-                <td>{z.receiving.map((r) => `${r.name}${z.receiving.length > 1 ? ` (${r.share.toFixed(0)}%)` : ""}`).join(", ")}</td>
-                <td>{signedMi(z.medianDeltaM)}</td>
-                <td>{pct(z.pctFarther)}</td>
-                <td>{pct(z.pctOver2New)}</td>
-                <td><Shift from={z.hazardOld.ped} to={z.hazardNew.ped} /></td>
-                <td><Shift from={z.hazardOld.hin} to={z.hazardNew.hin} /></td>
-                <td><Shift from={z.hazardOld.rail} to={z.hazardNew.rail} /></td>
-                <td><Shift from={z.hazardOld.combined} to={z.hazardNew.combined} /></td>
+                <td data-label="Now zoned to">{z.receiving.map((r) => `${r.name}${z.receiving.length > 1 ? ` (${r.share.toFixed(0)}%)` : ""}`).join(", ")}</td>
+                <td data-label="Median change">{signedMi(z.medianDeltaM)}</td>
+                <td data-label="Farther">{pct(z.pctFarther)}</td>
+                <td data-label="2+ mi">{pct(z.pctOver2New)}</td>
+                <td data-label="Ped-dangerous road"><Shift from={z.hazardOld.ped} to={z.hazardNew.ped} /></td>
+                <td data-label="Any High Injury road"><Shift from={z.hazardOld.hin} to={z.hazardNew.hin} /></td>
+                <td data-label="Active railroad"><Shift from={z.hazardOld.rail} to={z.hazardNew.rail} /></td>
+                <td data-label="Either hazard"><Shift from={z.hazardOld.combined} to={z.hazardNew.combined} /></td>
               </tr>
             ))}
             <tr className="total">
-              <th scope="row">All seven</th><td /><td /><td /><td>{pct(totals.pctOver2New)}</td>
-              <td><Shift from={totals.hazardOld.ped} to={totals.hazardNew.ped} /></td>
-              <td><Shift from={totals.hazardOld.hin} to={totals.hazardNew.hin} /></td>
-              <td><Shift from={totals.hazardOld.rail} to={totals.hazardNew.rail} /></td>
-              <td><Shift from={totals.hazardOld.combined} to={totals.hazardNew.combined} /></td>
+              <th scope="row">All seven</th><td /><td /><td /><td data-label="2+ mi">{pct(totals.pctOver2New)}</td>
+              <td data-label="Ped-dangerous road"><Shift from={totals.hazardOld.ped} to={totals.hazardNew.ped} /></td>
+              <td data-label="Any High Injury road"><Shift from={totals.hazardOld.hin} to={totals.hazardNew.hin} /></td>
+              <td data-label="Active railroad"><Shift from={totals.hazardOld.rail} to={totals.hazardNew.rail} /></td>
+              <td data-label="Either hazard"><Shift from={totals.hazardOld.combined} to={totals.hazardNew.combined} /></td>
             </tr>
           </tbody>
         </table>

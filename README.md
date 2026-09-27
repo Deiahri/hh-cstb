@@ -116,6 +116,11 @@ rather than shipped beside it, so there's one engine (`analyzeAddress`/`planWalk
   source), the "is it safe?" headline and the "why this walk qualifies" line (copy rules 2 and 4), "ask again every fall"
   (no source), MapLibre and Nominatim (Leaflet and the ArcGIS geocoder already work here), and the scaled paper previews
   (the packet and draft pages are the documents).
+- **One codebase (2026-09-27, later).** The static build briefly shipped at the site root beside this app (`ui/`, with the
+  React app under `/app/`). It's gone: this app is the site again. Its last changes were ported: the splash draws the home dot
+  and the word in, the first visit follows the phone's language, and the per-zone table on `/zones` stacks into one card per
+  zone on phones. Its cooperative map gestures weren't: Leaflet here already zooms and pans by wheel, trackpad and touch, and
+  the walk map stays folded on phones. Its to-do list is in `docs/improvements.md`.
 
 ## Layout
 

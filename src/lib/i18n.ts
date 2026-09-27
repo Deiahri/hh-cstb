@@ -919,7 +919,8 @@ export function initialLang(): Lang {
   } catch {
     /* storage blocked: fall through */
   }
-  return "en";
+  // First visit: follow the phone's language.
+  return (navigator.language || "").toLowerCase().startsWith("es") ? "es" : "en";
 }
 
 /** Keep the choice in the URL (outside the hash, which the router owns) and, where allowed, in storage. */

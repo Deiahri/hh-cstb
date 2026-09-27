@@ -10,7 +10,7 @@
     "streets": "tsx scripts/fetch-streets.ts",
     "compute": "tsx scripts/compute.ts",
     "dev": "vite",
-    "build": "tsc --noEmit && vite build --outDir dist/app && node -e \"require('fs').cpSync('ui','dist',{recursive:true})\"",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

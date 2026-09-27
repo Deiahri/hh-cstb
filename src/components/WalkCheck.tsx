@@ -11,7 +11,7 @@ import { useT } from "../lib/i18n";
 export const Logo = ({ size = 28, className }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" className={className} aria-hidden="true">
     <rect width="100" height="100" rx="22" className="logo-bg" />
-    <path className="logo-road" d="M22 54 L42 74 L78 30" fill="none" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" />
+    <path className="logo-road" d="M22 54 L42 74 L78 30" fill="none" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" pathLength={100} />
     <path className="logo-dash" d="M22 54 L42 74 L78 30" fill="none" strokeWidth="3" strokeDasharray="6 7" />
     <circle className="logo-home" cx="22" cy="54" r="10" strokeWidth="3" />
     <circle className="logo-school" cx="78" cy="30" r="11" strokeWidth="5" />

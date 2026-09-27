@@ -1,5 +1,9 @@
 # Walk Check: what can still be improved
 
+> Written for the static build in `ui/` (plain JS, MapLibre, Nominatim, `geo.js`), which has since been folded into the
+> React app. Items that name those files now apply to their React counterparts (`src/lib/analyze.ts`, `src/lib/i18n.ts`,
+> Leaflet, the ArcGIS geocoder). The principal and council contacts it mentions were never ported (no source).
+
 Written 2026-09-27 after the rebuild on real data. Ordered by how much each one would matter to a
 family using the site, then to the team demoing it.
 

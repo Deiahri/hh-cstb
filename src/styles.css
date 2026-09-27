@@ -150,6 +150,18 @@ table.data th, table.data td { text-align: left; padding: .45rem .55rem; border-
 table.data thead th { font-size: .78rem; color: var(--muted); font-weight: 600; white-space: nowrap; }
 table.data tbody th { font-weight: 600; }
 table.data tr.total th, table.data tr.total td { border-top: 2px solid var(--text); font-weight: 600; }
+/* Phones: a wide table stacks into one card per row, each cell labelled, so nothing scrolls sideways. */
+@media (max-width: 899px) {
+  table.data.stack, table.data.stack tbody { display: block; }
+  table.data.stack thead { display: none; }
+  table.data.stack tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  table.data.stack tr.total { border-top: 2px solid var(--text); border-bottom: 0; }
+  table.data.stack th, table.data.stack td { display: block; border: 0; padding: 0; }
+  table.data.stack tbody th { grid-column: 1 / -1; font-size: 1rem; }
+  table.data.stack tr.total th, table.data.stack tr.total td { border-top: 0; }
+  table.data.stack td[data-label]::before { content: attr(data-label); display: block; font-size: .75rem; color: var(--muted); font-weight: 400; }
+  table.data.stack td:empty { display: none; }
+}
 table.selectable tbody tr { cursor: pointer; }
 table.selectable tbody tr:hover { background: var(--note-bg); }
 table.selectable tbody tr.selected { background: var(--alert-bg); }
