@@ -60,7 +60,7 @@ export function Back({ to }: { to?: string }) {
   );
 }
 
-/** Home → each road (amber) or track (ink) → school, in the order the straight line meets them. Draws itself once. */
+/** Home → each road (amber) or track (ink) → school, in first-encounter order on the displayed geometry. Draws itself once. */
 export function RouteStrip({ hazards, school }: { hazards: Hazard[]; school: string }) {
   const { t } = useT();
   const ref = useRef<SVGLineElement>(null);

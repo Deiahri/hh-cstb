@@ -1,0 +1,15 @@
+# Optional blueprint for a Node Web Service. Does not convert an existing Static Site.
+services:
+  - type: web
+    name: hh-cstb
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: ORS_API_KEY
+        sync: false
+      - key: ROUTING_REQUESTS_PER_MINUTE
+        value: "30"

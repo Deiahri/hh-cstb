@@ -14,6 +14,10 @@ const TRIVIAL_M = 15;
 export function stepText(step: CrossingStep, t: Dict, lang: Lang): { text: string; who: "road" | "rail" | null } {
   const c = step.control, h = step.hazard, x = t.cross;
   const d = (m: number) => dist(m, lang);
+  if (step.contextOnly) return {
+    text: c ? t.routing.control(controlLabel(c), d(c.d)) : t.routing.noControl,
+    who: step.near ? null : h.kind,
+  };
   const adds = (m: number | null) => (m === null || m < TRIVIAL_M ? x.addsNothing : x.adds(d(m)));
   if (c && step.near) {
     const label = controlLabel(c);
@@ -49,7 +53,7 @@ function CrashCounts({ h }: { h: Hazard }) {
  */
 export function CrossingPlan({ plan, crashes = true }: { plan: WalkPlan; crashes?: boolean }) {
   const { lang, t } = useT();
-  if (!plan.steps.length) return <p className="muted">{t.hazard.none}</p>;
+  if (!plan.steps.length) return <p className="muted">{t.routing.noHits}</p>;
   const nearCount = plan.steps.filter((s) => s.near).length;
   return (
     <>

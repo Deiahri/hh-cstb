@@ -1,16 +1,14 @@
-import { useMemo } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { analyzeAddress } from "../lib/analyze";
-import { shuttleFrom, useData } from "../lib/data";
-import type { LngLat } from "../lib/geo";
-import { coord, mi } from "../lib/format";
+import { Link } from "react-router-dom";
+import { walkingFitPoints } from "../lib/useWalkingAddress";
+import { RouteDistance, RouteStatus } from "../components/RouteStatus";
+import { useData } from "../lib/data";
 import { useT } from "../lib/i18n";
 import { CrossingPlan, WhoCanChange } from "../components/CrossingPlan";
 import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { DatesLine } from "../components/Notes";
 import { shuttlePoints } from "../components/ShuttleLayer";
 import { RouteLayers } from "../components/RouteLayers";
-import { shuttleWalk, walkPlans } from "../lib/walk";
+import { useWalk } from "../lib/walk";
 
 /**
  * The family's one-page walk plan, in their language: walk it once first, then each crossing with where to cross,
@@ -21,29 +19,25 @@ export default function Plan() {
   const d = useData();
   const { t } = useT();
   const tp = t.plan;
-  const [params] = useSearchParams();
-  const home: LngLat = [Number(params.get("lng")), Number(params.get("lat"))];
-  const addr = params.get("addr") ?? coord(home);
-  const r = useMemo(() => analyzeAddress(home, d.ds), [home[0], home[1], d.ds]);
+  const w = useWalk();
 
-  if (!Number.isFinite(home[0]) || !r.now)
+  if (!w?.r.now)
     return (
       <div className="page">
         <p>{tp.missing} <Link to="/">{tp.start}</Link>.</p>
       </div>
     );
 
-  const shuttle = r.oldZone ? shuttleFrom(d, Number(r.oldZone.Campus__Number)) : undefined;
-  const sw = shuttleWalk(r, shuttle);
-  const nowName = r.now.school.name;
+  const { r, addr, params, shuttle, sw, plans } = w;
+  const now = w.r.now;
+  const nowName = now.school.name;
   const oldName = r.old?.school.name ?? "";
   // walkPlans returns the shuttle walk first when there is one, then the walk to the new school.
-  const plans = walkPlans(d, r, shuttle);
   const walks = [
     ...(sw ? [{ title: tp.walkShuttle(oldName), route: sw }] : []),
-    { title: sw ? tp.walkDirect(nowName) : tp.walkOnly(nowName), route: r.now },
+    { title: sw ? tp.walkDirect(nowName) : tp.walkOnly(nowName), route: now },
   ].map((w, i) => ({ ...w, plan: plans[i] }));
-  const packetParams = new URLSearchParams({ lat: String(home[1]), lng: String(home[0]), addr });
+  const packetParams = new URLSearchParams(params);
 
   return (
     // Five or more crossings across both walks (about 7% of the sampled area) print smaller, so the plan stays on one page.
@@ -66,8 +60,9 @@ export default function Plan() {
         <div className="plan-walks">
           {walks.map(({ title, route, plan }) => (
             <section key={title} className="plan-walk">
-              <h2>{title} <span className="muted small">({t.result.miles(mi(route.distance))})</span></h2>
-              {route.hazards.length ? <CrossingPlan plan={plan} crashes={false} /> : <p>{tp.noCrossings}</p>}
+              <h2>{title} <span className="muted small">(<RouteDistance route={route} />)</span></h2>
+              <RouteStatus route={route} />
+              {route.hazards.length ? <CrossingPlan plan={plan} crashes={false} /> : <p>{t.routing.noHits}</p>}
             </section>
           ))}
           <WhoCanChange plans={plans} school={nowName} />
@@ -77,9 +72,9 @@ export default function Plan() {
         <section className="map-section">
           <MapBase className="map print-map" interactive={false}>
             <RouteLayers d={d} r={r} shuttle={sw ? shuttle : undefined} plans={plans} />
-            <FitTo points={[home, r.now.school.loc, ...(sw && r.old ? [r.old.school.loc] : []), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])]} />
+            <FitTo points={[...walkingFitPoints(r), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])]} />
           </MapBase>
-          <p className="small">{tp.mapNote}</p>
+          <p className="small">{t.routing.mapNote}</p>
           <MapLegend shuttle={!!sw} walks plan />
         </section>
 

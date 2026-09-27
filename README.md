@@ -1,8 +1,8 @@
 # Closed-School Walk Check (prototype)
 
 Families type an address and see the walks their child makes now: to the closure shuttle's pickup at the old campus
-(through 2027–28), and straight to the new school (for anyone who skips the shuttle, and for everyone once it ends). Each
-walk leads with a one-line answer, such as "Crosses train tracks and 1 dangerous road," built from City-listed dangerous roads
+(through 2027–28), and directly to the new school (for anyone who skips the shuttle, and for everyone once it ends). Each
+walk leads with a one-line answer, about potential map intersections, built from City-listed dangerous roads
 and active railroads. The page states the 2028 end date and HISD's Pre-K rule. It gives the family a packet to print, plus
 text to paste into HISD's Transportation Support Request Form ("Walk Route Concerns"). The app also has a closed-zone
 overview with a card for each shuttle pickup, a ranked list of corridors the City can act on, and a "Before April 15" page
@@ -14,17 +14,26 @@ recomputed numbers agree with the report and where they don't.
 ## Run
 
 ```bash
-npm install
+npm ci
 npm run data      # pull HISD + City of Houston ArcGIS layers into public/data (snapshot)
 npm run grounds   # pull OpenStreetMap school grounds around the shuttle campuses → campus_grounds.geojson
 npm run crossings # pull traffic signals (TranStar) and public rail crossings (FRA) → signals.json, rail_crossings.json
 npm run streets   # pull City street class (MTFP) and road centerline around the crossings and schools → street_context.json
 npm run compute   # grid-sample the closed zones → zones.json, corridors.json, shuttles.json, zone_requests.json, ../VERIFY.md
-npm run dev       # http://localhost:5173
-npm run build     # static site in dist/ (HashRouter, relative paths — host anywhere)
+npm run dev       # http://localhost:5173; /api proxies to the local Node server
+npm run build     # TypeScript check + frontend in dist/
+npm test          # focused routing tests; run after build
+npm start         # serve dist/ and /api/walk on port 3000 (or PORT)
 ```
 
-The snapshot in `public/data` is already there, so `npm run dev` works offline without the fetch steps.
+The snapshot in `public/data` is already included. Do not run the fetch/compute steps for normal local testing.
+Live routing needs a server-only `ORS_API_KEY`. Copy `.env.example` to `.env`, add your key, then run
+`node --env-file=.env server/index.mjs` alongside `npm run dev`. For a production check, run the build
+and that same server command, then open http://localhost:3000. Without a key, pages display labeled
+straight-line estimates. A Vite preview or static-only host does not provide the routing API.
+
+See [walking-routes.md](docs/walking-routes.md) for Render settings, the exact Holly Hall test link,
+current data dates, the routing method, verification and remaining deployment prerequisites.
 
 Add `?lang=es` before the `#` (for example `index.html?lang=es#/`) to open in Spanish, for a flyer link or QR code.
 
@@ -44,15 +53,11 @@ Add `?lang=es` before the `#` (for example `index.html?lang=es#/`) to open in Sp
 
 The site's warning-families report found that telling families "this road is dangerous" mostly repeats what they know
 and pushes families with a car into driving. So each crossing now leads with an action:
-- **Lookup:** under each walk, one line per road or track. It names the nearest traffic light on that road, or the
-  nearest public rail crossing of that railroad, with the distance, direction and extra walking ("Cross at the traffic
-  light at Liberty & Altoona, 550 ft northeast. That adds about 500 ft"). Where there's nothing within 250 m it says
-  so, gives the nearest one within 1 km, and names who can change it: the receiving school's principal and the City
-  for roads, HISD for rail. It offers a school zone only if the street could get one under HPW's rules (street facts
-  from `npm run streets`). Crash counts sit folded under each road. The map adds the lights and crossings, and a
-  dotted line through them.
-- **Walk plan** (`/plan`, "Print a walk plan"): one page, in English or Spanish. It opens with "walk it once with your
-  child," then each walk's crossings, a map, and three one-time actions. Plans with five or more crossings print
+- **Walk Check** (`/walk`): the displayed pedestrian geometry drives the potential hazard list. Each
+  listed road or railroad includes nearby controls as context, with no unverified detour line or
+  instruction to leave the route. The map preserves home/school pins and labels network endpoint gaps.
+  If routing is unavailable, distances and hazards are explicitly identified as straight-line estimates.
+- **Walk plan** (`/plan`, "Print a walk plan"): one page, in English or Spanish. It opens with a request to check entrances and crossings locally, then each walk's potential intersections, a map, and three one-time actions. Plans with five or more crossings print
   smaller so they stay on one page.
 - **Corridors:** a "Traffic light or public rail crossing nearby?" column and a "What can change it" column. It's
   sorted so the uncontrolled crossings come first (E Whitney, Westover, Ralston, Brewster, Crane St, the Port Houston
@@ -60,7 +65,7 @@ and pushes families with a car into driving. So each crossing now leads with an 
   Dr, N Main St, SSgt Macario Garcia Dr, MLK Blvd, N Wayside Dr). The brief called those "newly crossed," which they
   aren't; see `../VERIFY.md`.
 - **Packet:** a "Nearest traffic light / public rail crossing" column, and the same fact in the copy-paste text.
-  Texas's hazardous-route test says "uncontrolled," so it's stated either way, including when a light is close.
+  A nearby light is not proof that a crossing is accessible, controlled at grade, or suitable for a child.
 - **Not built, on purpose:** a danger map or area rating, the word "safe," anything addressed to children, alerts or
   accounts, and blocked-train times. For blocked trains, the past year of FRA reports has 0 or 1 at 8 of the 9
   crossings the walks use.
@@ -90,11 +95,11 @@ count then is a floor. Each draft has a line for the school's own count.
 
 The family screens now follow the Walk Check wireframes (Figma → static prototype): cream and green, Atkinson Hyperlegible
 Next, a bottom action bar on phones, a share sheet, and one question or answer per screen. The prototype resolved addresses by
-ZIP code and hardcoded its numbers, principals and council meetings; here every screen runs on `analyzeAddress()` and the
-precomputed zone files, and the names it had no source for are left out ("the principal of Kennedy ES", not a name).
+ZIP code and hardcoded its numbers, principals and council meetings; here address screens use `useWalk()` (school assignment plus live pedestrian routing) and staff
+views retain the precomputed zone files, and the names it had no source for are left out ("the principal of Kennedy ES", not a name).
 Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify").
 - `/` address (geocoder, map pick, sample points) → `/prek` (closed zones only) → `/walk`: the one-line answer, last year vs
-  now, the walk as a strip, where to cross, the shuttle walk, who can change it, the 2-mile cliff, and the map.
+  now, potential intersections as a schematic strip, nearby controls to check, the shuttle walk, who can change it, the 2-mile cliff, and the map.
 - `/help` → `/bus` (what the HISD page holds, drag the suggested stop, then `/packet`) and `/schoolzone` (each road on the
   walk against HPW's written paths, then the principal's draft on `/april-15`).
 - `/schools` and `/schools/:nbr`: before → now bars per closed zone, shares of **area**, said on screen.
@@ -112,9 +117,12 @@ Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify
 - `scripts/grid.ts`: the ~110 m sample grid, point for point the one `compute.ts` walks, for `fetch-streets.ts`.
 - `scripts/compute.ts`: diffs the zones, samples a ~110 m grid, computes the hazard shares, the corridor ranking and each corridor's crossing control, the per-receiving-school street requests (`zone_requests.json`), and writes the VERIFY report.
 - `src/lib/geo.ts`: point-in-polygon, haversine, segment intersection. Shared by the scripts and the browser.
-- `src/lib/analyze.ts`: `analyzeAddress()`, the single analysis the precompute and the UI both run.
+- `src/lib/analyze.ts`: original school assignment and straight-line analysis, preserved for precompute and fallback.
 - `src/lib/crossings.ts`: which signals and rail crossings belong to a crossed road or track, `planWalk()` (the nearest control, direction and detour per crossing), and `zonePossible()`. Ported from `research/warning-families/crossing-options.mts`.
-- `src/lib/walk.ts`: `useWalk()`, the address in the URL analysed once for every screen, and `zoneStreets()`.
+- `src/lib/walk.ts`: `useWalk()`, shared by Walk, Ask, Plan and Packet, and `zoneStreets()`.
+- `src/lib/useWalkingAddress.ts`, `routing.ts`, `route-hazards.ts`: route loading/cache, validated geometry and path-based hazards.
+- `src/components/RouteLayers.tsx` and `RouteStatus.tsx`: shared geometry, bounds inputs, distance and fallback disclosures.
+- `server/index.mjs`: production frontend server and same-origin pedestrian API; `render.yaml` documents a Node Web Service.
 - `src/components/WalkCheck.tsx` and `src/walkcheck.css`: the logo, splash, walk strip, bars and share sheet.
 - `src/components/CrossingPlan.tsx`: the where-to-cross list and the once-per-page "who can change this".
 - `src/components/ShuttleLayer.tsx`: the shuttle layer on the Closed zones map and the address check.
@@ -124,7 +132,7 @@ Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify
 
 ## Limits (also shown in the UI)
 
-- Routes are straight lines, so every result is a floor. A street route crosses at least as many hazards.
+- Address pages use pedestrian routes when available; fallbacks and precomputed research use straight lines. Their hazard sets can differ. Neither method proves a safe path or a minimum crossing count.
 - Shares are of zone **area**, not students or homes. Next step: weight by HCAD residential parcels.
 - The tool produces evidence, not an eligibility decision. §48.151 also needs "no walkway", and Houston publishes no sidewalk data.
 - Crash data is the City's HIN 2022, the newest the City publishes. The railroad layer was last edited 2024-02-15.
@@ -133,9 +141,7 @@ Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify
   straight connector, not a route. Ross's announced drop-offs (Roosevelt, C. Martinez) differ from the boundary layer (Dogan, Roosevelt).
 - The address search uses the keyless ArcGIS World Geocoder. Clicking the map always works as a fallback.
 - **Where to cross covers traffic signals and public rail crossings only.** Crossing guards, stop signs and marked
-  crosswalks aren't in any public Houston layer, so a guarded crossing shows as "no traffic light." The detour is
-  home → light → school in straight lines, not a street route. A light is "controlled," not a promise, and the page
-  never says "safe." The signal feed is TranStar's public map, with no date and no stated license, so ask the City
+  crosswalks are not included in the current datasets. Nearby controls are context only; the app does not route a detour to them or establish an at-grade crossing. The signal feed is TranStar's public map, with no date and no stated license, so ask the City
   before relying on it.
 - **The April 15 street facts are a sort, not a ruling.** HPW decides after its own traffic study. "Not on the plan" means no
   MTFP line within 40 m at most crossing points. From/To are the centerline cross streets just outside the outermost crossing, and

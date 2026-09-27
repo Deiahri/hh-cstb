@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { CircleMarker, GeoJSON, Marker, Polyline, Tooltip } from "react-leaflet";
 import type { AddressResult } from "../lib/analyze";
 import { type WalkPlan, controlLabel, railKind } from "../lib/crossings";
@@ -7,19 +8,17 @@ import { useT } from "../lib/i18n";
 import { COLORS, pinIcon } from "./MapBase";
 import { hazardName } from "./HazardList";
 import { ShuttleLayer } from "./ShuttleLayer";
+import { RouteDistance } from "./RouteStatus";
 
 const ll = ([x, y]: LngLat) => [y, x] as [number, number];
 
-/** The lights and rail crossings a plan says to use, and each walk drawn through them. */
+/** Nearby controls are context only; they are not waypoints or directions off the route. */
 function PlanLayers({ plans }: { plans: WalkPlan[] }) {
   const { t } = useT();
   const seen = new Set<string>();
   const marks = plans.flatMap((p) => p.steps).filter((s) => s.near && s.control && !seen.has(`${s.control.loc}`) && !!seen.add(`${s.control.loc}`));
   return (
     <>
-      {plans.map((p, i) => p.path && (
-        <Polyline key={`path${i}`} positions={p.path.map(ll)} pathOptions={{ color: COLORS.plan, weight: 3, dashArray: "2 7", lineCap: "round" }} />
-      ))}
       {marks.map(({ control: c }) => (
         <CircleMarker key={`${c!.loc}`} center={ll(c!.loc)} radius={7} pathOptions={{ color: "#fff", weight: 2, fillColor: COLORS.plan, fillOpacity: 1 }}>
           <Tooltip>{c!.kind === "signal" ? t.cross.lightTip(controlLabel(c!)) : t.cross.railTip(controlLabel(c!), t.cross.railKinds[railKind(c!.xing)])}</Tooltip>
@@ -29,7 +28,7 @@ function PlanLayers({ plans }: { plans: WalkPlan[] }) {
   );
 }
 
-/** Both straight-line walks from a home, the hazards they cross, the schools, the shuttle, and optionally the where-to-cross marks. */
+/** Shared route geometry and its potential hazard intersections, or labeled straight-line estimates. */
 export function RouteLayers({ d, r, stop, shuttle, plans }: { d: AppData; r: AddressResult; stop?: LngLat; shuttle?: ShuttleStat; plans?: WalkPlan[] }) {
   const { t } = useT();
   const crossedNew = r.now ? r.now.hazards.flatMap((h) => h.lineIds) : [];
@@ -38,7 +37,7 @@ export function RouteLayers({ d, r, stop, shuttle, plans }: { d: AppData; r: Add
   const segs = [...crossedNew, ...crossedOld].filter((s) => !seen.has(`${s.layer}${s.id}`) && seen.add(`${s.layer}${s.id}`));
   const feats = segmentFeatures(d, segs).map((f, i) => ({ ...f, properties: { ...f.properties, _layer: segs[i].layer } }));
   const color = { rail: COLORS.rail, pedHin: COLORS.ped, hin: COLORS.hin } as const;
-  // Crossing points on both walks: the old line is the walk to the shuttle pickup while the shuttle runs.
+  // Potential intersections on both walks; the old-campus route also serves the shuttle pickup.
   const marked = new Set<string>();
   const marks = [...(r.now?.hazards ?? []), ...(r.old?.hazards ?? [])].filter((h) => {
     const k = `${h.key}@${h.at.join()}`;
@@ -51,8 +50,22 @@ export function RouteLayers({ d, r, stop, shuttle, plans }: { d: AppData; r: Add
         data={{ type: "FeatureCollection", features: feats } as any}
         style={(f) => ({ color: color[f?.properties._layer as keyof typeof color], weight: 7, opacity: 0.85 })}
       />
-      {r.old && <Polyline positions={[ll(r.point), ll(r.old.school.loc)]} pathOptions={{ color: COLORS.oldRoute, weight: 3, dashArray: "6 6" }} />}
-      {r.now && <Polyline positions={[ll(r.point), ll(r.now.school.loc)]} pathOptions={{ color: COLORS.newRoute, weight: 4 }} />}
+      {([r.old, r.now] as const).map((route, i) => {
+        if (!route) return null;
+        const ready = route.routing?.status === "ready" ? route.routing.route : null;
+        const color = i ? COLORS.newRoute : COLORS.oldRoute;
+        return <Fragment key={i}>
+          <Polyline positions={(ready?.coordinates ?? [r.point, route.school.loc]).map(ll)}
+            pathOptions={{ color, weight: i ? 4 : 3, dashArray: !ready || !i ? "6 6" : undefined }}>
+            <Tooltip>{route.school.name}: <RouteDistance route={route} />. {t.routing[route.routing?.status ?? "unavailable"]}</Tooltip>
+          </Polyline>
+          {ready && [ready.coordinates[0], ready.coordinates[ready.coordinates.length - 1]].map((p, j) => (
+            <CircleMarker key={j} center={ll(p)} radius={5} pathOptions={{ color, fillColor: "white", fillOpacity: 1 }}>
+              <Tooltip>{t.routing.endpoint}</Tooltip>
+            </CircleMarker>
+          ))}
+        </Fragment>;
+      })}
       {marks.map((h) => (
         <CircleMarker key={`${h.key}@${h.at.join()}`} center={ll(h.at)} radius={6} pathOptions={{ color: "#111", weight: 2, fillColor: "#fff", fillOpacity: 1 }}>
           <Tooltip>{hazardName(h, t)}</Tooltip>

@@ -136,6 +136,8 @@ export function controlFor(h: Hazard, ds: Dataset): Control | null {
 // ---- A walk, crossing by crossing -------------------------------------------------
 
 export interface CrossingStep {
+  /** A nearby control is context, not a verified pedestrian waypoint or instruction. */
+  contextOnly?: boolean;
   hazard: Hazard;
   /** Nearest control, or null when there's none on this road or track within SHOW_FAR_M. */
   control: Control | null;
@@ -161,12 +163,14 @@ export function planWalk(home: LngLat, route: RouteResult, ds: Dataset): WalkPla
     const c = controlFor(hazard, ds);
     const control = c && c.d <= SHOW_FAR_M ? c : null;
     return {
-      hazard, control, near: !!control && control.d <= NEAR_M,
-      detourM: control ? pathLength([home, control.loc, dest]) - straight : null,
+      hazard, control, near: !!control && control.d <= NEAR_M, contextOnly: !!route.routing,
+      detourM: !route.routing && control ? pathLength([home, control.loc, dest]) - straight : null,
     };
   });
   const via = steps.filter((s) => s.near).map((s) => s.control!.loc);
-  const path = via.length ? [home, ...via, dest] : null;
+  // A signal's point is not necessarily on an accessible sidewalk. Do not invent a route to it.
+  // Legacy calculations remain for the offline research scripts only.
+  const path = !route.routing && via.length ? [home, ...via, dest] : null;
   return { steps, path, pathDetourM: path ? pathLength(path) - straight : null };
 }
 
