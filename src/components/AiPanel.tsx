@@ -19,6 +19,8 @@ export interface AiPanelProps {
   renderCite?: (id: string) => ReactNode;
   /** Shown when the proxy runs without a key. */
   mock?: boolean;
+  /** Start open, straight to the box (inside the ASK sheet). */
+  startOpen?: boolean;
 }
 
 /** Answer text with [ids] turned into whatever the page renders for them. */
@@ -28,9 +30,9 @@ export function AnswerText({ text, renderCite }: { text: string; renderCite?: (i
   return <>{parts.map((p, i) => (i % 2 ? <span key={i}>{renderCite(p.trim())}</span> : p))}</>;
 }
 
-export function AiPanel({ mode, title, intro, suggestions, context, notice, renderCite, mock }: AiPanelProps) {
+export function AiPanel({ mode, title, intro, suggestions, context, notice, renderCite, mock, startOpen = false }: AiPanelProps) {
   const { lang, t } = useT();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
   const [turns, setTurns] = useState<AiTurn[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -65,7 +67,7 @@ export function AiPanel({ mode, title, intro, suggestions, context, notice, rend
     return (
       <div className="card ai-card no-print">
         <span className="v">{title}</span>
-        <span className="muted">{intro}</span>
+        {intro && <span className="muted">{intro}</span>}
         <button type="button" className="btn secondary" onClick={() => { setOpen(true); setTimeout(() => input.current?.focus(), 0); }}>
           {t.ai.start}
         </button>

@@ -12,7 +12,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsx --test server/lib/*.test.ts src/lib/ai/*.test.ts",
+    "test": "tsx --test server/lib/*.test.ts src/lib/ai/*.test.ts src/lib/ui/*.test.ts",
     "dev:server": "npm --prefix server run dev"
   },
   "dependencies": {

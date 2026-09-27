@@ -29,14 +29,14 @@ export default function Zones() {
               <BarRow key={z.nbr} label={short(z.name)} sub={`→ ${z.receiving.map((r) => short(r.name)).join(" / ")}`} before={z.hazOld.combined} now={z.hazNew.combined} onClick={() => nav(`/zone/${z.nbr}`)} />
             ))}
           </div>
-          <p className="small muted">{L.tap} {L.pct_note}</p>
+          <p className="small muted">{L.pct_note}</p>
           {phone && <Link className="btn mob-only" to="/">{L.checkaddr}</Link>}
         </div>
         <div className="col side">
           <div className="stat">
             <span className="n">{Math.round(T.hazardNew.combined / 10)} {L.in10}</span>
             <span className="t">{L.big_t}</span>
-            <span className="muted">{L.big_s.replace(/5/, String(Math.round(T.hazardOld.combined / 10)))}</span>
+            <span className="muted">{L.big_s(Math.round(T.hazardOld.combined / 10))}</span>
           </div>
           <WcMap kind="zones" height={phone ? 280 : 380} />
           {!phone && <Link className="btn desk-only" to="/">{L.checkaddr}</Link>}
@@ -128,7 +128,6 @@ export function Sources() {
     <section className="screen">
       <Back />
       <h1>{L.sources_h}</h1>
-      <p className="muted lede">{L.sources_b}</p>
       <table className="tbl">
         <thead><tr>{L.src_cols.map((c: string) => <th key={c}>{c}</th>)}</tr></thead>
         <tbody>

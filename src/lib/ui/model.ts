@@ -190,11 +190,57 @@ export const crossList = (list: UiCrossing[], lang: "en" | "es") =>
   list.map((c) => (c.kind === "rail" ? (lang === "es" ? "vías de tren" : "train tracks") : c.name)).join(", ");
 
 /** Who can change one crossing, and the one-line "Ask:" for it. A school zone only where HPW's written rules allow one. */
-export function whoFor(c: UiCrossing, r: UiResult, L: UiDict): { ask: string; who: string } {
+export function whoFor(c: UiCrossing, school: string, L: UiDict): { ask: string; who: string } {
   if (c.kind === "rail") return { ask: L.ask_rail, who: L.who_rail };
   const s = c.street;
-  const zone = !!s && (!s.owner || s.owner === "COH") && (s.toc || s.borders.includes(r.recv.name));
-  const p = short(r.recv.name);
+  const zone = !!s && (!s.owner || s.owner === "COH") && (s.toc || s.borders.includes(school));
+  const p = short(school);
   return zone ? { ask: L.ask_toc(p), who: L.who_toc(p) } : { ask: L.ask_local, who: L.who_local };
 }
 
+
+// ---- The check: any HISD elementary address, closed zone or not ---------------------------------------------------------
+
+export type Verdict = "red" | "yellow" | "green";
+
+/** The one-screen answer on /check. `closed` is the closed zone the home was in, when it was in one. */
+export interface UiCheck {
+  home: LngLat;
+  school: { nbr: number; name: string; address: string; loc: LngLat };
+  crossings: UiCrossing[];
+  distM: number;
+  closed: UiZone | null;
+  verdict: Verdict;
+}
+
+/** Red: a crossing with no light or public rail crossing within 800 ft. Yellow: every crossing has one. Green: none. */
+export function verdictOf(list: Pick<UiCrossing, "control">[]): Verdict {
+  if (!list.length) return "green";
+  return list.some((c) => !c.control.has) ? "red" : "yellow";
+}
+
+/** The home's walk to its 2026–27 elementary school, or null outside every HISD elementary zone. */
+export function toCheck(d: AppData, w: Walk): UiCheck | null {
+  const { r } = w;
+  if (!r.now || !w.nowPlan) return null;
+  const s = r.now.school;
+  const crossings = w.nowPlan.steps.map((st) => crossing(d, st));
+  const closed = r.closedZone ? closedZones(d).find((z) => z.nbr === Number(r.oldZone!.Campus__Number)) ?? null : null;
+  return {
+    home: w.home,
+    school: { nbr: s.nbr, name: s.name, address: s.address, loc: s.loc },
+    crossings,
+    distM: r.now.distance,
+    closed,
+    verdict: verdictOf(crossings),
+  };
+}
+
+/** One danger row, short: "No light" / "Light 300 ft N" / "Gate 200 ft E". */
+export function dangerNote(c: UiCrossing, L: UiDict): string {
+  const k = c.control;
+  if (!k.has) return c.kind === "rail" ? L.d_nox : L.d_nolight;
+  const f = `${ft(k.d!)} ft ${L.dir(k.dir)}`;
+  if (c.kind === "road") return L.d_light(f);
+  return k.gates ? L.d_gate(f) : L.d_xing(f);
+}

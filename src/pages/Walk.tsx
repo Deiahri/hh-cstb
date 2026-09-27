@@ -23,7 +23,7 @@ function CrossingRow({ c, i, r }: { c: UiCrossing; i: number; r: UiResult }) {
   const { lang, L } = useUi();
   const ctl = useWalkMapCtl();
   const tags = c.kind === "rail" ? [L.tag_rail] : [c.ped ? L.tag_ped : null, L.tag_hin].filter(Boolean);
-  const { ask, who } = whoFor(c, r, L);
+  const { ask, who } = whoFor(c, r.recv.name, L);
   return (
     <li className={`xrow ${c.kind}`} data-x={i} onClick={(e) => !(e.target as HTMLElement).closest("details,a,button") && ctl.current?.show(i)}>
       <span className="n">{i + 1}</span>
@@ -102,6 +102,7 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
   return (
     <section className="screen has-bar">
       <PrintDoc><PlanDoc r={r} addr={u.addr} dates={dates} /></PrintDoc>
+      <AskResult w={u.w} bus={u.to("bus")} />
       {u.shared && <p className="shared">{L.shared_h} <Link to="/">{L.shared_b} ›</Link></p>}
       <div className={`ctx${ctxOn ? " is-on" : ""}`} aria-hidden="true">
         <b>{L.walkto} {to}</b><span>{r.now.length ? L.crossings(r.now.length) : L.nothing} · {mi(r.distNowM)} mi</span>
@@ -129,7 +130,6 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
           <h2>{L.where}</h2>
           {r.now.length ? (
             <>
-              <p className="muted">{L.inorder}</p>
               <ol className="xlist" ref={list}>{r.now.map((c, i) => <CrossingRow key={c.key} c={c} i={i} r={r} />)}</ol>
             </>
           ) : (
@@ -140,7 +140,6 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
           <p className="muted">{L.shuttle_c}</p>
           <h2>{L.after_h}</h2>
           <p>{L.after_b(to, mi(r.distNowM))}</p>
-          <AskResult w={u.w} bus={u.to("bus")} />
           <p className="small muted foot">{L.note_lines} {L.note_lights}</p>
           <p className="small muted foot">
             {L.dates}: {lang === "es" ? "listas de choques de la Ciudad" : "City crash lists"} {dates.crash} · HISD {lang === "es" ? "vías" : "rail"} {dates.rail} ·{" "}

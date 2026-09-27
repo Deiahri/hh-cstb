@@ -5,12 +5,9 @@ import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { askAI, useAiStatus } from "../lib/ai/client";
 import { useData } from "../lib/data";
-import { AiPanel } from "./AiPanel";
+import { AskSheet } from "./AskSheet";
 
-const STAFF_NOTICE =
-  "This is an AI assistant (Anthropic's Claude). It answers only from this app's corridor, zone-request and zone data, " +
-  "puts the row id behind each number in brackets, and can still be wrong: check each figure against the table before " +
-  "using it. HPW and HISD decide; this site saves nothing you type.";
+const STAFF_NOTICE = "AI assistant (Claude). Answers from this app's data, with the row behind each number. Can be wrong: check the table. Nothing is saved.";
 
 /** For a cited id, the action that selects its row on this page, or null when this page has no such row. */
 export type PickRow = (id: string) => (() => void) | null;
@@ -54,10 +51,11 @@ export function StaffAsk({ suggestions, pick }: { suggestions: string[]; pick?: 
   const cite = useCiteChip(pick);
   if (!ai.available) return null;
   return (
-    <AiPanel
+    <AskSheet
+      label="Ask"
       mode="staff"
       title="Ask the data"
-      intro="Questions about these corridors, streets and zones, answered from the app's own numbers with the row behind each one."
+      intro=""
       notice={STAFF_NOTICE}
       suggestions={suggestions}
       renderCite={cite}
@@ -86,24 +84,24 @@ export function NarrativeDraft({ nbr }: { nbr: number }) {
     <section className="card ai-card is-open no-print" aria-label="Draft the narrative">
       <span className="v">Draft the narrative (AI)</span>
       <p className="ai-notice" role="note">{STAFF_NOTICE}</p>
-      {ai.mock && <p className="small muted">Demo mode: no AI key is set, so the draft is canned.</p>}
+      {ai.mock && <p className="small muted">Demo mode: canned draft.</p>}
       {text === null ? (
-        <p className="small muted">A first draft of the reason for the request, written from this school's rows below, for the principal to edit. It isn't added to the printed application.</p>
+        <p className="small muted">First draft for the principal to edit. Not printed.</p>
       ) : (
         <>
-          <label className="k" htmlFor="narrative">AI draft: check every number against the table below</label>
+          <label className="k" htmlFor="narrative">AI draft: check every number</label>
           <textarea id="narrative" className="input" rows={10} value={text} onChange={(e) => setText(e.target.value)} />
           <button
             type="button"
             className="btn secondary"
             onClick={() => navigator.clipboard.writeText(text).then(() => setCopied(true), () => setCopied(false))}
           >
-            {copied ? "Copied" : "Copy the draft"}
+            {copied ? "Copied" : "Copy"}
           </button>
         </>
       )}
-      <button type="button" className="btn" disabled={busy} onClick={draft}>{busy ? "Drafting…" : text === null ? "Draft the narrative" : "Draft it again"}</button>
-      {error && <p className="err">The assistant isn't answering right now. The draft application below still works.</p>}
+      <button type="button" className="btn" disabled={busy} onClick={draft}>{busy ? "Drafting…" : text === null ? "Draft it" : "Again"}</button>
+      {error && <p className="err">No answer right now.</p>}
     </section>
   );
 }

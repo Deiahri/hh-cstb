@@ -43,20 +43,17 @@ export function Data() {
     <section className="screen wide">
       <Back />
       <Eyebrow />
-      <h1>Closed zones: the walk got longer, and it got more dangerous</h1>
-      <p className="lede muted">
-        Each 2025–26 elementary zone with no 2026–27 counterpart was sampled on a {T.spacingM} m grid ({T.points.toLocaleString()} points). Each point was
-        measured in a straight line to its old school and to its new one.
-      </p>
+      <h1>Closed zones</h1>
+      <p className="muted small">{T.points.toLocaleString()} grid points, {T.spacingM} m apart. Straight lines to old and new school.</p>
       <dl className="facts three">
-        <div><dt>{Math.round(T.pctOver2New * 10) / 10}%</dt><dd>of the closed-zone area is 2+ miles from its new school, the distance that earns a bus</dd></div>
-        <div><dt>{Math.round(T.hazardNew.combined)}%</dt><dd>now crosses a pedestrian-dangerous road or active railroad, up from {Math.round(T.hazardOld.combined)}%</dd></div>
-        <div><dt>{Math.round(T.hazardNew.rail)}%</dt><dd>crosses active railroad track, up from {Math.round(T.hazardOld.rail)}%</dd></div>
+        <div><dt>{Math.round(T.pctOver2New * 10) / 10}%</dt><dd>2+ mi from school</dd></div>
+        <div><dt>{Math.round(T.hazardNew.combined)}%</dt><dd>cross a dangerous road or rail (was {Math.round(T.hazardOld.combined)}%)</dd></div>
+        <div><dt>{Math.round(T.hazardNew.rail)}%</dt><dd>cross rail (was {Math.round(T.hazardOld.rail)}%)</dd></div>
       </dl>
       <WcMap kind="zones" height={phone ? 340 : 460} />
-      <p className="small muted">Fill: share of each closed zone whose new walk crosses a hazard. Dot: shuttle pickup at the closed campus. Square: receiving school.</p>
+      <p className="small muted">Fill: share crossing a hazard. Dot: pickup. Square: new school.</p>
       <h2>Per closed zone</h2>
-      <p className="muted small">All percentages are shares of zone area.</p>
+      <p className="muted small">{L.pct_note}</p>
       <table className="tbl fit stack">
         <thead>
           <tr>
@@ -91,11 +88,7 @@ export function Data() {
         </tbody>
       </table>
       <h2>The seven pickups</h2>
-      <p>
-        HISD runs a direct shuttle from each closed campus to its receiving school for 2026–27 and 2027–28, open to any K–12 student affected by a closure (
-        <a href={HISD_FAQ} target="_blank" rel="noopener">HISD closure FAQ</a>). HISD owns the building and the bus. The City owns the streets, the school zones
-        and the crossing-guard funding. On Aug 13, 2026 the board declared each building surplus; no sale date is published.
-      </p>
+      <p>Shuttle to the new school, 2026–27 and 2027–28, any K–12 student. <a href={HISD_FAQ} target="_blank" rel="noopener">HISD FAQ</a></p>
       <div className="tblwrap">
         <table className="tbl">
           <thead><tr><th>Pickup</th><th>To</th><th>Shuttle</th><th>Walk to the pickup crosses a hazard</th><th>Roads crossed most</th></tr></thead>
@@ -112,11 +105,7 @@ export function Data() {
           </tbody>
         </table>
       </div>
-      <p>
-        <b>Not public for any of the seven:</b> where on campus the bus stops and when (ask HISD; families got route details in early August); the City school
-        zone at the campus and its hours (ask Houston Public Works; a zone’s hours follow its school’s bell, and a closed campus has none); a crossing guard on the
-        walk to the pickup (ask HISD, which reports its guard posts to the City).
-      </p>
+      <p><b>Not public:</b> stop location and times (HISD), campus school zone hours (HPW), crossing guards (HISD).</p>
       <p className="small muted">{L.pct_note} {L.note_lines}</p>
       <StaffNav />
     </section>
@@ -154,11 +143,8 @@ export function Corridors() {
     <section className="screen wide">
       <Back />
       <Eyebrow />
-      <h1>The corridors now between children and school</h1>
-      <p className="lede muted">
-        Each road or railroad that a 2026–27 straight-line walk crosses but the 2025–26 walk did not. Sorted so the places with no traffic light or public rail
-        crossing nearby come first, each with what the City can do there. The City can act on this list whatever HISD decides about buses.
-      </p>
+      <h1>Corridors</h1>
+      <p className="muted small">Roads and rail the new walks cross. No light first.</p>
       <StaffAsk
         suggestions={[
           "Which corridors have no traffic light nearby, and which receiving schools' walks cross them?",
@@ -190,11 +176,7 @@ export function Corridors() {
           </tbody>
         </table>
       </div>
-      <p className="small muted">
-        * HPW’s written criteria cover a street that borders the school or a City-owned thoroughfare or collector; a local street that does neither has no written
-        path to a zone. ** The City decides how many crossing guards, on schools’ recommendations (Tex. Local Gov’t Code §343.014). Crashes: City High Injury
-        Network 2022, on the crossed segments. Lights: Houston TranStar’s public signal list. {L.pct_note}
-      </p>
+      <p className="small muted">* School zone: borders the school, or City thoroughfare/collector. ** Guards: City decides (Tex. Local Gov’t Code §343.014). Crashes: HIN 2022. Lights: TranStar. {L.pct_note}</p>
       <StaffNav />
     </section>
   );
@@ -213,13 +195,8 @@ export function April15() {
     <section className="screen wide">
       <Back />
       <Eyebrow extra={`${days} days until April 15, ${yr}`} />
-      <h1>Before April 15: school zones for the new walks</h1>
-      <p className="lede muted">
-        The City’s school-zone process was built for schools that stay put. A principal applies by April 15, and on a street that does not border the school HPW
-        asks for “observation or evidence of students walking”. The 2026 deadline came before anyone walked the new routes. This page does the homework for each
-        receiving school: the streets its new walkers cross, what the City’s own layers say about each, and a filled-in draft of HPW’s application for the
-        principal to review, count, and sign.
-      </p>
+      <h1>Before April 15</h1>
+      <p className="muted small">School zone applications for each new school. Principal reviews, counts, signs.</p>
       <ol className="timeline">
         <li><b>Feb 26, 2026</b> HISD’s board approves the closures.</li>
         <li><b>Apr 15, 2026</b> School-zone applications close, 48 days later. Nobody walks the new routes yet.</li>
@@ -228,7 +205,7 @@ export function April15() {
         <li><b>End of 2027–28</b> The shuttle ends. The 2-mile bus rule applies again.</li>
         <li><b>Apr 15, 2028</b> Deadline for 2028–29, the first year without the shuttle.</li>
       </ol>
-      <p className="muted">Signing the City’s 2023 batch of 38 schools took about 11 months. An application in April 2027 is the one that can have signs up before the shuttle ends.</p>
+      <p className="muted small">2023 batch: ~11 months to signs. Apply April 2027 to beat the shuttle’s end.</p>
       <StaffAsk
         suggestions={[
           "Which receiving schools have a street on a written path to a school zone, and which streets?",
@@ -237,11 +214,7 @@ export function April15() {
         ]}
         pick={rowPicker(ids)}
       />
-      <h2>The streets, by receiving school</h2>
-      <p className="muted">
-        Each row is a street a straight-line walk to the school crosses when the walk to the old campus did not. HPW considers a zone on a street that borders the
-        school, or on a City-owned thoroughfare or collector. HPW decides after its own study; this page only sorts the streets by which written path they could use.
-      </p>
+      <h2>Streets by school</h2>
       <div className="tblwrap">
         <table className="tbl">
           <thead><tr><th>Street</th><th className="num">Newly crossing</th><th className="num">Ped. crashes / deaths</th><th>Traffic lights</th><th>City street class</th><th>HPW’s written path</th></tr></thead>
@@ -269,7 +242,7 @@ export function April15() {
         </table>
       </div>
       <h2>Draft applications</h2>
-      <p className="muted">One per receiving school, in the order of HPW’s form. The principal fills in contacts, bell times, the school’s own count and the signature. Everything else comes from public data and says so.</p>
+      <p className="muted small">Principal adds contacts, bell times, count, signature.</p>
       <ul className="plain drafts">
         {Z.schools.map((s) => {
           const ok = s.streets.filter((st) => st.path !== "neither").length, alt = s.streets.length - ok;
@@ -282,11 +255,7 @@ export function April15() {
         })}
       </ul>
       <h2>The seven pickups</h2>
-      <p>
-        A school zone’s hours follow its school’s bell, and only its principal can ask to change it. The seven closed campuses have no principal, and the shuttle
-        there runs on the receiving school’s clock. Whether each old zone is still in the ordinance, and on what hours, is not public. Someone has to decide what
-        those zones do in 2027–28, by the same April 15. <Link to="/data">See the pickup table ›</Link>
-      </p>
+      <p>Closed campuses have no principal to renew their school zones. Unresolved for 2027–28. <Link to="/data">Pickups ›</Link></p>
       <StaffNav />
     </section>
   );
@@ -321,7 +290,7 @@ export function Draft() {
       <h1>Draft school zone application: {s.name}</h1>
       <div className="cols">
         <div className="col">
-          <p className="lede muted">Streets a newly zoned walk crosses, sorted by HPW’s written paths. Public data fills the table; the principal adds bell times, contacts and the school’s own count.</p>
+          <p className="muted small">New streets, by HPW’s written path.</p>
           <dl className="def">
             <dt>Principal</dt><dd>{L.front}<br />{s.name} · {s.address}</dd>
             <dt>Send to</dt><dd>Houston Public Works, School Coordination Program<br /><a href={`mailto:${HPW_EMAIL}`}>{HPW_EMAIL}</a></dd>

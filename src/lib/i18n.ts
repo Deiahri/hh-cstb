@@ -18,71 +18,57 @@ export type Lang = "en" | "es";
 
 const en = {
   htmlLang: "en",
-  loading: "Loading HISD and City maps…",
+  loading: "Loading maps…",
   unreviewed: "",
 
   packet: {
-    back: "← Back to the walk",
-    print: "Print or save as PDF",
-    howTitle: "How to send this to HISD",
-    howIntro: "There are two ways. You can use both.",
-    way1Title: "1. File it yourself online",
+    back: "← Back",
+    print: "Print / PDF",
+    howTitle: "Send to HISD",
+    howIntro: "",
+    way1Title: "1. Online",
     way1Before: "Open HISD's ",
     way1Link: "Transportation Support Request Form",
-    way1After:
-      '. Choose "Walk Route Concerns." Paste the text below into the Description box. You\'ll need your child\'s student ID ' +
-      "(an S and 7 numbers). The form can't take files, so also print this page and give it to the school office.",
-    way2Title: "2. Ask the school to file it",
-    way2: (school: string) =>
-      `Give a printed copy to the principal of ${school}. Ask them to send HISD a hazardous-route request for your area. ` +
-      `HISD's policy (CNA, Exhibit B) has the principal start that request.`,
-    timing:
-      "HISD's pages give 5 to 10 business days for transportation requests. They don't say how long a walk-route request takes. " +
-      "Only HISD decides who gets a bus.",
-    copyTitle: "Text to paste into the form",
+    way1After: '. Pick "Walk Route Concerns." Paste the text below. Needs the student ID (S + 7 numbers). Also print this for the office.',
+    way2Title: "2. Through the school",
+    way2: (school: string) => `Give a copy to the principal of ${school}. HISD policy CNA, Exhibit B: the principal starts the request.`,
+    timing: "HISD: 5–10 business days for transportation requests. HISD decides.",
+    copyTitle: "Text for the form",
     copyNote: "",
-    addSidewalk:
-      "Before you copy it, add a sentence at the end: is there a sidewalk, and where does your child cross? HISD's rule asks about " +
-      "sidewalks, and no public map shows them.",
-    copy: "Copy text",
+    addSidewalk: "Add one line: is there a sidewalk, and where does your child cross?",
+    copy: "Copy",
     copied: "Copied",
-    copyFailed: "Select the text and copy it.",
+    copyFailed: "Select and copy the text.",
     printNote: "",
   },
 
-  // The AI assistant (docs/ai-assistant): the "this is AI" notice, the result explainer and the walkway helper.
   ai: {
-    notice:
-      "This is an AI assistant (Anthropic's Claude), not a person, HISD or the City. It answers only from this page's result " +
-      "and can be wrong, so check anything important with the school or HISD. This site doesn't save what you type. Don't type " +
-      "your child's name.",
-    demo: "Demo mode: no AI key is set, so the answers are canned.",
-    askTitle: "Ask about this result",
-    askIntro: "Ask what this page means for your child, in your own words.",
-    start: "Ask a question",
-    suggestions: ["Why does it say my child crosses these roads?", "Where should we cross?", "What happens when the shuttle ends?", "Does Pre-K get a bus?"],
-    placeholder: "Type your question",
+    notice: "AI assistant (Claude), not HISD or the City. Can be wrong. Nothing is saved. Don't type your child's name.",
+    demo: "Demo mode: canned answers.",
+    askTitle: "Ask about this walk",
+    askIntro: "",
+    start: "Ask",
+    suggestions: ["Where should we cross?", "Which crossing is worst?", "Who do I call?", "Does Pre-K get a bus?"],
+    placeholder: "Your question",
     send: "Ask",
     you: "You",
-    bot: "Assistant (AI)",
-    thinking: "Reading your result…",
-    error: "The assistant isn't answering right now. Everything else on this page still works.",
-    done: "That's the end of this chat. Reload the page to start a new one.",
-    walkwayLink: "Help me describe the sidewalk for HISD",
-    walkwayTitle: "Describe the walk in your own words",
-    walkwayIntro:
-      "HISD's form asks about sidewalks, and Houston has no sidewalk map, so your words are the evidence. Write what you see, " +
-      "in any language. The assistant writes it as one English sentence for the form. You check it before it's used.",
+    bot: "AI",
+    thinking: "Thinking…",
+    error: "No answer right now. Try again.",
+    done: "Chat ended. Reload to start over.",
+    walkwayLink: "Describe the sidewalk for HISD",
+    walkwayTitle: "Describe the walk",
+    walkwayIntro: "No public sidewalk map exists. Your words are the evidence. Any language; you get one English sentence.",
     walkwayLabel: "What is the walk like?",
-    walkwayPlaceholder: "For example: no sidewalk on Lyons, the kids walk in the street next to the trucks",
+    walkwayPlaceholder: "No sidewalk on Lyons. Kids walk in the street.",
     walkwayWrite: "Write it for HISD",
     walkwayYours: "Your words",
-    walkwayDraft: "For HISD's form (in English)",
-    walkwayCheck: "Check it says only what you said. You can change it.",
-    walkwayUse: "Use this sentence",
-    walkwayUsed: "Added to the request for the principal and to the text for HISD's online form.",
-    walkwayRemove: "Take it out",
-    walkwayAgain: "Write it again",
+    walkwayDraft: "For HISD (English)",
+    walkwayCheck: "Check it. You can edit it.",
+    walkwayUse: "Use this",
+    walkwayUsed: "Added to the request and the form text.",
+    walkwayRemove: "Remove",
+    walkwayAgain: "Again",
   },
 };
 
@@ -90,72 +76,57 @@ export type Dict = typeof en;
 
 const es: Dict = {
   htmlLang: "es",
-  loading: "Cargando los mapas de HISD y de la Ciudad…",
-  unreviewed: "Traducción del equipo, sin revisión profesional.",
+  loading: "Cargando mapas…",
+  unreviewed: "Traducción sin revisión profesional.",
 
   packet: {
-    back: "← Regresar al camino",
-    print: "Imprimir o guardar como PDF",
-    howTitle: "Cómo enviar esto a HISD",
-    howIntro: "Hay dos formas. Puede usar las dos.",
-    way1Title: "1. Envíelo usted en línea",
+    back: "← Atrás",
+    print: "Imprimir / PDF",
+    howTitle: "Enviar a HISD",
+    howIntro: "",
+    way1Title: "1. En línea",
     way1Before: "Abra el ",
-    way1Link: "formulario de solicitud de apoyo de transporte de HISD (Transportation Support Request Form)",
-    way1After:
-      '. Elija "Walk Route Concerns" (preocupaciones sobre la ruta a pie). Pegue el texto de abajo en la casilla Description. ' +
-      "Necesita el número de estudiante de su hijo (una S y 7 números). El formulario no acepta archivos, así que también imprima " +
-      "esta página y entréguela en la oficina de la escuela.",
-    way2Title: "2. Pida a la escuela que lo envíe",
-    way2: (school: string) =>
-      `Entregue una copia impresa a la dirección de ${school}. Pida que envíen a HISD una solicitud de ruta peligrosa para su área. ` +
-      `Según la política de HISD (CNA, Anexo B), esa solicitud la inicia el director o la directora.`,
-    timing:
-      "Las páginas de HISD dan de 5 a 10 días hábiles para solicitudes de transporte. No dicen cuánto tarda una solicitud sobre la " +
-      "ruta a pie. Solo HISD decide quién recibe autobús.",
-    copyTitle: "Texto para pegar en el formulario",
-    copyNote: "Está en inglés porque lo lee el personal de HISD.",
-    addSidewalk:
-      "Antes de copiarlo, agregue una frase al final: ¿hay acera (banqueta) y dónde cruza su hijo? La regla de HISD pregunta por " +
-      "las aceras, y ningún mapa público las muestra. Puede escribirla en español.",
-    copy: "Copiar texto",
+    way1Link: "formulario de transporte de HISD (Transportation Support Request Form)",
+    way1After: '. Elija "Walk Route Concerns." Pegue el texto de abajo. Necesita el número de estudiante (S + 7 números). Imprima esto también para la oficina.',
+    way2Title: "2. Por la escuela",
+    way2: (school: string) => `Entregue una copia al director de ${school}. Política CNA, Anexo B: el director inicia la solicitud.`,
+    timing: "HISD: 5–10 días hábiles para transporte. HISD decide.",
+    copyTitle: "Texto para el formulario",
+    copyNote: "En inglés: lo lee HISD.",
+    addSidewalk: "Agregue una línea: ¿hay banqueta y dónde cruza su hijo? Puede ser en español.",
+    copy: "Copiar",
     copied: "Copiado",
-    copyFailed: "Seleccione el texto y cópielo.",
-    printNote: "La página impresa está en inglés porque la lee el personal de HISD.",
+    copyFailed: "Seleccione y copie el texto.",
+    printNote: "Impreso en inglés: lo lee HISD.",
   },
 
   ai: {
-    notice:
-      "Este es un asistente de IA (Claude, de Anthropic), no una persona, ni HISD ni la Ciudad. Contesta solo con el resultado " +
-      "de esta página y se puede equivocar; confirme lo importante con la escuela o con HISD. Este sitio no guarda lo que usted " +
-      "escribe. No escriba el nombre de su hijo.",
-    demo: "Modo de prueba: no hay clave de IA, así que las respuestas son fijas.",
-    askTitle: "Pregunte sobre este resultado",
-    askIntro: "Pregunte qué significa esta página para su hijo, con sus propias palabras.",
-    start: "Hacer una pregunta",
-    suggestions: ["¿Por qué dice que mi hijo cruza estas calles?", "¿Dónde debemos cruzar?", "¿Qué pasa cuando termine el autobús de enlace?", "¿Pre-K tiene autobús?"],
-    placeholder: "Escriba su pregunta",
+    notice: "Asistente de IA (Claude), no HISD ni la Ciudad. Puede equivocarse. No se guarda nada. No escriba el nombre de su hijo.",
+    demo: "Modo de prueba: respuestas fijas.",
+    askTitle: "Pregunte sobre este camino",
+    askIntro: "",
+    start: "Preguntar",
+    suggestions: ["¿Dónde cruzamos?", "¿Cuál cruce es el peor?", "¿A quién llamo?", "¿Pre-K tiene autobús?"],
+    placeholder: "Su pregunta",
     send: "Preguntar",
     you: "Usted",
-    bot: "Asistente (IA)",
-    thinking: "Leyendo su resultado…",
-    error: "El asistente no contesta ahora. Todo lo demás en esta página sigue funcionando.",
-    done: "Aquí termina esta conversación. Vuelva a cargar la página para empezar otra.",
-    walkwayLink: "Ayúdeme a describir la banqueta para HISD",
-    walkwayTitle: "Describa el camino con sus propias palabras",
-    walkwayIntro:
-      "El formulario de HISD pregunta por las banquetas, y Houston no tiene un mapa de banquetas, así que sus palabras son la " +
-      "evidencia. Escriba lo que ve, en cualquier idioma. El asistente lo escribe en una oración en inglés para el formulario. " +
-      "Usted la revisa antes de usarla.",
+    bot: "IA",
+    thinking: "Pensando…",
+    error: "Sin respuesta ahora. Intente otra vez.",
+    done: "Fin de la conversación. Recargue para empezar otra.",
+    walkwayLink: "Describir la banqueta para HISD",
+    walkwayTitle: "Describa el camino",
+    walkwayIntro: "No hay mapa público de banquetas. Sus palabras son la evidencia. Cualquier idioma; recibe una oración en inglés.",
     walkwayLabel: "¿Cómo es el camino?",
-    walkwayPlaceholder: "Por ejemplo: no hay banqueta en Lyons, los niños caminan en la calle junto a los camiones",
+    walkwayPlaceholder: "No hay banqueta en Lyons. Los niños caminan en la calle.",
     walkwayWrite: "Escribirlo para HISD",
     walkwayYours: "Sus palabras",
-    walkwayDraft: "Para el formulario de HISD (en inglés)",
-    walkwayCheck: "Revise que diga solo lo que usted dijo. Puede cambiarla.",
-    walkwayUse: "Usar esta oración",
-    walkwayUsed: "Se agregó a la solicitud para el director y al texto para el formulario en línea de HISD.",
-    walkwayRemove: "Quitarla",
-    walkwayAgain: "Escribirla otra vez",
+    walkwayDraft: "Para HISD (inglés)",
+    walkwayCheck: "Revísela. Puede editarla.",
+    walkwayUse: "Usar",
+    walkwayUsed: "Agregada a la solicitud y al texto del formulario.",
+    walkwayRemove: "Quitar",
+    walkwayAgain: "Otra vez",
   },
 };
 

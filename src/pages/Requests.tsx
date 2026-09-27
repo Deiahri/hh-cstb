@@ -25,7 +25,6 @@ export function Help() {
     <section className="screen">
       <Back />
       <h1>{L.help_h}</h1>
-      <p className="muted lede">{L.help_b}</p>
       <div className="cols">
         <div className="col">
           <Link className="option" to={u.to("bus")}>
