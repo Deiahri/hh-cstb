@@ -25,6 +25,7 @@
       ask_rail:'Ask: HISD for a bus stop, the City for a guard',ask_toc:p=>`Ask: the City, through the principal of ${p}`,ask_local:'Ask: the City, through 311 and your principal',key:'Key',
       copy:'Copy message',copied:'Copied',close:'Close',opens_mail:'Opens your email app with this message.',opens_msgs:'Opens your messages with this text ready to send.',showmap:'Show on map',walkto:'Walk to',
       shared_h:'Someone shared this walk with you.',shared_b:'Check your own address',
+      coop_win:'Hold Ctrl and scroll to zoom the map',coop_mac:'Hold ⌘ and scroll to zoom the map, or pinch on a trackpad',coop_touch:'Use two fingers to move the map',
       closed:'Schools that closed',closed_b:'Each closed school, and the school its families walk to now.',see:'See the walk',how:['Type your address','See what the walk crosses and where to cross','Give your principal the request'],
       staff_h:'For City and HISD staff',staff_b:'The same data, sorted for the people who can change the walks.',
       staff:[{h:'Closed zones data',b:'Per closed zone: how much farther the walk is, and what share now crosses a dangerous road or active rail.',href:'#/data'},{h:'Corridors',b:'Every road and track a new walk crosses, sorted so the places with no traffic light come first, with what the City can do there.',href:'#/corridors'},{h:'Before April 15',b:'The streets by receiving school, the City’s written paths for a school zone, and a filled-in draft application for each principal.',href:'#/april15'}],
@@ -81,6 +82,7 @@
       ask_rail:'Pida: a HISD una parada, a la Ciudad un guardia',ask_toc:p=>`Pida: a la Ciudad, por medio del director de ${p}`,ask_local:'Pida: a la Ciudad, por el 311 y su director',key:'Leyenda',
       copy:'Copiar mensaje',copied:'Copiado',close:'Cerrar',opens_mail:'Abre su correo con este mensaje.',opens_msgs:'Abre sus mensajes con este texto listo para enviar.',showmap:'Ver en el mapa',walkto:'Camino a',
       shared_h:'Alguien compartió este camino con usted.',shared_b:'Revise su propia dirección',
+      coop_win:'Mantenga Ctrl y desplace para acercar el mapa',coop_mac:'Mantenga ⌘ y desplace para acercar el mapa, o pellizque en el trackpad',coop_touch:'Use dos dedos para mover el mapa',
       closed:'Escuelas que cerraron',closed_b:'Cada escuela cerrada, y la escuela a la que sus familias caminan ahora.',see:'Ver el camino',how:['Escriba su dirección','Vea qué cruza el camino y dónde cruzar','Entregue la solicitud a su director'],
       staff_h:'Para personal de la Ciudad y de HISD',staff_b:'Los mismos datos, ordenados para quienes pueden cambiar los caminos.',
       staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],
@@ -329,7 +331,9 @@
   const polyF=(rings,props)=>({type:'Feature',properties:props||{},geometry:{type:'Polygon',coordinates:rings}});
   const ptF=(p,props)=>({type:'Feature',properties:props||{},geometry:{type:'Point',coordinates:p}});
   function marker(m,p,cls,glyph,label){const el=document.createElement('div');el.className='mkwrap';el.innerHTML=`<div class="mk ${cls}">${glyph||''}</div>${label?`<span class="mk-label">${esc(label)}</span>`:''}`;return new maplibregl.Marker({element:el,anchor:'top',offset:[0,-11]}).setLngLat(p).addTo(m);}
-  function newMap(el,interactiveZoom){const m=new maplibregl.Map({container:el,style:STYLE,center:[-95.33,29.75],zoom:11,attributionControl:{compact:true},scrollZoom:false,dragRotate:false,pitchWithRotate:false,touchPitch:false});
+  function newMap(el,interactiveZoom){const mac=/Mac|iPhone|iPad/.test(navigator.platform);
+    const m=new maplibregl.Map({container:el,style:STYLE,center:[-95.33,29.75],zoom:11,attributionControl:{compact:true},cooperativeGestures:true,dragRotate:false,pitchWithRotate:false,touchPitch:false,
+      locale:{'CooperativeGesturesHandler.WindowsHelpText':t('coop_win'),'CooperativeGesturesHandler.MacHelpText':t('coop_mac'),'CooperativeGesturesHandler.MobileHelpText':t('coop_touch')}});
     if(interactiveZoom)m.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left');m.touchZoomRotate.disableRotation();return m;}
   const addLine=(m,id,data,paint)=>{m.addSource(id,{type:'geojson',data});m.addLayer({id,type:'line',source:id,layout:{'line-cap':'round','line-join':'round'},paint});};
   function bounds(pts){const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);return [[Math.min(...xs),Math.min(...ys)],[Math.max(...xs),Math.max(...ys)]];}
