@@ -47,9 +47,12 @@ b{font-weight:700}
 .splash.is-gone{opacity:0;visibility:hidden}
 .splash-logo{border-radius:26px}
 .splash-word{font-size:34px;font-weight:800;letter-spacing:-0.02em}
-.splash .logo-road{stroke-dasharray:110;stroke-dashoffset:110;animation:draw 700ms var(--ease-out) 120ms forwards}
+.splash .logo-road{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 700ms var(--ease-out) 120ms forwards}
 .splash .logo-dash{opacity:0;animation:fade 300ms var(--ease-out) 700ms forwards}
+.splash .logo-home{transform-origin:22px 54px;transform:scale(.6);opacity:0;animation:pop 260ms var(--ease-out) 60ms forwards}
 .splash .logo-school{transform-origin:78px 30px;transform:scale(.6);opacity:0;animation:pop 300ms var(--ease-out) 640ms forwards}
+.splash-word{opacity:0;transform:translateY(6px);animation:rise-in 400ms var(--ease-out) 820ms forwards}
+@keyframes rise-in{to{opacity:1;transform:none}}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes fade{to{opacity:1}}
 @keyframes pop{to{transform:scale(1);opacity:1}}
