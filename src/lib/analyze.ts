@@ -6,6 +6,7 @@ import {
   type Feature, type FeatureCollection, type IndexedLine, type IndexedPolygon, type LngLat,
   crossings, haversine, indexLines, indexPolygons, polygonAt,
 } from "./geo";
+import type { RailXing, Signal } from "./crossings";
 
 export interface SchoolProps { Campus_Nbr: number; Campus_Sho: string; Street_Add: string; Grades_Tau?: string }
 export interface ZoneProps { Campus__Number: number; Campus_Short_Name: string; Street_Address: string }
@@ -20,6 +21,9 @@ export interface RawData {
   rail: FeatureCollection<RailProps>;
   ped_hin: FeatureCollection<RoadProps>;
   hin: FeatureCollection<RoadProps>;
+  /** Where to cross (scripts/fetch-crossings.ts). Optional so the research scripts' RawData still builds. */
+  signals?: Signal[];
+  rail_crossings?: RailXing[];
 }
 
 export interface School { nbr: number; name: string; address: string; loc: LngLat }
@@ -34,6 +38,8 @@ export interface Dataset {
   hin: IndexedLine<RoadProps>[];
   /** 2025–26 elementary zones whose campus number has no 2026–27 zone. */
   closedIds: Set<number>;
+  signals: Signal[];
+  railXings: RailXing[];
 }
 
 function schoolMap(fc: FeatureCollection<SchoolProps>): Map<number, School> {
@@ -58,6 +64,8 @@ export function buildDataset(raw: RawData): Dataset {
     rail: indexLines(raw.rail),
     pedHin: indexLines(raw.ped_hin),
     hin: indexLines(raw.hin),
+    signals: raw.signals ?? [],
+    railXings: raw.rail_crossings ?? [],
   };
 }
 
@@ -76,7 +84,7 @@ export interface Hazard {
   lineIds: { layer: "rail" | "pedHin" | "hin"; id: number }[];
 }
 
-const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase());
+const titleCase = (s: string) => s.toLowerCase().replace(/\b([a-z])/g, (c) => c.toUpperCase()).replace(/\bSsgt\b/, "SSgt");
 
 export function hazardsOnRoute(a: LngLat, b: LngLat, ds: Dataset): Hazard[] {
   const byKey = new Map<string, Hazard>();

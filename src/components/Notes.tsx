@@ -24,6 +24,23 @@ export function DataVintage() {
             {n.groundsCount(meta.campus_grounds.count, meta.campus_grounds.lastEditDate ?? n.unknown)}
           </li>
         )}
+        {meta.signals && (
+          <li>
+            <a href={meta.signals.url} target="_blank" rel="noreferrer">{n.signals}</a> —{" "}
+            {n.signalsCount(meta.signals.count.toLocaleString(), meta.signals.readOn ?? n.unknown)}
+          </li>
+        )}
+        {meta.rail_crossings && (
+          <li>
+            <a href={meta.rail_crossings.url} target="_blank" rel="noreferrer">{n.railXings}</a> —{" "}
+            {n.railXingsCount(meta.rail_crossings.count.toLocaleString(), meta.rail_crossings.lastEditDate ?? n.unknown)}
+          </li>
+        )}
+        {([["mtfp", n.mtfp], ["centerline", n.centerline]] as const).map(([k, label]) => meta[k] && (
+          <li key={k}>
+            <a href={meta[k]!.url} target="_blank" rel="noreferrer">{label}</a> — {n.layerEdited(meta[k]!.lastEditDate ?? n.unknown)}
+          </li>
+        ))}
         <li>
           {n.pairings}{" "}
           {shuttles.sources.map((src, i) => (
@@ -33,6 +50,24 @@ export function DataVintage() {
       </ul>
       <p>{n.vintageNote}</p>
     </details>
+  );
+}
+
+/** The brief's rule: every input's date on the same screen as its answer, not folded away. */
+export function DatesLine() {
+  const { meta } = useData();
+  const { t } = useT();
+  const u = t.notes.unknown;
+  return (
+    <p className="dates small muted">
+      {t.dates({
+        rail: meta.rail.lastEditDate ?? u,
+        zones: meta.zones_new.lastEditDate ?? u,
+        schools: meta.schools_new.lastEditDate ?? u,
+        lights: meta.signals?.readOn ?? u,
+        xings: meta.rail_crossings?.lastEditDate ?? u,
+      })}
+    </p>
   );
 }
 

@@ -6,6 +6,8 @@
   "scripts": {
     "data": "tsx scripts/fetch-data.ts",
     "grounds": "tsx scripts/fetch-grounds.ts",
+    "crossings": "tsx scripts/fetch-crossings.ts",
+    "streets": "tsx scripts/fetch-streets.ts",
     "compute": "tsx scripts/compute.ts",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

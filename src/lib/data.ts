@@ -2,9 +2,14 @@
 import { createContext, useContext } from "react";
 import { type Dataset, type RawData, buildDataset } from "./analyze";
 import type { LngLat } from "./geo";
+import type { RailKind } from "./crossings";
 
-export interface LayerMeta { label: string; url: string; count: number; lastEditDate: string | null }
-export type Meta = { fetchedAt: string; campus_grounds?: LayerMeta } & Record<keyof RawData, LayerMeta>;
+/** `readOn` (Houston date) is set on lists that carry no edit date of their own (the signal feed), so the page can say when it was read. */
+export interface LayerMeta { label: string; url: string; count: number; lastEditDate: string | null; fetchedAt?: string; readOn?: string }
+type SnapshotLayer = "schools_old" | "schools_new" | "zones_old" | "zones_new" | "rail" | "ped_hin" | "hin";
+export type Meta = {
+  fetchedAt: string; campus_grounds?: LayerMeta; signals?: LayerMeta; rail_crossings?: LayerMeta; mtfp?: LayerMeta; centerline?: LayerMeta;
+} & Record<SnapshotLayer, LayerMeta>;
 
 export interface HazardShares { ped: number; hin: number; rail: number; combined: number }
 export interface ZoneStat {
@@ -25,6 +30,8 @@ export interface ZoneStat {
   pctOver15New: number;
   hazardOld: HazardShares;
   hazardNew: HazardShares;
+  /** The roads the walk to the old campus (the shuttle pickup) crosses most, as shares of the zone. */
+  pickupRoads: { name: string; share: number; pedDangerous: boolean }[];
   rings: LngLat[][];
   demoPoint: LngLat | null;
 }
@@ -56,6 +63,24 @@ export interface CorridorStat {
   pedDeaths: number;
   totalCrashes: number;
   segments: { layer: "rail" | "pedHin" | "hin"; id: number }[];
+  /** Receiving schools whose walks cross it: their principals are the City's contact for a zone or a guard. */
+  receiving: string[];
+  /** Is there a traffic light (roads) or open public crossing (rail) near where the new walks cross it? */
+  control: {
+    crossings: number;
+    within250Pct: number;
+    within500Pct: number;
+    medianM: number | null;
+    controlsWithin500: number;
+    nearest: string | null;
+    /** none: nothing within 500 m of any crossing point; far: under half within 250 m; near: the rest. */
+    status: "none" | "far" | "near";
+  };
+  controls: { label: string; kind: "signal" | "rail"; loc: LngLat; railKind?: RailKind }[];
+  /** From the City's Major Thoroughfare and Freeway Plan (scripts/fetch-streets.ts); absent until that runs. */
+  streetClass?: { type: string | null; owner: string | null; thoroughfareOrCollector: boolean } | null;
+  /** Receiving schools whose grounds this street borders (HPW's other school-zone path). */
+  bordersSchool?: string[];
 }
 
 /** One end of a closure shuttle: a campus, and the OSM grounds its (unpublished) stop is somewhere on. */
@@ -75,6 +100,51 @@ export interface ShuttleStat {
 }
 export interface Shuttles { sources: { label: string; url: string }[]; shuttles: ShuttleStat[] }
 
+/**
+ * HPW's written paths to a school zone: the street "borders the school", or it is "a thoroughfare or collector";
+ * "neither" means neither applies on paper. HPW decides after its own study (scripts/compute.ts, zone_requests.json).
+ */
+export type ZonePath = "borders" | "thoroughfare-collector" | "neither";
+/** One street a receiving school's new walkers cross that their walk to the old campus didn't. */
+export interface StreetRequest {
+  id: string;
+  nbr: number;
+  key: string;
+  name: string;
+  zone: string;
+  points: number;
+  /** Share of the area now zoned to this school (from the closed zone) whose walk newly crosses it. */
+  share: number;
+  pedDangerous: boolean;
+  highInjury: boolean;
+  pedCrashes: number;
+  pedDeaths: number;
+  segments: { layer: "rail" | "pedHin" | "hin"; id: number }[];
+  at: LngLat[];
+  lights: { within500: number; medianM: number | null; within250Pct: number; nearest: string | null };
+  medianToSchoolM: number;
+  streetClass: { type: string | null; owner: string | null; status: string | null; thoroughfareOrCollector: boolean; classifiedPct: number } | null;
+  borders: boolean;
+  limits: { from: string | null; to: string | null; fromLoc: LngLat | null; toLoc: LngLat | null } | null;
+  path: ZonePath;
+}
+export interface ReceivingSchoolRequests {
+  nbr: number;
+  name: string;
+  address: string;
+  loc: LngLat;
+  zip: number | null;
+  /** "point": no grounds outline was found, so "borders the school" is approximate. */
+  grounds: "osm" | "point" | null;
+  zone: string;
+  points: number;
+  shareOfZone: number;
+  railNewlyPct: number;
+  streets: StreetRequest[];
+  smaller: { name: string; points: number }[];
+}
+export interface ZoneRequests { generatedAt: string; streetContextAt: string | null; minPoints: number; schools: ReceivingSchoolRequests[] }
+
 export interface AppData {
   raw: RawData;
   ds: Dataset;
@@ -83,6 +153,7 @@ export interface AppData {
   zones: ZoneStat[];
   corridors: CorridorStat[];
   shuttles: Shuttles;
+  zoneRequests: ZoneRequests;
 }
 
 const url = (f: string) => `${import.meta.env.BASE_URL}data/${f}`;
@@ -94,15 +165,18 @@ const get = async (f: string) => {
 
 export async function loadAppData(): Promise<AppData> {
   const keys = ["schools_old", "schools_new", "zones_old", "zones_new", "rail", "ped_hin", "hin"] as const;
-  const [layers, meta, zj, corridors, shuttles] = await Promise.all([
+  const [layers, meta, zj, corridors, shuttles, signals, railXings, zoneRequests] = await Promise.all([
     Promise.all(keys.map((k) => get(`${k}.geojson`))),
     get("meta.json"),
     get("zones.json"),
     get("corridors.json"),
     get("shuttles.json"),
+    get("signals.json"),
+    get("rail_crossings.json"),
+    get("zone_requests.json"),
   ]);
-  const raw = Object.fromEntries(keys.map((k, i) => [k, layers[i]])) as unknown as RawData;
-  return { raw, ds: buildDataset(raw), meta, totals: zj.totals, zones: zj.zones, corridors, shuttles };
+  const raw = { ...Object.fromEntries(keys.map((k, i) => [k, layers[i]])), signals, rail_crossings: railXings } as unknown as RawData;
+  return { raw, ds: buildDataset(raw), meta, totals: zj.totals, zones: zj.zones, corridors, shuttles, zoneRequests };
 }
 
 export const DataContext = createContext<AppData | null>(null);

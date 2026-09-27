@@ -48,5 +48,53 @@
     "count": 22,
     "lastEditDate": "2025-11-08",
     "fetchedAt": "2026-09-26T17:43:48.583Z"
+  },
+  "signals": {
+    "label": "Traffic signals (City of Houston, TxDOT, Harris County, via Houston TranStar's signal map)",
+    "url": "https://traffic.houstontranstar.org/signalmap/",
+    "count": 4359,
+    "lastEditDate": null,
+    "fetchedAt": "2026-09-27T00:10:06.848Z",
+    "readOn": "2026-09-26",
+    "bySource": {
+      "City of Houston": 2500,
+      "TxDOT": 739,
+      "Harris County": 1120
+    },
+    "fireSignalsDropped": 64
+  },
+  "rail_crossings": {
+    "label": "FRA Crossing Inventory: open public crossings, Harris County",
+    "url": "https://data.transportation.gov/Railroads/Crossing-Inventory-Data-Form-71-Current/m2f8-22s6",
+    "count": 876,
+    "lastEditDate": "2026-09-26",
+    "fetchedAt": "2026-09-27T00:10:06.848Z",
+    "readOn": "2026-09-26",
+    "openInHarris": 1161,
+    "facilityDriveways": [
+      "869766K JW PEAVY/Sesco Cement",
+      "911820N MANCHESTER STREET/Yard Lead",
+      "758414X Ship Channel Entrance",
+      "758421H Gate 1 Rd",
+      "869759A J W PEAVY/BWC Main Entrance",
+      "969844R JCPT BLVD/BWC",
+      "911811P PENINSULA ST/BWC JACO",
+      "969849A POHA Gate 16 to RO-RO",
+      "969846E POHA INTERIOR CROSSINGS"
+    ]
+  },
+  "mtfp": {
+    "label": "Major Thoroughfare and Freeway Plan (City of Houston)",
+    "url": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_MTFP_view/FeatureServer/3",
+    "count": 326,
+    "lastEditDate": "2025-08-07",
+    "fetchedAt": "2026-09-27T00:09:15.607Z"
+  },
+  "centerline": {
+    "label": "Road centerline (City of Houston)",
+    "url": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_RoadCenterline/FeatureServer/0",
+    "count": 3414,
+    "lastEditDate": "2026-09-25",
+    "fetchedAt": "2026-09-27T00:09:15.607Z"
   }
 }

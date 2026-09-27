@@ -1,9 +1,12 @@
+import { useEffect } from "react";
 import { GeoJSON, Tooltip } from "react-leaflet";
+import { Link, useLocation } from "react-router-dom";
 import { useData } from "../lib/data";
 import { pct, signedMi } from "../lib/format";
 import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { Caveats, DataVintage } from "../components/Notes";
 import { NOT_PUBLISHED, ShuttleLayer, shuttlePoints } from "../components/ShuttleLayer";
+import { PickupCards } from "../components/PickupCards";
 
 // Sequential teal→red ramp for "share of zone whose new walk crosses a hazard".
 function ramp(p: number) {
@@ -23,6 +26,12 @@ export default function Overview() {
   const { zones, totals, shuttles } = useData();
   const ross = zones.find((z) => z.name.startsWith("Ross"));
   const rossDiffers = ross && !ross.receiving.some((r) => /Martinez/i.test(r.name));
+  // The April 15 page links here with { scrollTo: "pickups" }.
+  const location = useLocation();
+  const scrollTo = (location.state as { scrollTo?: string } | null)?.scrollTo;
+  useEffect(() => {
+    if (scrollTo) document.getElementById(scrollTo)?.scrollIntoView({ block: "start" });
+  }, [scrollTo]);
 
   return (
     <div className="page">
@@ -111,6 +120,15 @@ export default function Overview() {
           K-12 student affected by a closure. The table places each one on HISD's campus points. {NOT_PUBLISHED} HISD said route details would be
           shared with families in early August.
         </p>
+        <section id="pickups">
+          <h3>The seven pickup sites</h3>
+          <p className="small">
+            Each closed elementary building is now a daily pickup for two school years. HISD owns the building and the bus. The City owns
+            the streets, the school zones and the crossing-guard funding. The "not public" rows show where one side's answer is needed
+            and isn't published. The zones on the new walks are on the <Link to="/april-15">Before April 15</Link> page.
+          </p>
+          <PickupCards />
+        </section>
         <div className="table-scroll">
           <table className="data">
             <caption>All {shuttles.shuttles.length} campuses on HISD's closure list. Distances are straight lines between campus points.</caption>

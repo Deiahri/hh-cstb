@@ -5,11 +5,14 @@
 //      them: "HISD's own rules, checked against your street." No "unfair," no "transition," no blame, no thanks.
 //   2. Never say a family qualifies. The page gathers evidence; HISD decides.
 //   3. Plain words, about a 6th-grade reading level. The answer first, detail after, legal cites inside <details>.
-// The Overview and Corridors pages are for City and HISD staff and stay in English; they say so in Spanish.
+//   4. Never "safe" (nor "seguro/segura"). A light is "a traffic light," a rail crossing "has gates." Lead with where
+//      to cross; crash and death counts stay inside <details>. Written for the adult who walks the child.
+// The Overview, Corridors and April 15 pages are for City and HISD staff and stay in English; they say so in Spanish.
 // The packet body stays in English because HISD staff read it; its instructions to the family are translated.
 // The Spanish hasn't been reviewed by a professional translator, and the app says so whenever it's shown.
 
 import { createContext, useContext } from "react";
+import type { Dir, RailKind } from "./crossings";
 
 export type Lang = "en" | "es";
 
@@ -18,7 +21,7 @@ const plural = (n: number, one: string, many: string) => (n === 1 ? `1 ${one}` :
 const en = {
   htmlLang: "en",
   brand: "Closed-School Walk Check",
-  nav: { check: "Check an address", zones: "Closed zones", corridors: "Corridors" },
+  nav: { check: "Check an address", zones: "Closed zones", corridors: "Corridors", april15: "Before April 15" },
   langToggle: "Español",
   langToggleTitle: "Ver esta página en español",
   loading: "Loading HISD and City maps…",
@@ -95,10 +98,11 @@ const en = {
     notPublished: "HISD hasn't published where on campus the shuttle stops or when it runs. Ask HISD's closure family line: 713-556-7121.",
     stopTitle: "Suggest a bus stop",
     stopBody:
-      "HISD's hazardous-route form asks where a stop should go. The S pin starts at your home. Drag it to a safe corner on your " +
-      "side of the tracks and busy roads.",
+      "HISD's hazardous-route form asks where a stop should go. The S pin starts at your home. Drag it to a corner on your side " +
+      "of the tracks and busy roads.",
     resetStop: "Move it back to home",
     packetButton: "Get the page for HISD →",
+    planButton: "Print a walk plan",
     sms: "Text this to me or family",
     smsBody: (addr: string, now: string, crosses: string, url: string) => `Walk check for ${addr}. Walk to ${now}: ${crosses} ${url}`,
   },
@@ -115,6 +119,75 @@ const en = {
     none: "No train tracks and no road on the City's dangerous-road lists.",
   },
 
+  cross: {
+    dirs: { n: "north", ne: "northeast", e: "east", se: "southeast", s: "south", sw: "southwest", w: "west", nw: "northwest" } as Record<Dir, string>,
+    railKinds: {
+      underpass: "the street goes under the tracks",
+      bridge: "the street goes over the tracks",
+      path: "a crossing for people walking",
+      gatesLights: "gates and flashing lights",
+      gates: "gates",
+      lights: "flashing lights",
+      none: "no gates or lights",
+    } as Record<RailKind, string>,
+    atLight: (label: string, dist: string, dir: string) => `Cross at the traffic light at ${label}, ${dist} ${dir} of where the line meets the road.`,
+    atLightHere: (label: string) => `Cross at the traffic light at ${label}. It's right where the line meets the road.`,
+    atRail: (label: string, kind: string, dist: string, dir: string) => `Cross the tracks at ${label} (${kind}), ${dist} ${dir} of where the line meets them.`,
+    atRailHere: (label: string, kind: string) => `Cross the tracks at ${label} (${kind}). It's right where the line meets them.`,
+    adds: (x: string) => `That adds about ${x} to the walk.`,
+    addsNothing: "That adds almost nothing to the walk.",
+    noLight: (near: string) => `No traffic light on this road within ${near} of where the line crosses it.`,
+    noRail: (near: string) => `No public rail crossing within ${near} of where the line meets the tracks.`,
+    nearestLight: (label: string, dist: string, dir: string, adds: string) => `The nearest is at ${label}, ${dist} ${dir}. Crossing there adds about ${adds}.`,
+    nearestRail: (label: string, kind: string, dist: string, dir: string, adds: string) =>
+      `The nearest is ${label} (${kind}), ${dist} ${dir}. Crossing there adds about ${adds}.`,
+    noneWithin: (far: string) => `There's none within ${far}.`,
+    whoLabel: "Who can change this",
+    whoRoad: (school: string) =>
+      `The City. Ask the principal of ${school} to ask the City for a crossing guard here. If the street qualifies, the ` +
+      `principal can also apply for a school zone (applications close April 15). You can report the crossing to the City through 311.`,
+    // A local street that doesn't border the school can't get a City school zone (HPW), so don't offer one.
+    whoRoadNoZone: (school: string) =>
+      `The City. Ask the principal of ${school} to ask the City for a crossing guard here. You can also ask the City for a ` +
+      `crosswalk or a traffic-signal study through 311. A school zone isn't an option on these streets under the City's rules.`,
+    whoRail: "HISD decides where bus stops go. To ask about a walk across train tracks, use the page for HISD in this app.",
+    crashSummary: "City crash counts",
+    caveat:
+      "Traffic lights only. Crossing guards, stop signs and marked crosswalks aren't on any public map, so a crossing with a " +
+      "guard shows here as \"no traffic light.\" At a light, turning cars still cross your path.",
+    pathAdds: (x: string) => `Crossing at every light and rail crossing named above adds about ${x} in all.`,
+    lightTip: (label: string) => `Traffic light: ${label}`,
+    railTip: (label: string, kind: string) => `Rail crossing: ${label} (${kind})`,
+  },
+
+  dates: (p: { rail: string; zones: string; schools: string; lights: string; xings: string }) =>
+    `Data dates: City crash lists 2022 · HISD railroads ${p.rail} · attendance boundaries ${p.zones} · campus list ${p.schools} · ` +
+    `traffic lights read ${p.lights} · rail crossings ${p.xings}.`,
+
+  plan: {
+    back: "← Back to the map",
+    print: "Print or save as PDF",
+    eyebrow: "Walk plan",
+    title: (school: string) => `Walk plan to ${school}`,
+    forHome: (addr: string) => `For the home at ${addr}.`,
+    first: "First: walk it once with your child, before a school day, the way this page shows. Stop at each place to cross.",
+    walkShuttle: (old: string) => `Walk to the shuttle at ${old}, through the 2027–28 school year`,
+    walkDirect: (now: string) => `Walk straight to ${now}`,
+    walkOnly: (now: string) => `Walk to ${now}`,
+    noCrossings:
+      "This walk crosses no train tracks and no road on the City's dangerous-road lists. Walk it once anyway to see the corners.",
+    doOnce: "Three things to do once",
+    do1: "Walk the route once with your child, crossing where this page says.",
+    do2Shuttle: (old: string) =>
+      `While the shuttle runs (through 2027–28), ask the school or HISD's closure family line, 713-556-7121, where at ${old} it stops and when.`,
+    do2: (now: string) => `Ask ${now} whether there's a crossing guard on your child's way, and where.`,
+    do3: "Send HISD one request about the walk. The page for HISD in this app fills in the details for you.",
+    mapNote: "Straight lines, not streets. The dotted blue-green line goes through the lights and crossings named above.",
+    by: "Made from public HISD, City of Houston, Houston TranStar and federal railroad data. This isn't an HISD document.",
+    missing: "This link has no usable home location.",
+    start: "Start from an address",
+  },
+
   legend: {
     aria: "Map legend",
     walkNow: "Walk to this year's school",
@@ -123,6 +196,8 @@ const en = {
     ped: "Road the City lists as dangerous for people walking (2022)",
     hin: "High-injury road (City of Houston, 2022)",
     rail: "Active train tracks (HISD map layer)",
+    controls: "Traffic light or public rail crossing on the walk",
+    path: "Walk through the lights and crossings",
   },
 
   shuttleMap: {
@@ -160,6 +235,13 @@ const en = {
       hin: "High Injury Network (City, 2022)",
     },
     grounds: "School grounds (OpenStreetMap contributors)",
+    signals: "Traffic lights (City, TxDOT, Harris County, via Houston TranStar)",
+    signalsCount: (n: string, date: string) => `${n} lights, read ${date}; the feed carries no date`,
+    railXings: "Public rail crossings (FRA crossing inventory)",
+    railXingsCount: (n: string, date: string) => `${n} crossings in Harris County, dataset updated ${date}`,
+    mtfp: "Street class (City of Houston Major Thoroughfare and Freeway Plan)",
+    centerline: "Road centerline (City of Houston)",
+    layerEdited: (date: string) => `last edited ${date}`,
     groundsCount: (n: number, date: string) => `${n} outlines around the shuttle campuses, newest edit ${date}`,
     pairings: "Shuttle pairings:",
     pairingsTail: "HISD has published no stop locations, times or routes for the shuttles.",
@@ -203,7 +285,7 @@ export type Dict = typeof en;
 const es: Dict = {
   htmlLang: "es",
   brand: "Revise el camino a la escuela",
-  nav: { check: "Revisar una dirección", zones: "Zonas cerradas", corridors: "Calles" },
+  nav: { check: "Revisar una dirección", zones: "Zonas cerradas", corridors: "Calles", april15: "Antes del 15 de abril" },
   langToggle: "English",
   langToggleTitle: "See this page in English",
   loading: "Cargando los mapas de HISD y de la Ciudad…",
@@ -284,9 +366,10 @@ const es: Dict = {
     stopTitle: "Sugiera una parada de autobús",
     stopBody:
       "El formulario de rutas peligrosas de HISD pide dónde debería estar la parada. El pin S empieza en su casa. Muévalo a una " +
-      "esquina segura de su lado de las vías y las calles peligrosas.",
+      "esquina de su lado de las vías y las calles peligrosas.",
     resetStop: "Regresarlo a la casa",
     packetButton: "Obtener la página para HISD →",
+    planButton: "Imprimir un plan del camino",
     sms: "Enviarme esto por mensaje de texto",
     smsBody: (addr: string, now: string, crosses: string, url: string) => `Revisión del camino para ${addr}. Camino a ${now}: ${crosses} ${url}`,
   },
@@ -303,6 +386,75 @@ const es: Dict = {
     none: "No cruza vías del tren ni calles de las listas de calles peligrosas de la Ciudad.",
   },
 
+  cross: {
+    dirs: { n: "al norte", ne: "al noreste", e: "al este", se: "al sureste", s: "al sur", sw: "al suroeste", w: "al oeste", nw: "al noroeste" },
+    railKinds: {
+      underpass: "la calle pasa por debajo de las vías",
+      bridge: "la calle pasa por encima de las vías",
+      path: "un cruce para peatones",
+      gatesLights: "barreras y luces intermitentes",
+      gates: "barreras",
+      lights: "luces intermitentes",
+      none: "sin barreras ni luces",
+    },
+    atLight: (label: string, dist: string, dir: string) => `Cruce en el semáforo de ${label}, a ${dist} ${dir} de donde la línea cruza la calle.`,
+    atLightHere: (label: string) => `Cruce en el semáforo de ${label}. Está justo donde la línea cruza la calle.`,
+    atRail: (label: string, kind: string, dist: string, dir: string) => `Cruce las vías en ${label} (${kind}), a ${dist} ${dir} de donde la línea cruza las vías.`,
+    atRailHere: (label: string, kind: string) => `Cruce las vías en ${label} (${kind}). Está justo donde la línea cruza las vías.`,
+    adds: (x: string) => `Eso agrega unos ${x} al camino.`,
+    addsNothing: "Eso casi no agrega distancia al camino.",
+    noLight: (near: string) => `No hay semáforo en esta calle a menos de ${near} de donde la línea la cruza.`,
+    noRail: (near: string) => `No hay cruce público de tren a menos de ${near} de donde la línea cruza las vías.`,
+    nearestLight: (label: string, dist: string, dir: string, adds: string) => `El más cercano está en ${label}, a ${dist} ${dir}. Cruzar ahí agrega unos ${adds}.`,
+    nearestRail: (label: string, kind: string, dist: string, dir: string, adds: string) =>
+      `El más cercano es ${label} (${kind}), a ${dist} ${dir}. Cruzar ahí agrega unos ${adds}.`,
+    noneWithin: (far: string) => `No hay ninguno a menos de ${far}.`,
+    whoLabel: "Quién puede cambiar esto",
+    whoRoad: (school: string) =>
+      `La Ciudad. Pida a la dirección de ${school} que solicite a la Ciudad un guardia de cruce aquí. Si la calle califica, la ` +
+      `dirección también puede solicitar una zona escolar (las solicitudes cierran el 15 de abril). Usted puede reportar el cruce a la Ciudad por el 311.`,
+    whoRoadNoZone: (school: string) =>
+      `La Ciudad. Pida a la dirección de ${school} que solicite a la Ciudad un guardia de cruce aquí. También puede pedir a la ` +
+      `Ciudad un paso peatonal o un estudio de semáforo por el 311. Según las reglas de la Ciudad, estas calles no pueden tener zona escolar.`,
+    whoRail:
+      "HISD decide dónde van las paradas de autobús. Para preguntar por un camino que cruza vías del tren, use la página para HISD en esta aplicación.",
+    crashSummary: "Choques según la Ciudad",
+    caveat:
+      "Solo semáforos. Los guardias de cruce, las señales de alto y los pasos peatonales no aparecen en ningún mapa público, así que " +
+      "un cruce con guardia sale aquí como \"sin semáforo\". En un semáforo, los carros que dan vuelta también cruzan su paso.",
+    pathAdds: (x: string) => `Cruzar en todos los semáforos y cruces de tren nombrados arriba agrega unos ${x} en total.`,
+    lightTip: (label: string) => `Semáforo: ${label}`,
+    railTip: (label: string, kind: string) => `Cruce de tren: ${label} (${kind})`,
+  },
+
+  dates: (p: { rail: string; zones: string; schools: string; lights: string; xings: string }) =>
+    `Fechas de los datos: listas de choques de la Ciudad 2022 · vías del tren de HISD ${p.rail} · límites de asistencia de HISD ${p.zones} · ` +
+    `lista de escuelas ${p.schools} · semáforos leídos ${p.lights} · cruces de tren ${p.xings}.`,
+
+  plan: {
+    back: "← Regresar al mapa",
+    print: "Imprimir o guardar como PDF",
+    eyebrow: "Plan del camino",
+    title: (school: string) => `Plan del camino a ${school}`,
+    forHome: (addr: string) => `Para la casa en ${addr}.`,
+    first: "Primero: haga el camino una vez con su hijo, antes de un día de clases, como lo muestra esta página. Deténganse en cada lugar para cruzar.",
+    walkShuttle: (old: string) => `Camino al autobús de enlace en ${old}, hasta el final del año escolar 2027–28`,
+    walkDirect: (now: string) => `Camino directo a ${now}`,
+    walkOnly: (now: string) => `Camino a ${now}`,
+    noCrossings:
+      "Este camino no cruza vías del tren ni calles de las listas de calles peligrosas de la Ciudad. Hágalo una vez de todos modos para ver las esquinas.",
+    doOnce: "Tres cosas para hacer una vez",
+    do1: "Haga el camino una vez con su hijo, cruzando donde dice esta página.",
+    do2Shuttle: (old: string) =>
+      `Mientras funcione el autobús de enlace (hasta 2027–28), pregunte en la escuela o en la línea de HISD para familias sobre los cierres, 713-556-7121, dónde para en ${old} y a qué hora.`,
+    do2: (now: string) => `Pregunte en ${now} si hay un guardia de cruce en el camino de su hijo, y dónde.`,
+    do3: "Envíe a HISD una solicitud sobre el camino. La página para HISD en esta aplicación llena los detalles por usted.",
+    mapNote: "Líneas rectas, no calles. La línea punteada azul verdosa pasa por los semáforos y cruces nombrados arriba.",
+    by: "Hecho con datos públicos de HISD, la Ciudad de Houston, Houston TranStar y el gobierno federal sobre vías del tren. No es un documento de HISD.",
+    missing: "Este enlace no tiene una ubicación de casa que se pueda usar.",
+    start: "Empiece con una dirección",
+  },
+
   legend: {
     aria: "Leyenda del mapa",
     walkNow: "Camino a la escuela de este año",
@@ -311,6 +463,8 @@ const es: Dict = {
     ped: "Calle que la Ciudad considera peligrosa para peatones (2022)",
     hin: "Calle de alto riesgo (Ciudad de Houston, 2022)",
     rail: "Vías del tren activas (capa del mapa de HISD)",
+    controls: "Semáforo o cruce público de tren en el camino",
+    path: "Camino por los semáforos y cruces",
   },
 
   shuttleMap: {
@@ -348,6 +502,13 @@ const es: Dict = {
       hin: "Red de calles de alto riesgo (Ciudad, 2022)",
     },
     grounds: "Terrenos escolares (colaboradores de OpenStreetMap)",
+    signals: "Semáforos (Ciudad, TxDOT, Condado de Harris, vía Houston TranStar)",
+    signalsCount: (n: string, date: string) => `${n} semáforos, leídos el ${date}; la fuente no tiene fecha`,
+    railXings: "Cruces públicos de tren (inventario de cruces de la FRA)",
+    railXingsCount: (n: string, date: string) => `${n} cruces en el Condado de Harris, datos actualizados el ${date}`,
+    mtfp: "Clase de calle (Plan de Vías Principales de la Ciudad de Houston)",
+    centerline: "Ejes de calles (Ciudad de Houston)",
+    layerEdited: (date: string) => `última edición ${date}`,
     groundsCount: (n: number, date: string) => `${n} contornos alrededor de las escuelas del autobús de enlace, última edición ${date}`,
     pairings: "Rutas del autobús de enlace:",
     pairingsTail: "HISD no ha publicado paradas, horarios ni rutas de los autobuses de enlace.",

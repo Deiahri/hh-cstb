@@ -2,14 +2,16 @@ import { useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CircleMarker, GeoJSON, Marker, Polyline, Tooltip, useMapEvents } from "react-leaflet";
 import { analyzeAddress, type AddressResult, type Hazard, type RouteResult } from "../lib/analyze";
+import { type WalkPlan, controlLabel, planWalk, railKind } from "../lib/crossings";
 import { segmentFeatures, shuttleFrom, useData, type AppData, type ShuttleStat } from "../lib/data";
 import { type Candidate, geocode, reverseGeocode } from "../lib/geocode";
 import { type LngLat, METERS_PER_MILE, pointInRings } from "../lib/geo";
 import { coord, mi } from "../lib/format";
 import { dataText, shareUrl, useT } from "../lib/i18n";
 import { COLORS, FitTo, MapBase, MapLegend, pinIcon } from "../components/MapBase";
-import { HazardList, hazardName } from "../components/HazardList";
-import { Caveats, DataVintage } from "../components/Notes";
+import { hazardName } from "../components/HazardList";
+import { CrossingPlan, WhoCanChange } from "../components/CrossingPlan";
+import { Caveats, DataVintage, DatesLine } from "../components/Notes";
 import { ShuttleLayer, shuttlePoints } from "../components/ShuttleLayer";
 
 const ll = ([x, y]: LngLat) => [y, x] as [number, number];
@@ -22,6 +24,31 @@ export const crossCounts = (hz: Hazard[]) => ({ rail: hz.some((h) => h.kind === 
  * 2025–26 campus, so it's the same straight line as the walk to last year's school.
  */
 export const shuttleWalk = (r: AddressResult, s?: ShuttleStat) => (s && !s.sameSite && r.old ? r.old : undefined);
+
+/** Where-to-cross plans for the walks a family makes now: to the shuttle pickup (while it runs), and to the new school. */
+export function walkPlans(d: AppData, r: AddressResult, s?: ShuttleStat): WalkPlan[] {
+  const sw = shuttleWalk(r, s);
+  return [sw, r.now].filter((x): x is RouteResult => !!x).map((route) => planWalk(r.point, route, d.ds));
+}
+
+/** The lights and rail crossings a plan says to use, and each walk drawn through them. */
+function PlanLayers({ plans }: { plans: WalkPlan[] }) {
+  const { t } = useT();
+  const seen = new Set<string>();
+  const marks = plans.flatMap((p) => p.steps).filter((s) => s.near && s.control && !seen.has(`${s.control.loc}`) && !!seen.add(`${s.control.loc}`));
+  return (
+    <>
+      {plans.map((p, i) => p.path && (
+        <Polyline key={`path${i}`} positions={p.path.map(ll)} pathOptions={{ color: COLORS.plan, weight: 3, dashArray: "2 7", lineCap: "round" }} />
+      ))}
+      {marks.map(({ control: c }) => (
+        <CircleMarker key={`${c!.loc}`} center={ll(c!.loc)} radius={7} pathOptions={{ color: "#fff", weight: 2, fillColor: COLORS.plan, fillOpacity: 1 }}>
+          <Tooltip>{c!.kind === "signal" ? t.cross.lightTip(controlLabel(c!)) : t.cross.railTip(controlLabel(c!), t.cross.railKinds[railKind(c!.xing)])}</Tooltip>
+        </CircleMarker>
+      ))}
+    </>
+  );
+}
 
 function ClickToSet({ onPick }: { onPick: (p: LngLat) => void }) {
   useMapEvents({ click: (e) => onPick([e.latlng.lng, e.latlng.lat]) });
@@ -36,7 +63,7 @@ function zoneSamplePoint(rings: LngLat[][]): LngLat {
   return outer[Math.floor(outer.length / 2)];
 }
 
-export function RouteLayers({ d, r, stop, shuttle }: { d: AppData; r: AddressResult; stop?: LngLat; shuttle?: ShuttleStat }) {
+export function RouteLayers({ d, r, stop, shuttle, plans }: { d: AppData; r: AddressResult; stop?: LngLat; shuttle?: ShuttleStat; plans?: WalkPlan[] }) {
   const { t } = useT();
   const crossedNew = r.now ? r.now.hazards.flatMap((h) => h.lineIds) : [];
   const crossedOld = r.old ? r.old.hazards.flatMap((h) => h.lineIds) : [];
@@ -64,6 +91,7 @@ export function RouteLayers({ d, r, stop, shuttle }: { d: AppData; r: AddressRes
           <Tooltip>{hazardName(h, t)}</Tooltip>
         </CircleMarker>
       ))}
+      {plans && <PlanLayers plans={plans} />}
       {shuttle && <ShuttleLayer shuttles={[shuttle]} hideDropAt={r.now?.school.nbr} />}
       {r.old && !shuttle && (
         <Marker position={ll(r.old.school.loc)} icon={pinIcon("25", "pin-old")}>
@@ -87,8 +115,8 @@ export function RouteLayers({ d, r, stop, shuttle }: { d: AppData; r: AddressRes
   );
 }
 
-/** One walk, answer first: what it crosses, then how far, then the per-road detail on request. */
-function Walk({ title, when, route }: { title: string; when?: string; route: RouteResult }) {
+/** One walk, answer first: what it crosses and how far, then where to cross each one. Crash counts stay folded. */
+function Walk({ title, when, route, plan }: { title: string; when?: string; route: RouteResult; plan: WalkPlan }) {
   const { t } = useT();
   const c = crossCounts(route.hazards);
   return (
@@ -98,12 +126,7 @@ function Walk({ title, when, route }: { title: string; when?: string; route: Rou
       <p className="walk-answer">
         <strong>{t.result.crosses(c.rail, c.roads)}</strong> <span className="muted">({t.result.miles(mi(route.distance))})</span>
       </p>
-      {route.hazards.length > 0 && (
-        <details className="walk-details">
-          <summary>{t.result.details}</summary>
-          <HazardList hazards={route.hazards} />
-        </details>
-      )}
+      {route.hazards.length > 0 && <CrossingPlan plan={plan} />}
     </div>
   );
 }
@@ -121,6 +144,7 @@ function ShuttleNote({ s }: { s: ShuttleStat }) {
 }
 
 function Result({ r, addr, stop, onResetStop, shuttle }: { r: AddressResult; addr: string; stop: LngLat; onResetStop: () => void; shuttle?: ShuttleStat }) {
+  const d = useData();
   const { lang, t } = useT();
   const tr = t.result;
   if (!r.oldZone && !r.newZone)
@@ -129,11 +153,14 @@ function Result({ r, addr, stop, onResetStop, shuttle }: { r: AddressResult; add
   const packetParams = new URLSearchParams({
     lat: String(r.point[1]), lng: String(r.point[0]), slat: String(stop[1]), slng: String(stop[0]), addr,
   });
+  const planParams = new URLSearchParams({ lat: String(r.point[1]), lng: String(r.point[0]), addr });
   const now = r.now;
   const sw = shuttleWalk(r, shuttle);
   const nowName = now?.school.name ?? r.newZone?.Campus_Short_Name ?? "";
   const oldName = r.old?.school.name ?? r.oldZone?.Campus_Short_Name ?? "";
   const nowCounts = crossCounts(now?.hazards ?? []);
+  // Same order as the walks below: the shuttle walk (when there is one), then the walk to the new school.
+  const plans = walkPlans(d, r, shuttle);
   const railOld = !!sw && crossCounts(sw.hazards).rail;
   const beyond2 = !!now && now.distance >= 2 * METERS_PER_MILE;
   const smsText = now ? tr.smsBody(addr || coord(r.point), nowName, tr.crosses(nowCounts.rail, nowCounts.roads), shareUrl(lang)) : "";
@@ -148,11 +175,15 @@ function Result({ r, addr, stop, onResetStop, shuttle }: { r: AddressResult; add
 
       {now && (
         <div className="walks">
-          {sw && <Walk title={tr.walkShuttle(oldName)} when={tr.walkShuttleWhen} route={sw} />}
-          <Walk title={sw ? tr.walkDirect(nowName) : tr.walkOnly(nowName)} when={sw ? tr.walkDirectWhen : undefined} route={now} />
+          {sw && <Walk title={tr.walkShuttle(oldName)} when={tr.walkShuttleWhen} route={sw} plan={plans[0]} />}
+          <Walk title={sw ? tr.walkDirect(nowName) : tr.walkOnly(nowName)} when={sw ? tr.walkDirectWhen : undefined} route={now}
+            plan={plans[plans.length - 1]} />
+          <WhoCanChange plans={plans} school={nowName} />
           {sw && railOld !== nowCounts.rail && (
             <p className="note rail">{railOld ? tr.shuttleAddsRail(nowName) : tr.shuttleAvoidsRail(nowName)}</p>
           )}
+          {(now.hazards.length > 0 || (sw?.hazards.length ?? 0) > 0) && <p className="small muted">{t.cross.caveat}</p>}
+          <DatesLine />
         </div>
       )}
 
@@ -174,7 +205,8 @@ function Result({ r, addr, stop, onResetStop, shuttle }: { r: AddressResult; add
       </p>
 
       <div className="actions">
-        <Link className="button primary" to={`/packet?${packetParams}`}>{tr.packetButton}</Link>
+        {now && <Link className="button primary" to={`/plan?${planParams}`}>{tr.planButton}</Link>}
+        <Link className="button" to={`/packet?${packetParams}`}>{tr.packetButton}</Link>
         {now && <a className="button" href={`sms:?&body=${encodeURIComponent(smsText)}`}>{tr.sms}</a>}
       </div>
     </div>
@@ -299,7 +331,7 @@ export default function Lookup() {
             d.zones.map((z) => (
               <GeoJSON key={z.nbr} data={{ type: "Polygon", coordinates: z.rings } as any} style={{ color: COLORS.zone, weight: 2, fillOpacity: 0.12 }} interactive={false} />
             ))}
-          {result && <RouteLayers d={d} r={result} shuttle={shuttle} />}
+          {result && <RouteLayers d={d} r={result} shuttle={shuttle} plans={walkPlans(d, result, shuttle)} />}
           {result && stop && (
             <Marker
               position={ll(stop)}
@@ -312,7 +344,7 @@ export default function Lookup() {
           )}
           <FitTo points={fitPoints} />
         </MapBase>
-        <MapLegend shuttle={!!shuttle} walks={!!result} />
+        <MapLegend shuttle={!!shuttle} walks={!!result} plan={!!result} />
       </section>
     </div>
   );

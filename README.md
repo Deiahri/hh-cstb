@@ -5,7 +5,8 @@ Families type an address and see the walks their child makes now: to the closure
 walk leads with a one-line answer, such as "Crosses train tracks and 1 dangerous road," built from City-listed dangerous roads
 and active railroads. The page states the 2028 end date and HISD's Pre-K rule. It gives the family a packet to print, plus
 text to paste into HISD's Transportation Support Request Form ("Walk Route Concerns"). The app also has a closed-zone
-overview and a ranked list of corridors the City can act on.
+overview with a card for each shuttle pickup, a ranked list of corridors the City can act on, and a "Before April 15" page
+with a draft City school-zone application for each receiving school.
 
 Every number is recomputed from public layers. None is copied from `../Report.md`. See `../VERIFY.md` for where the
 recomputed numbers agree with the report and where they don't.
@@ -16,12 +17,14 @@ recomputed numbers agree with the report and where they don't.
 npm install
 npm run data      # pull HISD + City of Houston ArcGIS layers into public/data (snapshot)
 npm run grounds   # pull OpenStreetMap school grounds around the shuttle campuses → campus_grounds.geojson
-npm run compute   # grid-sample the closed zones → zones.json, corridors.json, shuttles.json, ../VERIFY.md
+npm run crossings # pull traffic signals (TranStar) and public rail crossings (FRA) → signals.json, rail_crossings.json
+npm run streets   # pull City street class (MTFP) and road centerline around the crossings and schools → street_context.json
+npm run compute   # grid-sample the closed zones → zones.json, corridors.json, shuttles.json, zone_requests.json, ../VERIFY.md
 npm run dev       # http://localhost:5173
 npm run build     # static site in dist/ (HashRouter, relative paths — host anywhere)
 ```
 
-The snapshot in `public/data` is already there, so `npm run dev` works offline without the first two steps.
+The snapshot in `public/data` is already there, so `npm run dev` works offline without the fetch steps.
 
 Add `?lang=es` before the `#` (for example `index.html?lang=es#/`) to open in Spanish, for a flyer link or QR code.
 
@@ -32,22 +35,72 @@ Add `?lang=es` before the `#` (for example `index.html?lang=es#/`) to open in Sp
   a phone with the map folded away, and have a "Text this" button (an `sms:` link, with no backend and no account). A real SMS or
   WhatsApp line is out of scope for the demo.
 - **HISD staff read the packet**, so its body stays in English. The family's instructions above it follow the chosen language.
-- **City and HISD staff use the Closed zones and Corridors pages.** Those stay in English and say so in Spanish.
+- **City and HISD staff use the Closed zones, Corridors and Before April 15 pages.** Those stay in English and say so in Spanish.
 - The copy rules are at the top of `src/lib/i18n.ts`: neither HISD's voice nor a protest's, never "you qualify," plain words.
   The Spanish hasn't been professionally reviewed, and the app says so.
 - Questions only people can answer (shuttle stops and times, Pre-K help, who does pickup) are in `../context/Calls-To-Make.md`.
+
+## Where to cross (walk-plan pivot, 2026-09-26)
+
+The site's warning-families report found that telling families "this road is dangerous" mostly repeats what they know
+and pushes families with a car into driving. So each crossing now leads with an action:
+- **Lookup:** under each walk, one line per road or track. It names the nearest traffic light on that road, or the
+  nearest public rail crossing of that railroad, with the distance, direction and extra walking ("Cross at the traffic
+  light at Liberty & Altoona, 550 ft northeast. That adds about 500 ft"). Where there's nothing within 250 m it says
+  so, gives the nearest one within 1 km, and names who can change it: the receiving school's principal and the City
+  for roads, HISD for rail. It offers a school zone only if the street could get one under HPW's rules (street facts
+  from `npm run streets`). Crash counts sit folded under each road. The map adds the lights and crossings, and a
+  dotted line through them.
+- **Walk plan** (`/plan`, "Print a walk plan"): one page, in English or Spanish. It opens with "walk it once with your
+  child," then each walk's crossings, a map, and three one-time actions. Plans with five or more crossings print
+  smaller so they stay on one page.
+- **Corridors:** a "Traffic light or public rail crossing nearby?" column and a "What can change it" column. It's
+  sorted so the uncontrolled crossings come first (E Whitney, Westover, Ralston, Brewster, Crane St, the Port Houston
+  track). Rail rows are split by closed zone. A checkbox adds the roads the walk to the old campus crosses too (Airline
+  Dr, N Main St, SSgt Macario Garcia Dr, MLK Blvd, N Wayside Dr). The brief called those "newly crossed," which they
+  aren't; see `../VERIFY.md`.
+- **Packet:** a "Nearest traffic light / public rail crossing" column, and the same fact in the copy-paste text.
+  Texas's hazardous-route test says "uncontrolled," so it's stated either way, including when a light is close.
+- **Not built, on purpose:** a danger map or area rating, the word "safe," anything addressed to children, alerts or
+  accounts, and blocked-train times. For blocked trains, the past year of FRA reports has 0 or 1 at 8 of the 9
+  crossings the walks use.
+- VERIFY's "warning-families:" rows recompute that report's figures with the app's own code. All of them agree.
+
+## Before April 15 and the pickup cards (2026-09-26)
+
+The site's after-the-shuttle report found a handoff gap. HISD owns the pickup buildings and the shuttle; the City owns the
+streets, the school zones and the crossing-guard funding. Only a school's principal can apply for a City school zone, by April
+15, with "observation or evidence of students walking," and the new walks began four months after the 2026 deadline.
+- **Before April 15** (`/april-15`): the streets each receiving school's new walkers cross that their walk to the old campus
+  didn't, with crashes, the nearest traffic lights, and the City's class for the street. Each street is sorted by HPW's written
+  path to a zone: it "borders the school," or it's "a thoroughfare or collector," on a City-owned street, or neither. Then comes
+  one draft of HPW's application per receiving school, in the form's order, printable on its own. The principal fills in the
+  contact lines, bell times and signature. Streets on neither path (E Whitney, Westover, Ralston, Brewster and Crane St, all
+  local streets with no light within 500 m) go in a separate box that points to the form's crosswalk page and to crossing guards.
+  S Wayside borders Carrillo but is TxDOT-owned, and the page says so.
+- **Pickup cards** (`/zones`, "The seven pickup sites"): the shuttle, the walk to the old campus (computed), the building's
+  Aug 13, 2026 surplus vote with no sale date, and three "not public" items with who to ask: stop spot and times (HISD),
+  the school zone and its hours (HPW), and a crossing guard (HISD). The facts shared by all seven are stated once above the cards.
+- **Not built, on purpose:** a sale alert, a live shuttle tracker, a "get a bus" button and a transit planner.
+- VERIFY's last section lists every street's path, and its on-screen-claims table lists the HPW rules and the surplus vote.
 
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.
 - `scripts/shuttle-pairs.ts`: HISD's announced closure-shuttle pairings (all 12 campuses), keyed by campus number, with sources and flags.
 - `scripts/fetch-grounds.ts`: Overpass pull of OSM school grounds around each shuttle endpoint. It retries and falls back to a mirror, because the main server 504s under load.
-- `scripts/compute.ts`: diffs the zones, samples a ~110 m grid, computes the hazard shares and the corridor ranking, and writes the VERIFY report.
+- `scripts/fetch-crossings.ts`: TranStar's City, TxDOT and Harris County signal lists (POST `{}`, no key; fire-station signals dropped) and FRA's Form 71 inventory (open public crossings in Harris; port and plant driveways dropped by name). It merges `signals` and `rail_crossings` into meta.json, with the Houston-time date read.
+- `scripts/fetch-streets.ts`: for each road the walks to a receiving school cross, the City's Major Thoroughfare and Freeway Plan class and owner at the crossing points, whether it borders the school (City road centerline within 30 m of the OSM grounds), and the From/To cross streets on the centerline just outside where the walks cross. Writes `street_context.json`; merges `mtfp` and `centerline` into meta.json.
+- `scripts/grid.ts`: the ~110 m sample grid, point for point the one `compute.ts` walks, for `fetch-streets.ts`.
+- `scripts/compute.ts`: diffs the zones, samples a ~110 m grid, computes the hazard shares, the corridor ranking and each corridor's crossing control, the per-receiving-school street requests (`zone_requests.json`), and writes the VERIFY report.
 - `src/lib/geo.ts`: point-in-polygon, haversine, segment intersection. Shared by the scripts and the browser.
 - `src/lib/analyze.ts`: `analyzeAddress()`, the single analysis the precompute and the UI both run.
+- `src/lib/crossings.ts`: which signals and rail crossings belong to a crossed road or track, `planWalk()` (the nearest control, direction and detour per crossing), and `zonePossible()`. Ported from `research/warning-families/crossing-options.mts`.
+- `src/components/CrossingPlan.tsx`: the where-to-cross list and the once-per-page "who can change this".
 - `src/components/ShuttleLayer.tsx`: the shuttle layer on the Closed zones map and the address check.
 - `src/lib/i18n.ts`: every family-facing sentence in English and Spanish, the copy rules, and display-time translation of the shuttle flags.
-- `src/pages/`: Lookup (home), Packet (print), Overview (`/zones`), Corridors.
+- `src/pages/`: Lookup (home), Plan (the family's walk plan, print), Packet (HISD, print), Overview (`/zones`), Corridors, April15 (`/april-15`).
+- `src/components/PickupCards.tsx` and `src/lib/pickups.ts`: the seven pickup cards and their fixed facts. `src/april15.css` styles both, apart from `styles.css`.
 
 ## Limits (also shown in the UI)
 
@@ -59,3 +112,12 @@ Add `?lang=es` before the `#` (for example `index.html?lang=es#/`) to open in Sp
   has published no stop spot, times, runs or streets. The map shows the pickup campus's grounds (OSM outline), not a curb, and a
   straight connector, not a route. Ross's announced drop-offs (Roosevelt, C. Martinez) differ from the boundary layer (Dogan, Roosevelt).
 - The address search uses the keyless ArcGIS World Geocoder. Clicking the map always works as a fallback.
+- **Where to cross covers traffic signals and public rail crossings only.** Crossing guards, stop signs and marked
+  crosswalks aren't in any public Houston layer, so a guarded crossing shows as "no traffic light." The detour is
+  home → light → school in straight lines, not a street route. A light is "controlled," not a promise, and the page
+  never says "safe." The signal feed is TranStar's public map, with no date and no stated license, so ask the City
+  before relying on it.
+- **The April 15 street facts are a sort, not a ruling.** HPW decides after its own traffic study. "Not on the plan" means no
+  MTFP line within 40 m at most crossing points. From/To are the centerline cross streets just outside the outermost crossing, and
+  HPW sets the final limits. Two ends found no cross street and print "HPW sets." Kennedy ES has no OSM grounds, so its "borders
+  the school" check uses the campus point (marked approx.). Whether each old campus's school zone is still in the ordinance isn't public.

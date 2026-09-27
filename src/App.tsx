@@ -4,10 +4,12 @@ import { type AppData, DataContext, loadAppData } from "./lib/data";
 import { DICTS, type Lang, LangContext, initialLang, persistLang, useT } from "./lib/i18n";
 import Lookup from "./pages/Lookup";
 import Packet from "./pages/Packet";
+import Plan from "./pages/Plan";
 import Overview from "./pages/Overview";
 import Corridors from "./pages/Corridors";
+import April15 from "./pages/April15";
 
-/** The Overview and Corridors pages are for City and HISD staff and stay in English; say so in Spanish. */
+/** The Overview, Corridors and April 15 pages are for City and HISD staff and stay in English; say so in Spanish. */
 function EnglishOnly({ children }: { children: ReactNode }) {
   const { t, setLang } = useT();
   return (
@@ -46,6 +48,7 @@ export default function App() {
             <NavLink to="/" end>{t.nav.check}</NavLink>
             <NavLink to="/zones">{t.nav.zones}</NavLink>
             <NavLink to="/corridors">{t.nav.corridors}</NavLink>
+            <NavLink to="/april-15">{t.nav.april15}</NavLink>
           </nav>
           <button
             type="button"
@@ -66,8 +69,10 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Lookup />} />
                 <Route path="/packet" element={<Packet />} />
+                <Route path="/plan" element={<Plan />} />
                 <Route path="/zones" element={<EnglishOnly><Overview /></EnglishOnly>} />
                 <Route path="/corridors" element={<EnglishOnly><Corridors /></EnglishOnly>} />
+                <Route path="/april-15" element={<EnglishOnly><April15 /></EnglishOnly>} />
               </Routes>
             </DataContext.Provider>
           )}

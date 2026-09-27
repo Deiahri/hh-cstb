@@ -16,6 +16,9 @@ export const COLORS = {
   // School-bus yellow, cased in dark amber so it stays visible over OSM's yellow roads.
   shuttle: "#facc15",
   shuttleInk: "#854d0e",
+  // Where to cross: the lights and rail crossings a walk plan names, and the walk drawn through them. Cyan, so it
+  // isn't mistaken for the green "S" stop pin.
+  plan: "#0891b2",
 };
 
 /** Refit the map whenever the set of points changes. */
@@ -84,8 +87,8 @@ export function MapBase({
   );
 }
 
-/** `walks` adds the two straight-line walks an address result draws (Lookup and the packet). */
-export function MapLegend({ shuttle = false, walks = false }: { shuttle?: boolean; walks?: boolean }) {
+/** `walks` adds the two straight-line walks an address result draws (Lookup and the packet); `plan` the where-to-cross marks. */
+export function MapLegend({ shuttle = false, walks = false, plan = false }: { shuttle?: boolean; walks?: boolean; plan?: boolean }) {
   const { t } = useT();
   const l = t.legend;
   return (
@@ -94,6 +97,12 @@ export function MapLegend({ shuttle = false, walks = false }: { shuttle?: boolea
         <>
           <li><span className="swatch" style={{ background: COLORS.newRoute }} /> {l.walkNow}</li>
           <li><span className="swatch dashed" style={{ borderColor: COLORS.oldRoute }} /> {l.walkOld}</li>
+        </>
+      )}
+      {plan && (
+        <>
+          <li><span className="swatch dot" style={{ background: COLORS.plan }} /> {l.controls}</li>
+          <li><span className="swatch dotted" style={{ borderColor: COLORS.plan }} /> {l.path}</li>
         </>
       )}
       {shuttle && (
