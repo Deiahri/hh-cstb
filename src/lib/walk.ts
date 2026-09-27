@@ -44,6 +44,10 @@ export interface Walk {
 export const walkQuery = (p: LngLat, addr: string, extra: Record<string, string> = {}) =>
   new URLSearchParams({ lat: p[1].toFixed(6), lng: p[0].toFixed(6), addr, ...extra });
 
+/** The first screen after an address: the Pre-K question for a closed-zone home, else straight to its walk. */
+export const firstScreen = (p: LngLat, addr: string, d: AppData) =>
+  `/${analyzeAddress(p, d.ds).closedZone ? "prek" : "walk"}?${walkQuery(p, addr)}`;
+
 /** The address in the URL, analysed. Null when the link carries no usable location. */
 export function useWalk(): Walk | null {
   const d = useData();

@@ -77,6 +77,7 @@ export function SchoolDetail() {
             <div className="card"><span className="n">{deltaMi.toFixed(1)} mi</span><span className="t">{z.medianDeltaM >= 0 ? wc.farther : wc.nearer}</span></div>
             <div className="card"><span className="n">{Math.round(z.pctFarther)}%</span><span className="t">{wc.fartherPct}</span></div>
             <div className="card"><span className="n">{Math.round(z.pctOver2New)}%</span><span className="t">{wc.over2}</span></div>
+            <div className="card"><span className="n">{z.maxNewMi.toFixed(1)} mi</span><span className="t">{wc.longest}</span></div>
           </div>
           <p className="small"><strong>{t.notes.area}</strong></p>
           {s && (
@@ -84,6 +85,16 @@ export function SchoolDetail() {
               <span className="v">{wc.shuttleTitle}</span>
               <span className="muted">{s.sameSite ? wc.pickupNone : wc.pickup(s.from.name, s.from.address)}</span>
               <span className="small">{t.result.notPublished}</span>
+              {!s.sameSite && z.pickupRoads.some((p) => p.share >= 1) && (
+                <>
+                  <span className="k" style={{ marginTop: 8 }}>{wc.pickupRoadsH}</span>
+                  <ul className="plain">
+                    {z.pickupRoads.filter((p) => p.share >= 1).map((p) => (
+                      <li key={p.name}>{p.name} <span className="muted small">· {wc.pickupRoad(Math.round(p.share), p.pedDangerous)}</span></li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           )}
         </div>

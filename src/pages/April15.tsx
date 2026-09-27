@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CircleMarker, GeoJSON, Marker, Tooltip } from "react-leaflet";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { type ReceivingSchoolRequests, type StreetRequest, type ZonePath, segmentFeatures, useData } from "../lib/data";
 import { type LngLat } from "../lib/geo";
 import { dist, pct } from "../lib/format";
@@ -48,12 +48,7 @@ export default function April15() {
   const d = useData();
   const { schools, minPoints } = d.zoneRequests;
   const [sel, setSel] = useState<string | null>(null);
-  // The family's school-zone screen links here with { openDraft: <receiving school nbr> }.
-  const openDraft = (useLocation().state as { openDraft?: number } | null)?.openDraft;
-  const [open, setOpen] = useState<Set<number>>(() => new Set(openDraft ? [openDraft] : []));
-  useEffect(() => {
-    if (openDraft) document.getElementById(`draft-${openDraft}`)?.scrollIntoView({ block: "start" });
-  }, [openDraft]);
+  const [open, setOpen] = useState<Set<number>>(() => new Set());
   const [printing, setPrinting] = useState<number | null>(null);
   const deadline = nextDeadline();
 
@@ -207,7 +202,7 @@ export default function April15() {
           <details key={s.nbr} id={`draft-${s.nbr}`} className={`draft-app${printing === s.nbr ? " print-target" : ""}`} open={open.has(s.nbr)}
             onToggle={(e) => { const isOpen = (e.currentTarget as HTMLDetailsElement).open; setOpen((o) => { const n = new Set(o); if (isOpen) n.add(s.nbr); else n.delete(s.nbr); return n; }); }}>
             <summary>
-              <strong>{s.name}</strong>{" "}
+              <strong>{s.name}</strong>{" "}<Link className="small no-print" to={`/april-15/${s.nbr}`}>(own page)</Link>{" "}
               <span className="muted small">
                 {s.streets.filter(hasPath).length} requested street{s.streets.filter(hasPath).length === 1 ? "" : "s"}
                 {s.streets.some((r) => !hasPath(r)) ? `, ${s.streets.filter((r) => !hasPath(r)).length} for a crosswalk or guard instead` : ""}
@@ -228,6 +223,25 @@ export default function April15() {
 
       <Caveats area />
       <DataVintage />
+    </div>
+  );
+}
+
+/** One school's draft on its own page, for the family's school-zone screen to link to and for printing alone. */
+export function DraftPage() {
+  const { schools, minPoints } = useData().zoneRequests;
+  const { nbr } = useParams();
+  const s = schools.find((x) => String(x.nbr) === nbr);
+  if (!s) return <April15 />;
+  return (
+    <div className="page april15 draft-page">
+      <p className="no-print"><Link to="/april-15">‹ Before April 15: every receiving school</Link></p>
+      <h1 className="no-print">Draft school zone application: {s.name}</h1>
+      <p className="lede no-print">
+        Streets a newly zoned walk crosses, sorted by HPW's written paths. Public data fills it in; the principal adds the contact
+        lines, bell times, the school's own count and the signature, then sends it to Houston Public Works by April 15.
+      </p>
+      <Draft s={s} minPoints={minPoints} onPrint={() => window.print()} />
     </div>
   );
 }

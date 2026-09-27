@@ -32,6 +32,17 @@ function SchoolShare({ w }: { w: Walk }) {
   return <ShareButton title={t.wc.shareSchool} text={t.wc.msgSchool(w.r.now!.school.name, t.result.crosses(c.rail, c.roads), shareUrl(lang).replace(/#\/\w+/, "#/walk"))} label={t.wc.share} />;
 }
 
+/** "How this works": numbered steps, from this screen to the decision. */
+function Steps({ list }: { list: string[] }) {
+  const { t } = useT();
+  return (
+    <div className="steps-block">
+      <h2>{t.wc.stepsH}</h2>
+      <ol className="steps">{list.map((s) => <li key={s}>{s}</li>)}</ol>
+    </div>
+  );
+}
+
 /** Can any road on this walk get a City school zone? "none" when there are roads and none can; "noRoads" when there are none. */
 function zoneStatus(z: ReturnType<typeof zoneStreets>) {
   if (!z.length) return "noRoads" as const;
@@ -104,6 +115,7 @@ export function Bus() {
       <div className="cols">
         <div className="col">
           {w.prek && <div className="card warm edge"><span>{wc.busPrek}</span></div>}
+          <Steps list={wc.busSteps} />
           <PrincipalCard w={w} />
           <h2>{wc.insideH}</h2>
           <ul className="inside-list">{items.map((i) => <li key={i}>{i}</li>)}</ul>
@@ -162,6 +174,7 @@ export function SchoolZone() {
             <span className="t" style={{ fontSize: 22, fontWeight: 800 }}>{wc.zoneDeadline(nextDeadline().year)}</span>
             <span className="s">{wc.zoneDeadlineSub}</span>
           </div>
+          {status === "some" && <Steps list={wc.zoneSteps} />}
           {status === "none" && <div className="card"><span>{wc.zoneNone}</span></div>}
           {status === "noRoads" && <div className="card"><span>{wc.zoneNoRoads}</span></div>}
           {streets.length > 0 && (
@@ -182,7 +195,7 @@ export function SchoolZone() {
         <div className="col side">
           <PrincipalCard w={w} />
           <div className="bar-fixed">
-            {hasDraft && <Link className="btn primary" to="/april-15" state={{ openDraft: school.nbr }}>{wc.openDraft}</Link>}
+            {hasDraft && <Link className="btn primary" to={`/april-15/${school.nbr}`}>{wc.openDraft}</Link>}
             <SchoolShare w={w} />
           </div>
         </div>

@@ -93,6 +93,25 @@
 .chips .chip { min-height: 40px; border-width: 2px; }
 .cands { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
 
+/* ---- home sections, steps, staff links, sources table (from the Walk Check static build) ---- */
+.steps { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: s; }
+.steps li { display: flex; gap: 12px; align-items: flex-start; counter-increment: s; }
+.steps li::before { content: counter(s); flex: 0 0 28px; height: 28px; border-radius: 50%; background: var(--green); color: var(--accent-ink); font-weight: 700; font-size: 15px; display: grid; place-items: center; }
+.steps-block { display: grid; gap: 10px; }
+.sec { display: grid; gap: 8px; padding-top: 24px; border-top: 1px solid var(--line); }
+.screen .sec + * { margin-top: -8px; }
+.staffgrid { display: grid; }
+.staffcard { display: grid; gap: 6px; padding: 16px 0; border-top: 1px solid var(--line); color: var(--ink) !important; font-weight: 400 !important; }
+.staffcard h3 { margin: 0; font-size: 18px; color: var(--green); }
+.staffcard p { margin: 0; }
+.staffcard:hover h3 { text-decoration: underline; text-underline-offset: 3px; }
+.tblwrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.4; }
+.tbl th { text-align: left; font-weight: 700; padding: 8px 10px 8px 0; border-bottom: 2px solid var(--ink); vertical-align: bottom; }
+.tbl td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 110px; }
+.screen ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.pick-map .map { height: 420px; }
+
 /* ---- layout: one column on phones, two on desktop ---- */
 .cols, .col { display: grid; gap: 20px; align-content: start; }
 .col.side { gap: 12px; }
@@ -213,6 +232,10 @@ a.bar:hover .hd b { color: var(--green); }
   .sheet { border-radius: 24px; bottom: auto; top: 50%; transform: translate(0, -40%); opacity: 0; transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
   .sheet.is-in { transform: translateY(-50%); opacity: 1; }
   .walk-map .map { height: 420px; }
+  .pick-map .map { height: 520px; }
+  .staffgrid { grid-template-columns: repeat(3, 1fr); gap: 0 32px; }
+  .staffcard { padding-top: 20px; }
+  .sec { padding-top: 32px; }
 }
 .form { display: grid; gap: 18px; }
 @media (max-width: 899px) {

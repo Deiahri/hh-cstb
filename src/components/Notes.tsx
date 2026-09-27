@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useData } from "../lib/data";
 import { useT } from "../lib/i18n";
 
@@ -66,7 +67,8 @@ export function DatesLine() {
         schools: meta.schools_new.lastEditDate ?? u,
         lights: meta.signals?.readOn ?? u,
         xings: meta.rail_crossings?.lastEditDate ?? u,
-      })}
+      })}{" "}
+      <Link className="no-print" to="/sources">{t.wc.srcLink} ›</Link>
     </p>
   );
 }

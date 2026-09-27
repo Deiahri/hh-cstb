@@ -102,6 +102,21 @@ Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify
 - Old `/?lat=…&lng=…` links redirect to `/walk`. Staff pages (Closed zones, Corridors, Before April 15) are linked in the footer
   and keep their layout; they pick up the new palette through the shared tokens. Dark mode is kept.
 
+## Walk Check static build, ported (2026-09-27)
+
+The team's standalone Walk Check build (plain JS, MapLibre, Nominatim, its own `geo.js`) was folded into this app
+rather than shipped beside it, so there's one engine (`analyzeAddress`/`planWalk`) and one data pipeline. Ported:
+- Home: "how it works" steps, a "For City and HISD staff" section (with days to April 15) and a sources section.
+- `/pick`: a full map picker. Tap to drop a pin, drag it, then "Use this spot". It replaces the fold-out map on Home.
+- `/sources`: every public layer, what the app uses it for, and its date. The dates line on the walk links to it.
+- `/april-15/:nbr`: one receiving school's draft on its own page, to print alone. The family's school-zone screen links here.
+- "How this works" steps on the bus and school-zone screens. The zone detail page gets the longest walk and the roads the
+  walk to the pickup crosses most.
+- **Not ported, on purpose:** `data.js`'s hand-researched principal names, phones and Super Neighborhood meetings (no
+  source), the "is it safe?" headline and the "why this walk qualifies" line (copy rules 2 and 4), "ask again every fall"
+  (no source), MapLibre and Nominatim (Leaflet and the ArcGIS geocoder already work here), and the scaled paper previews
+  (the packet and draft pages are the documents).
+
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.

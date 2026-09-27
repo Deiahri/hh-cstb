@@ -11,7 +11,9 @@ import Packet from "./pages/Packet";
 import Plan from "./pages/Plan";
 import Overview from "./pages/Overview";
 import Corridors from "./pages/Corridors";
-import April15 from "./pages/April15";
+import April15, { DraftPage } from "./pages/April15";
+import Pick from "./pages/Pick";
+import Sources from "./pages/Sources";
 
 /** The Overview, Corridors and April 15 pages are for City and HISD staff and stay in English; say so in Spanish. */
 function EnglishOnly({ children }: { children: ReactNode }) {
@@ -107,6 +109,8 @@ export default function App() {
             <DataContext.Provider value={data}>
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/pick" element={<Pick />} />
+                <Route path="/sources" element={<Sources />} />
                 <Route path="/prek" element={<Prek />} />
                 <Route path="/walk" element={<WalkScreen />} />
                 <Route path="/help" element={<Help />} />
@@ -119,6 +123,7 @@ export default function App() {
                 <Route path="/zones" element={<EnglishOnly><Overview /></EnglishOnly>} />
                 <Route path="/corridors" element={<EnglishOnly><Corridors /></EnglishOnly>} />
                 <Route path="/april-15" element={<EnglishOnly><April15 /></EnglishOnly>} />
+                <Route path="/april-15/:nbr" element={<EnglishOnly><DraftPage /></EnglishOnly>} />
                 <Route path="*" element={<Home />} />
               </Routes>
             </DataContext.Provider>

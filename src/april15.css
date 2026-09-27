@@ -71,10 +71,11 @@
   body.print-draft .drafts { margin: 0; }
   body.print-draft .draft-app { border: 0; }
   body.print-draft .draft-app > summary { display: none; }
-  body.print-draft .draft-body { padding: 0; max-width: none; font-size: 10.5pt; }
-  body.print-draft .draft-attachment { break-before: page; }
-  body.print-draft .draft-body h4 { break-after: avoid; }
-  body.print-draft .draft-body li, body.print-draft .form-table tr { break-inside: avoid; }
-  body.print-draft .blank { color: #666; border-bottom-color: #000; }
+  body.print-draft .draft-body, .draft-page .draft-body { padding: 0; max-width: none; font-size: 10.5pt; }
+  body.print-draft .draft-attachment, .draft-page .draft-attachment { break-before: page; }
+  body.print-draft .draft-body h4, .draft-page .draft-body h4 { break-after: avoid; }
+  body.print-draft .draft-body li, body.print-draft .form-table tr, .draft-page .draft-body li, .draft-page .form-table tr { break-inside: avoid; }
+  body.print-draft .blank, .draft-page .blank { color: #666; border-bottom-color: #000; }
+  body:has(.draft-page) .lang-banner { display: none !important; }
   .path, .chip-none, .chip-unknown, .draft-stamp { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

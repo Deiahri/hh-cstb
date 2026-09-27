@@ -1,19 +1,12 @@
 import { useState } from "react";
-import { GeoJSON, useMapEvents } from "react-leaflet";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { analyzeAddress } from "../lib/analyze";
 import { useData } from "../lib/data";
-import { type Candidate, geocode, reverseGeocode } from "../lib/geocode";
+import { type Candidate, geocode } from "../lib/geocode";
 import { type LngLat, pointInRings } from "../lib/geo";
 import { useT } from "../lib/i18n";
-import { walkQuery } from "../lib/walk";
-import { COLORS, FitTo, MapBase } from "../components/MapBase";
-import { Caveats, DataVintage } from "../components/Notes";
-
-function ClickToSet({ onPick }: { onPick: (p: LngLat) => void }) {
-  useMapEvents({ click: (e) => onPick([e.latlng.lng, e.latlng.lat]) });
-  return null;
-}
+import { firstScreen } from "../lib/walk";
+import { Caveats } from "../components/Notes";
+import { nextDeadline } from "./April15";
 
 /** A point inside each closed zone for the demo shortcuts: the vertex average, nudged inside if needed. */
 function zoneSamplePoint(rings: LngLat[][]): LngLat {
@@ -36,15 +29,11 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<"noMatch" | "searchDown" | null>(null);
   const [cands, setCands] = useState<Candidate[]>([]);
-  const [mapOpen, setMapOpen] = useState(false);
 
   // Links shared before the redesign put the address on the home page: send them to the walk.
   if (params.has("lat") && params.has("lng")) return <Navigate to={`/walk?${params}`} replace />;
 
-  const go = (p: LngLat, label: string) => {
-    const r = analyzeAddress(p, d.ds);
-    nav(`/${r.closedZone ? "prek" : "walk"}?${walkQuery(p, label)}`);
-  };
+  const go = (p: LngLat, label: string) => nav(firstScreen(p, label, d));
 
   async function onSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -59,17 +48,9 @@ export default function Home() {
       else setCands(found);
     } catch {
       setErr("searchDown");
-      setMapOpen(true);
     } finally {
       setBusy(false);
     }
-  }
-
-  async function onMapPick(p: LngLat) {
-    setBusy(true);
-    const label = await reverseGeocode(p);
-    setBusy(false);
-    go(p, label ?? `${p[1].toFixed(5)}, ${p[0].toFixed(5)}`);
   }
 
   const pairs = d.zones.map((z) => ({ z, to: z.receiving.map((r) => schoolName(r.name)).join(" / ") }));
@@ -80,6 +61,7 @@ export default function Home() {
         <div style={{ display: "grid", gap: 14 }}>
           <h1>{w.h1}</h1>
           <p className="lede-wc">{w.lede}</p>
+          <ol className="steps">{w.how.map((s) => <li key={s}>{s}</li>)}</ol>
         </div>
         <form className="form" onSubmit={onSearch} role="search">
           <div className="field">
@@ -97,19 +79,7 @@ export default function Home() {
               ))}
             </ul>
           )}
-          <button type="button" className="linkbtn" aria-expanded={mapOpen} onClick={() => setMapOpen(!mapOpen)}>{mapOpen ? w.hideMap : w.pickMap}</button>
-          {mapOpen && (
-            <div className="walk-map">
-              <p className="small muted">{w.mapHint}</p>
-              <MapBase>
-                <ClickToSet onPick={onMapPick} />
-                {d.zones.map((z) => (
-                  <GeoJSON key={z.nbr} data={{ type: "Polygon", coordinates: z.rings } as any} style={{ color: COLORS.zone, weight: 2, fillOpacity: 0.12 }} interactive={false} />
-                ))}
-                <FitTo points={d.zones.flatMap((z) => z.rings[0])} />
-              </MapBase>
-            </div>
-          )}
+          <Link className="linkbtn" to="/pick">{w.pickMap}</Link>
           <div className="chips">
             <span className="small muted">{w.tryZone}</span>
             {d.zones.map((z) => (
@@ -127,8 +97,23 @@ export default function Home() {
           <Link key={z.nbr} className="list-row" to={`/schools/${z.nbr}`}><span>{w.pair(schoolName(z.name), to)}</span><span>{w.see} ›</span></Link>
         ))}
       </div>
+      <div className="sec">
+        <h2>{w.staffH}</h2>
+        <p className="muted">{w.staffSub}</p>
+      </div>
+      <div className="staffgrid">
+        {w.staffCards.map((c) => (
+          <Link key={c.to} className="staffcard" to={c.to}>
+            <h3>{c.h}{c.to === "/april-15" && <span className="muted"> · {w.daysLeft(nextDeadline().days)}</span>}</h3>
+            <p className="muted">{c.b}</p>
+          </Link>
+        ))}
+      </div>
+      <div className="sec">
+        <h2>{w.srcH}</h2>
+        <p className="muted">{w.srcSub} <Link to="/sources">{w.srcLink} ›</Link></p>
+      </div>
       <Caveats />
-      <DataVintage />
     </section>
   );
 }
