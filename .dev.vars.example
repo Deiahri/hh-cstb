@@ -1,0 +1,6 @@
+# Copy to .dev.vars for `npm run dev:full` (wrangler pages dev). .dev.vars is git-ignored.
+ANTHROPIC_API_KEY=
+# claude-opus-5 by default; claude-sonnet-5 or claude-haiku-4-5 cost less (see docs/ai-assistant/build-notes.md).
+AI_MODEL=
+# 1 = canned demo replies and no API calls, for running the page without a key.
+AI_MOCK=1
