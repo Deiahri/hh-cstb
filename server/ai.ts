@@ -1,6 +1,8 @@
-// POST /api/ai — the one server piece of Walk Check (in the Cloudflare Worker, worker/index.ts). It holds the API key, builds the
-// prompts, runs the checks in guard.ts on every answer, and stores nothing: no address, no messages, no IP.
+// POST /api/ai — the one server piece of Walk Check (served by server/index.ts). It holds the API key, builds the prompts,
+// runs the checks in guard.ts on every answer, and stores nothing: no address, no messages. (The rate limit in index.ts
+// keeps a count per IP in memory for ten minutes, and nothing else.)
 // GET /api/ai says whether the AI features are on, so the page can hide them when there's no key.
+import { readFile } from "node:fs/promises";
 import Anthropic from "@anthropic-ai/sdk";
 import type { AiLang, AiRequest, AiResponse, AiTurn } from "../src/lib/ai/types";
 import { forbiddenWords, stripUnknownCitations, tooHard, unknownCitations, validateRequest } from "./lib/guard";
@@ -13,8 +15,16 @@ export interface Env {
   AI_MODEL?: string;
   /** "1": canned replies, no API calls (local runs and tests). */
   AI_MOCK?: string;
-  ASSETS: { fetch: (req: Request | string) => Promise<Response> };
+  /** Comma-separated origins whose pages may call the API, e.g. https://hh-cstb.onrender.com. */
+  ALLOWED_ORIGINS?: string;
+  /** AI requests (POSTs) allowed per hour across everyone (default 300): a ceiling on the bill. */
+  AI_MAX_PER_HOUR?: string;
 }
+
+/** Local dev (vite) and preview (vite preview) pages, allowed when ALLOWED_ORIGINS isn't set. */
+const DEV_ORIGINS = ["http://localhost:5173", "http://localhost:4173"];
+export const allowedOrigins = (env: Env) =>
+  env.ALLOWED_ORIGINS ? env.ALLOWED_ORIGINS.split(",").map((o) => o.trim().replace(/\/$/, "")).filter(Boolean) : DEV_ORIGINS;
 
 export type Ctx = { request: Request; env: Env };
 
@@ -25,15 +35,12 @@ const enabled = (env: Env) => !!env.ANTHROPIC_API_KEY || env.AI_MOCK === "1";
 
 export const onRequestGet = async ({ env }: Ctx) => json({ available: enabled(env), mock: !env.ANTHROPIC_API_KEY && env.AI_MOCK === "1" });
 
-// The three staff files, read once per isolate from the site's own static assets, never from the client.
+// The three staff files, read once per process from the site's own data in public/data, never from the client.
+const DATA_DIR = new URL("../public/data/", import.meta.url);
 let staffCache: Promise<ReturnType<typeof staffData>> | null = null;
-function loadStaff(env: Env, origin: string) {
+function loadStaff() {
   staffCache ??= (async () => {
-    const get = async (f: string): Promise<any> => {
-      const r = await env.ASSETS.fetch(new URL(`/data/${f}`, origin).toString());
-      if (!r.ok) throw new Error(`asset ${f}: ${r.status}`);
-      return r.json();
-    };
+    const get = async (f: string): Promise<any> => JSON.parse(await readFile(new URL(f, DATA_DIR), "utf8"));
     const [corridors, zoneRequests, zones] = await Promise.all([get("corridors.json"), get("zone_requests.json"), get("zones.json")]);
     return staffData({ corridors, zoneRequests, zones });
   })().catch((e) => {
@@ -73,9 +80,9 @@ const withNote = (turns: AiTurn[], note: string): AiTurn[] =>
 
 export const onRequestPost = async ({ request, env }: Ctx) => {
   if (!enabled(env)) return json({ ok: false, error: "unavailable" }, 503);
-  // Browsers send Origin: only this site's own pages may call it from a browser. (Not a rate limit: add one in Cloudflare.)
+  // Browsers send Origin: only the site's own pages may call it from a browser. (The rate limit is in index.ts.)
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return json({ ok: false, error: "bad_request", message: "origin" }, 403);
+  if (origin && !allowedOrigins(env).includes(origin)) return json({ ok: false, error: "bad_request", message: "origin" }, 403);
   let body: unknown;
   try {
     body = await request.json();
@@ -101,7 +108,7 @@ export const onRequestPost = async ({ request, env }: Ctx) => {
       const head = `RESULT\n${JSON.stringify(req.context)}\n\n${req.mode === "walkway" ? "FAMILY'S WORDS\n" : "QUESTION\n"}`;
       turns = turns.map((m, i) => (i === 0 ? { ...m, text: head + m.text } : m));
     } else {
-      const data = await loadStaff(env, new URL(request.url).origin);
+      const data = await loadStaff();
       known = data.known;
       // Stable first, so the ~30k-token data block is cached across staff conversations.
       system = [

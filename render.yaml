@@ -1,0 +1,41 @@
+# Render Blueprint: the static site and the AI API as two services (New → Blueprint → this repo).
+# branch is set on purpose: without it Render deploys the repo's default branch.
+# After the first deploy, set VITE_API_URL (site) and ALLOWED_ORIGINS (API) to each other's URLs, then redeploy the site.
+services:
+  - type: web
+    name: hh-cstb
+    runtime: static
+    branch: ai-test
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    buildFilter:
+      ignoredPaths:
+        - server/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # The API's URL, e.g. https://hh-cstb-api.onrender.com. Read at build time.
+      - key: VITE_API_URL
+        sync: false
+
+  - type: web
+    name: hh-cstb-api
+    runtime: node
+    plan: free
+    branch: ai-test
+    buildCommand: cd server && npm ci
+    startCommand: cd server && npm start
+    healthCheckPath: /healthz
+    buildFilter:
+      paths:
+        - server/**
+        - src/lib/ai/types.ts
+        - public/data/**
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # The site's URL, e.g. https://hh-cstb.onrender.com.
+      - key: ALLOWED_ORIGINS
+        sync: false

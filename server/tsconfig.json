@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": true,
     "noUnusedLocals": true,
     "skipLibCheck": true,
-    "types": ["@cloudflare/workers-types"],
+    "types": ["node"],
     "noEmit": true
   },
-  "include": ["./**/*.ts", "../src/lib/ai/types.ts"]
+  "include": ["./**/*.ts", "../src/lib/ai/types.ts"],
+  "exclude": ["node_modules"]
 }

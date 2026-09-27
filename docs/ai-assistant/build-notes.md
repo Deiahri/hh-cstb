@@ -6,8 +6,8 @@ order: 3
 These are notes for building ideas 1, 3 and 6.
 
 **Status (2026-09-27): built.** Idea 1 is on `/walk`, idea 3 on `/bus` (the principal's request) and `/packet`, idea 6 on
-`/corridors`, `/april15` and `/draft/:nbr`. The proxy is part of the Cloudflare Worker that serves the site (`worker/ai.ts`). Every guardrail below is in code
-(`worker/lib/guard.ts`), with tests. The default model is `claude-opus-5`, set by `AI_MODEL`. Answer quality from the real
+`/corridors`, `/april15` and `/draft/:nbr`. The proxy is a separate Node service (`server/ai.ts`; deployed on Render next to the static site, see `render.yaml`). Every guardrail below is in code
+(`server/lib/guard.ts`), with tests. The default model is `claude-opus-5`, set by `AI_MODEL`. Answer quality from the real
 model hasn't been checked yet: there was no API key, so the build was tested with canned replies (`AI_MOCK=1`). The README's
 "AI assistant" section has the details.
 

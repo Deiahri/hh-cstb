@@ -23,7 +23,7 @@ npm run compute   # grid-sample the closed zones → zones.json, corridors.json,
 npm run dev       # http://localhost:5173
 npm run build     # static site in dist/ (HashRouter, relative paths — host anywhere)
 npm test          # AI guardrails, request checks, and the AI grounding on each closed zone's sample point
-npm run dev:full  # build + `wrangler dev` on :8788: the site plus the AI proxy, as deployed (needs a .dev.vars, see below)
+npm run dev:server # the AI API (server/) on :8788; `npm run dev` proxies /api to it (run `npm --prefix server install` once)
 ```
 
 The snapshot in `public/data` is already there, so `npm run dev` works offline without the fetch steps.
@@ -152,24 +152,36 @@ stays static and works without it; the AI parts appear only when `GET /api/ai` a
   drafts one English sentence for the Description box of HISD's form. Their words and the draft sit side by side, and only a tap
   on "Use this sentence" adds it, as "Walkway conditions (family's description)", to the bus request and to `/packet`'s copy box and page. Nothing is submitted.
 - **Ask the data** (`/corridors`, `/april15`) and **Draft the narrative** (`/draft/:nbr`), idea 6, for staff: answers
-  from `corridors.json`, `zone_requests.json` and `zones.json`, which the proxy reads from the site itself. Every number carries
+  from `corridors.json`, `zone_requests.json` and `zones.json`, which the proxy reads from `public/data`. Every number carries
   its row id; ids are chips that scroll to and light the row, and ids that aren't in the data are dropped before the answer arrives.
 
-**The proxy** lives in the Cloudflare Worker that serves the site (`wrangler.jsonc`: the Worker `hh-cstb`, with `dist/` as its
-static assets and `worker/index.ts` for `/api/ai`, handled in `worker/ai.ts`). It holds the key, builds the prompts on the
-server (`worker/lib/prompts.ts`), and checks every answer in code (`worker/lib/guard.ts`):
+**The proxy** is its own small Node service in `server/` (`server/index.ts`: CORS, a 64 KB body cap, a rate limit;
+`server/ai.ts`: `/api/ai`). The site is a static build that calls it at `VITE_API_URL`. The proxy holds the key, builds the
+prompts on the server (`server/lib/prompts.ts`), reads the staff data from `public/data`, and checks every answer in code
+(`server/lib/guard.ts`):
 the copy rules' words ("safe", "qualifies", "seguro", "califica"…), a reading-level check on family answers, and staff
 citations. A failed check gets one retry with a note, then a fixed answer that points to HISD's closure line. It stores
 nothing and logs only the mode, the outcome and the retry count. Model: `claude-opus-5` unless `AI_MODEL` says otherwise
 (`claude-sonnet-5` and `claude-haiku-4-5` cost less; test them on sample addresses first). Costs are in
 `docs/ai-assistant/build-notes.md`.
 
-To run it: copy `.dev.vars.example` to `.dev.vars`, set `ANTHROPIC_API_KEY` (or `AI_MOCK=1` for canned demo answers with no
-key), then `npm run dev:full`. `npm run dev` proxies `/api` to it on :8788. To deploy: Workers Builds runs `npm run build`
-then `npx wrangler deploy` on the production branch. Set the key with `npx wrangler secret put ANTHROPIC_API_KEY` (or in the
-dashboard: Worker → Settings → Variables and Secrets; `AI_MOCK=1` as a variable gives the demo), and add a Cloudflare
-rate-limiting rule on `/api/ai`, since anyone can call it (the proxy only refuses other
-websites' pages). The "this is AI" notice shows before the first message (Texas HB 149 §552.051 asks that of a government's AI;
+To run it: `npm --prefix server install`, copy `server/.env.example` to `server/.env`, set `ANTHROPIC_API_KEY` (or
+`AI_MOCK=1` for canned demo answers with no key), then `npm run dev:server` and, in another terminal, `npm run dev`.
+
+**Deploying on Render** (`render.yaml`, two services, both on branch `ai-test`):
+1. Render → New → Blueprint → this repo. It creates `hh-cstb` (static site: `npm run build`, publishes `dist/`) and
+   `hh-cstb-api` (Node web service: `server/`). When asked, enter `ANTHROPIC_API_KEY` (or leave it empty and add `AI_MOCK=1`
+   to the API's environment for the demo).
+2. Once both exist, set `VITE_API_URL` on the static site to the API's URL (e.g. `https://hh-cstb-api.onrender.com`) and
+   `ALLOWED_ORIGINS` on the API to the site's URL (e.g. `https://hh-cstb.onrender.com`). Then redeploy the static site:
+   `VITE_API_URL` is baked in at build time.
+3. Without `VITE_API_URL`, or with the API off, the site works and the AI panels stay hidden.
+
+The API refuses other websites' pages (`ALLOWED_ORIGINS`) and rate-limits in memory: 20 requests per IP per 10 minutes, and
+`AI_MAX_PER_HOUR` (default 300) for everyone, as a ceiling on the bill. Render's free web service sleeps after 15 idle
+minutes, so the first AI panel after a quiet spell takes up to a minute to appear; the site itself is unaffected.
+
+The "this is AI" notice shows before the first message (Texas HB 149 §552.051 asks that of a government's AI;
 it's shown either way). Spanish answers sit under the page's existing "not professionally reviewed" banner.
 - **Not verified yet:** answer quality from the real model. The build was tested end to end with `AI_MOCK=1` and unit tests;
   no API key was available. Try each closed zone's sample point in English and Spanish before a demo.
@@ -195,8 +207,8 @@ it's shown either way). Spanish answers sit under the page's existing "not profe
   (schools that closed, one zone, sources), Staff (data, corridors, Before April 15, one school's draft).
 - `src/ui.css`: `ui/styles.css`, plus the AI panels. `src/lib/i18n.ts`: the language switch, the copy rules, and the packet
   and AI strings.
-- `wrangler.jsonc`, `worker/index.ts`: the Cloudflare Worker (static assets from `dist/`, `/api/ai`). `worker/ai.ts`,
-  `worker/lib/`: the AI proxy, its prompts, checks and demo replies. `src/lib/ai/`: the request
+- `server/`: the AI API, a separate Node service (own `package.json`). `index.ts`: HTTP, CORS, rate limit; `ai.ts`, `lib/`:
+  the proxy, its prompts, checks and demo replies. `render.yaml`: the two Render services. `src/lib/ai/`: the request
   types, the page's grounding for one home, the walkway sentence, and the client. `src/components/AiPanel.tsx`,
   `AskResult.tsx`, `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
 

@@ -1,4 +1,4 @@
-// The one contract between the page and the AI proxy (worker/ai.ts). Plain types and limits only, so the
+// The one contract between the page and the AI proxy (server/ai.ts). Plain types and limits only, so the
 // Worker can import this file without pulling in React.
 
 export type AiLang = "en" | "es";
