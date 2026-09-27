@@ -25,7 +25,7 @@ Now, when the API has a key:
 
 ## Waiting and falling back
 
-The screens that show a walk (`/check`, `/walk`, `/help`, `/bus`, `/schoolzone`, `/packet`) show "Checking…" until every
+The screens that show a walk (`/walk`, `/help`, `/bus`, `/schoolzone`, `/packet`) show "Checking…" until every
 route has come back or failed, so a verdict never changes after it's on screen. The client gives up after 12 s, the API's
 call to ORS after 8 s. A missing key (503), an error, a bad route or a timeout leaves that walk a straight line, labelled
 "Walk (straight line)" in the map key, with the straight-line footnotes. Routes are cached in memory for 5 minutes and

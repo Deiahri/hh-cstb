@@ -1,14 +1,15 @@
-// Home, the map picker, the Pre-K question and "not in an HISD zone": the first screens of Walk Check.
-import { type FormEvent, useRef, useState } from "react";
+// Home, the map picker, the Pre-K question and "not a closed zone": the first screens of Walk Check.
+import { type FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { analyzeAddress } from "../lib/analyze";
 import { useData } from "../lib/data";
 import { geocode } from "../lib/geocode";
 import type { LngLat } from "../lib/geo";
 import { closedZones, short } from "../lib/ui/model";
-import { Arrow, Back, useUi } from "../components/ui/bits";
+import { walkLink } from "../lib/ui/useUiWalk";
+import { Arrow, Back, Steps, useUi } from "../components/ui/bits";
+import { useShare } from "../components/ui/ShareSheet";
 import { WcMap } from "../components/ui/WcMap";
-import { checkLink } from "./Check";
 
 /** Days to the next April 15, and its year. */
 export function daysToApril15(): [number, number] {
@@ -22,18 +23,15 @@ export function daysToApril15(): [number, number] {
 export const sampleLabel = (zone: string, lang: "en" | "es") =>
   lang === "es" ? `Punto de muestra en la zona de ${short(zone)}` : `Sample point in the old ${short(zone)} area`;
 
-/** Where a home goes: its check, or "not in an HISD elementary zone". */
+/** Where a home goes: its walk, or the "not a closed zone" screen. */
 function useGoHome() {
   const d = useData();
   const nav = useNavigate();
   return (p: LngLat, addr: string, geocoded = false) => {
     const r = analyzeAddress(p, d.ds);
-    nav(r.now ? checkLink(p, addr) + (geocoded ? "&geo=1" : "") : `/nozone?${new URLSearchParams({ addr })}`);
+    nav(r.closedZone ? walkLink(p, addr, { geocoded }) : `/nozone?${new URLSearchParams({ addr })}`);
   };
 }
-
-/** A house number and something after it. Anything less can't be geocoded to a home. */
-export const looksLikeAddress = (v: string) => /\d/.test(v) && /[a-z]{2}/i.test(v) && v.trim().length >= 5;
 
 export default function Home() {
   const d = useData();
@@ -42,73 +40,74 @@ export default function Home() {
   const [params] = useSearchParams();
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState(false);
   // Links from before the redesign put the address on the home page.
   if (params.has("lat") && params.has("lng")) return <Navigate to={`/walk?${params}`} replace />;
   const zones = closedZones(d);
-  const demo = `${zones[0].address}, Houston, TX`;
+  const [days] = daysToApril15();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     const v = q.trim();
-    if (!looksLikeAddress(v)) {
-      setErr(L.bad_addr(demo));
-      input.current?.focus();
-      return;
-    }
+    if (!v) return;
     setBusy(true);
-    setErr(null);
+    setErr(false);
     try {
       const found = await geocode(/houston|tx\b|texas/i.test(v) ? v : `${v}, Houston, TX`);
       if (found[0]) return go(found[0].loc, found[0].address.replace(/, Houston, Texas.*$/, "").replace(/, TX.*$/, ""), true);
-      setErr(L.notfound);
+      setErr(true);
     } catch {
-      setErr(L.notfound);
+      setErr(true);
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <section className="screen home">
-      <h1>{L.h_check}</h1>
-      <form className="form" onSubmit={submit} noValidate>
-        <label className="label" htmlFor="addr">{L.addr}</label>
-        <input
-          ref={input}
-          className="input"
-          id="addr"
-          name="addr"
-          autoComplete="street-address"
-          enterKeyHint="go"
-          required
-          placeholder={L.addr_ph}
-          aria-invalid={!!err}
-          aria-describedby={err ? "addr-err" : undefined}
-          value={q}
-          onChange={(e) => { setQ(e.target.value); setErr(null); }}
-        />
-        {err && <p className="err" id="addr-err" role="alert">{err}</p>}
-        <button className="btn go" type="submit" disabled={busy}>{busy ? L.checking : L.go}</button>
-        <div className="formlinks">
-          <button type="button" className="linkbtn" onClick={() => { setQ(demo); setErr(null); input.current?.focus(); }}>{L.demo}</button>
-          <Link to="/pick">{L.pick}</Link>
+    <section className="screen">
+      <div className="hero">
+        <div className="hero-copy">
+          <h1>{L.h_check}</h1>
+          <Steps list={L.how} />
         </div>
-      </form>
-
-      <div className="sec">
-        <h2>{L.examples}</h2>
-        <p className="muted small">{L.ex_sub}</p>
+        <form className="form" onSubmit={submit}>
+          <div className="field">
+            <label className="label" htmlFor="addr">{L.addr}</label>
+            <input className="input" id="addr" name="addr" autoComplete="street-address" placeholder={L.addr_ph} value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
+          <button className="btn" type="submit" disabled={busy}>{busy ? L.checking : L.go}</button>
+          {err && <p className="err">{L.notfound}</p>}
+          <Link className="linkbtn" to="/pick">{L.pick}</Link>
+          <p className="small muted try">{L.trya}</p>
+          <div className="chips">
+            {zones.map((z) => (
+              <button key={z.nbr} type="button" className="chip" onClick={() => go(z.demo, sampleLabel(z.name, lang))}>{short(z.name)}</button>
+            ))}
+          </div>
+        </form>
       </div>
-      <div className="exlist">
+
+      <div className="sec"><h2>{L.closed}</h2></div>
+      <div className="list grid4">
         {zones.map((z) => (
-          <button key={z.nbr} type="button" className="ex" onClick={() => go(z.demo, sampleLabel(z.name, lang))}>
+          <Link key={z.nbr} className="list-row pair-row" to={`/zone/${z.nbr}`}>
             <span className="pair"><span className="was">{short(z.name)}</span><span className="arrow" aria-hidden="true">→</span><span className="now">{z.receiving.map((r) => short(r.name)).join(" / ")}</span></span>
-            <Arrow />
-          </button>
+            <span className="go">{L.see} <Arrow /></span>
+          </Link>
         ))}
       </div>
+
+      <div className="sec"><h2>{L.staff_h}</h2></div>
+      <div className="staffgrid">
+        {L.staff.map((s: { h: string; b: string; href: string }) => (
+          <Link key={s.href} className="staffcard" to={s.href.replace(/^#/, "")}>
+            <h3>{s.h}{s.href === "#/april15" && <span className="muted"> · {L.days(days)}</span>}</h3>
+            <p className="muted">{s.b}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="sec"><h2>{L.src_h}</h2><p className="muted"><Link to="/sources">{L.src_link} ›</Link></p></div>
     </section>
   );
 }
@@ -152,13 +151,22 @@ export function Prek() {
 
 export function NoZone() {
   const { L } = useUi();
+  const share = useShare();
   const [params] = useSearchParams();
+  const site = `${location.origin}${location.pathname}`;
   return (
     <section className="screen narrow">
-      <p className="addrline">{params.get("addr")}</p>
+      <Back />
+      <p className="eyebrow">{params.get("addr")}</p>
       <h1>{L.nz_h}</h1>
-      <Link className="btn" to="/">{L.another}</Link>
-      <Link className="btn secondary" to="/pick">{L.pick}</Link>
+      <Link className="btn" to="/zones">{L.seeclosed}</Link>
+      <Link className="btn secondary" to="/">{L.another}</Link>
+      <p className="muted">
+        {L.know}{" "}
+        <button type="button" className="linkbtn" onClick={() => share(`Walk Check shows what a child’s walk to the new school crosses, where to cross, and how to ask for a bus or a school zone. ${site}`, L.share_h)}>
+          {L.share}
+        </button>
+      </p>
     </section>
   );
 }

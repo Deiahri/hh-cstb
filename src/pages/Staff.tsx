@@ -44,7 +44,7 @@ export function Data() {
       <Back />
       <Eyebrow />
       <h1>Closed zones</h1>
-      <p className="muted small">{T.points.toLocaleString()} grid points, {T.spacingM} m apart. Straight lines to old and new school.</p>
+      <p className="lede muted">{T.points.toLocaleString()} grid points, {T.spacingM} m apart. Straight lines to old and new school.</p>
       <dl className="facts three">
         <div><dt>{Math.round(T.pctOver2New * 10) / 10}%</dt><dd>2+ mi from school</dd></div>
         <div><dt>{Math.round(T.hazardNew.combined)}%</dt><dd>cross a dangerous road or rail (was {Math.round(T.hazardOld.combined)}%)</dd></div>
@@ -144,7 +144,7 @@ export function Corridors() {
       <Back />
       <Eyebrow />
       <h1>Corridors</h1>
-      <p className="muted small">Roads and rail the new walks cross. No light first.</p>
+      <p className="lede muted">Roads and rail the new walks cross. No light first.</p>
       <StaffAsk
         suggestions={[
           "Which corridors have no traffic light nearby, and which receiving schools' walks cross them?",
@@ -196,7 +196,7 @@ export function April15() {
       <Back />
       <Eyebrow extra={`${days} days until April 15, ${yr}`} />
       <h1>Before April 15</h1>
-      <p className="muted small">School zone applications for each new school. Principal reviews, counts, signs.</p>
+      <p className="lede muted">School zone applications for each new school. Principal reviews, counts, signs.</p>
       <ol className="timeline">
         <li><b>Feb 26, 2026</b> HISD’s board approves the closures.</li>
         <li><b>Apr 15, 2026</b> School-zone applications close, 48 days later. Nobody walks the new routes yet.</li>
@@ -205,7 +205,7 @@ export function April15() {
         <li><b>End of 2027–28</b> The shuttle ends. The 2-mile bus rule applies again.</li>
         <li><b>Apr 15, 2028</b> Deadline for 2028–29, the first year without the shuttle.</li>
       </ol>
-      <p className="muted small">2023 batch: ~11 months to signs. Apply April 2027 to beat the shuttle’s end.</p>
+      <p className="muted">2023 batch: ~11 months to signs. Apply April 2027 to beat the shuttle’s end.</p>
       <StaffAsk
         suggestions={[
           "Which receiving schools have a street on a written path to a school zone, and which streets?",
@@ -242,7 +242,7 @@ export function April15() {
         </table>
       </div>
       <h2>Draft applications</h2>
-      <p className="muted small">Principal adds contacts, bell times, count, signature.</p>
+      <p className="muted">Principal adds contacts, bell times, count, signature.</p>
       <ul className="plain drafts">
         {Z.schools.map((s) => {
           const ok = s.streets.filter((st) => st.path !== "neither").length, alt = s.streets.length - ok;
@@ -290,7 +290,7 @@ export function Draft() {
       <h1>Draft school zone application: {s.name}</h1>
       <div className="cols">
         <div className="col">
-          <p className="muted small">New streets, by HPW’s written path.</p>
+          <p className="lede muted">New streets, by HPW’s written path.</p>
           <dl className="def">
             <dt>Principal</dt><dd>{L.front}<br />{s.name} · {s.address}</dd>
             <dt>Send to</dt><dd>Houston Public Works, School Coordination Program<br /><a href={`mailto:${HPW_EMAIL}`}>{HPW_EMAIL}</a></dd>

@@ -11,6 +11,8 @@ const DIR_ES_SHORT: Record<string, string> = { N: "N", NE: "NE", E: "E", SE: "SE
 const en = {
       // home
       h_check:'Check my child’s walk to school',addr:'Home address',addr_ph:'1234 Main St',go:'Safety check',checking:'Checking…',
+      // the home, header and not-in-zone blocks of the full layout
+      how:['Type your address','See what the walk crosses and where to cross','Give your principal the request'],staff:[{h:'Closed zones data',b:'Per closed zone: how much farther the walk is, and what share now crosses a dangerous road or active rail.',href:'#/data'},{h:'Corridors',b:'Every road and track a new walk crosses, sorted so the places with no traffic light come first, with what the City can do there.',href:'#/corridors'},{h:'Before April 15',b:'The streets by receiving school, the City’s written paths for a school zone, and a filled-in draft application for each principal.',href:'#/april15'}],trya:'Or try a spot in a closed school’s area:',other_lang:'¿Prefiere español?',other_go:'Cambiar a español',dismiss:'Cerrar',seeclosed:'See the schools that closed',know:'Know a family near Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson or Ross?',src_h:'Where the data comes from',
       demo:'Use a demo address',pick:'Pick on a map',examples:'Examples',ex_sub:'Homes in the 7 closed school zones',
       bad_addr:(ex: A)=>`Add a house number and street. Example: ${ex}`,notfound:'Address not found. Try the demo or pick on a map.',
       // result
@@ -19,7 +21,7 @@ const en = {
       shuttle_line:(from: A)=>`Free shuttle from ${from} until 2028`,askbus:'Ask for a bus',details:'Full details',
       d_nolight:'No light',d_nox:'No rail crossing',d_light:(f: A)=>`Light ${f}`,d_gate:(f: A)=>`Gate ${f}`,d_xing:(f: A)=>`Rail crossing ${f}`,dir:(d: A)=>d,
       rail_name:'Train tracks',mi_walk:(m: A)=>`${m} mi straight line`,
-      nz_h:'Not in an HISD elementary zone',another:'Try another address',
+      nz_h:'Not in one of the 7 closed zones',another:'Try another address',
       // nav, about
       nav_check:'Check',nav_schools:'Schools',nav_about:'About',nav_staff:'Staff',
       about_h:'About',about_b:['HISD closed 7 elementary schools in 2026.','Kids now walk farther, across busier roads.','This site shows each walk. Public data only.'],
@@ -88,6 +90,8 @@ export type UiDict = typeof en;
 
 const es: UiDict = {
       h_check:'Revise el camino de su hijo a la escuela',addr:'Dirección',addr_ph:'1234 Main St',go:'Revisar',checking:'Revisando…',
+      // the home, header and not-in-zone blocks of the full layout
+      how:['Escriba su dirección','Vea qué cruza el camino y dónde cruzar','Entregue la solicitud a su director'],staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],trya:'O pruebe un punto en la zona de una escuela cerrada:',other_lang:'Prefer English?',other_go:'Switch to English',dismiss:'Close',seeclosed:'Ver las escuelas que cerraron',know:'¿Conoce a una familia cerca de Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson o Ross?',src_h:'De dónde salen los datos',
       demo:'Usar dirección de ejemplo',pick:'Marcar en el mapa',examples:'Ejemplos',ex_sub:'Casas en las 7 zonas cerradas',
       bad_addr:(ex: A)=>`Escriba número y calle. Ejemplo: ${ex}`,notfound:'No se encontró. Use el ejemplo o marque en el mapa.',
       v_red:'Peligro',v_red_s:'Cruces sin semáforo',v_yellow:'Cuidado',v_yellow_s:'Cruce solo en los semáforos',v_green:'Despejado',v_green_s:'Sin cruces peligrosos',
@@ -95,7 +99,7 @@ const es: UiDict = {
       shuttle_line:(from: A)=>`Autobús gratis desde ${from} hasta 2028`,askbus:'Pedir autobús',details:'Todos los detalles',
       d_nolight:'Sin semáforo',d_nox:'Sin cruce de vías',d_light:(f: A)=>`Semáforo ${f}`,d_gate:(f: A)=>`Barrera ${f}`,d_xing:(f: A)=>`Cruce de vías ${f}`,dir:(d: A)=>DIR_ES_SHORT[d] ?? d,
       rail_name:'Vías de tren',mi_walk:(m: A)=>`${m} mi en línea recta`,
-      nz_h:'Fuera de las zonas de primaria de HISD',another:'Otra dirección',
+      nz_h:'Fuera de las 7 zonas cerradas',another:'Otra dirección',
       nav_check:'Revisar',nav_schools:'Escuelas',nav_about:'Acerca',nav_staff:'Personal',
       about_h:'Acerca',about_b:['HISD cerró 7 primarias en 2026.','Los niños caminan más lejos, por calles más peligrosas.','Este sitio muestra cada camino. Solo datos públicos.'],
       about_links:'Más',

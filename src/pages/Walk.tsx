@@ -104,7 +104,6 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
   return (
     <section className="screen has-bar">
       <PrintDoc><PlanDoc r={r} addr={u.addr} dates={dates} /></PrintDoc>
-      <AskResult w={u.w} bus={u.to("bus")} />
       {u.shared && <p className="shared">{L.shared_h} <Link to="/">{L.shared_b} ›</Link></p>}
       <div className={`ctx${ctxOn ? " is-on" : ""}`} aria-hidden="true">
         <b>{L.walkto} {to}</b><span>{r.now.length ? L.crossings(r.now.length) : L.nothing} · {mi(r.distNowM)} mi</span>
@@ -142,6 +141,7 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
           <p className="muted">{L.shuttle_c}</p>
           <h2>{L.after_h}</h2>
           <p>{L.after_b(to, mi(r.lineNowM))}</p>
+          <AskResult w={u.w} bus={u.to("bus")} />
           <p className="small muted foot">{r.path ? L.note_route : L.note_lines} {L.note_lights}</p>
           <p className="small muted foot">
             {L.dates}: {lang === "es" ? "listas de choques de la Ciudad" : "City crash lists"} {dates.crash} · HISD {lang === "es" ? "vías" : "rail"} {dates.rail} ·{" "}
