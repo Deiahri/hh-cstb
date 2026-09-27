@@ -164,8 +164,9 @@ Checks run for this adaptation:
 
 **Not verified:** live ORS directions, actual pedestrian access, real endpoint snapping, the hosted
 Render service type/settings, and provider quotas. No usable ORS key or Render dashboard access
-was available. No remote PR or CI run was created; the connected GitHub integration did not grant
-push access. This is locally verified code, not a configured or deployed routing service.
+was available. The baseline repository contains no GitHub Actions workflow. Local checks do not
+establish hosted CI results; publication status is recorded in the accompanying handoff. This is
+verified code, not a configured or deployed routing service.
 
 ## Rollback
 
@@ -179,3 +180,19 @@ the prior commit does not contain `server/index.mjs`.
 - [ORS public API and key setup](https://api.openrouteservice.org/)
 - [ORS routing profiles](https://giscience.github.io/openrouteservice-r/reference/ors_profile.html)
 - [Render Node web-service deployment](https://render.com/docs/deploy-node-express-app)
+
+## Latest repository recheck
+
+Rechecked during the September 27 afternoon update (America/Chicago). Git fetch and the connected
+GitHub API independently returned `814a6852b4c3dad6f981b3d4cbccb13cc1366197` as the latest default
+branch (`master`) commit. There were no newer committed source, dataset or deployment changes to
+adapt. The earlier patch remains unapplied on master. The live app still returned HTTP 200 with
+`assets/index-d9HC2W4p.js`, SHA-256
+`efeab7900f6978206dc2e41573a375268890a7e057e9e4cd3e4ac784e7fb2965`.
+This is the same baseline bundle inspected previously, not the walking-route implementation.
+
+The production build, all 11 focused tests and the production-browser integration suite were rerun
+and passed. No duplicate routing implementation or unrelated code change was needed. The refreshed
+package retains the full implementation against this exact base and all 16 unchanged data files.
+GitHub now reports push permission; that change in access does not imply deployment access or a
+configured ORS key. The handoff records the actual branch/PR publication outcome.
