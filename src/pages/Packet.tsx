@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { analyzeAddress } from "../lib/analyze";
-import { type CrossingStep, NEAR_M, SHOW_FAR_M, type WalkPlan, controlLabel, planWalk, railKind } from "../lib/crossings";
-import { roadCorridorTotals, shuttleFrom, useData } from "../lib/data";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { walkingFitPoints } from "../lib/useWalkingAddress";
+import { RouteStatus, routeDistanceText } from "../components/RouteStatus";
+import { type CrossingStep, NEAR_M, SHOW_FAR_M, type WalkPlan, controlLabel, railKind } from "../lib/crossings";
+import { roadCorridorTotals, useData } from "../lib/data";
 import { reverseGeocode } from "../lib/geocode";
-import type { LngLat } from "../lib/geo";
 import { coord, dist, mi, signedMi } from "../lib/format";
 import { DICTS, LangContext, useT } from "../lib/i18n";
 import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { shuttlePoints } from "../components/ShuttleLayer";
 import { RouteLayers } from "../components/RouteLayers";
-import { shuttleWalk } from "../lib/walk";
+import { useWalk } from "../lib/walk";
 
 // HISD's family-facing request form. It has a "Walk Route Concerns" subcategory, one Description box and no upload
 // (read 2026-09-25; see the measuring-the-request report). The principal's route is CNA(EXHIBIT), Exhibit B.
@@ -39,11 +39,11 @@ function hazardPhrase(step: CrossingStep) {
   const h = step.hazard, c = step.control;
   const what = h.kind === "road" ? "traffic light" : "public rail crossing";
   const control = c && step.near
-    ? `nearest ${what} ${ft(c.d)} from where the line crosses, at ${controlLabel(c)}`
-    : `no ${what} within ${ft(NEAR_M)} of where the line crosses${c ? ` (nearest ${ft(c.d)} away, at ${controlLabel(c)})` : ""}`;
+    ? `nearest ${what} ${ft(c.d)} from the mapped intersection, at ${controlLabel(c)}`
+    : `no ${what} within ${ft(NEAR_M)} of the mapped intersection${c ? ` (nearest ${ft(c.d)} away, at ${controlLabel(c)})` : ""}`;
   if (h.kind === "rail") return `active railroad track (${h.key.slice(5)}; ${control})`;
   const lists = [h.pedDangerous && "City pedestrian-dangerous road", h.highInjury && "City High Injury Network"].filter(Boolean).join(", ");
-  return `${h.name} (${lists}; ${plural(h.pedCrashes, "pedestrian crash", "pedestrian crashes")}, ${plural(h.pedDeaths, "death", "deaths")} on the crossed segment; ${control})`;
+  return `${h.name} (${lists}; ${plural(h.pedCrashes, "pedestrian crash", "pedestrian crashes")}, ${plural(h.pedDeaths, "death", "deaths")} on the intersected segment; ${control})`;
 }
 const crossList = (plan: WalkPlan) =>
   plan.steps.length ? plan.steps.map(hazardPhrase).join("; ") : "no road on the City's High Injury Network and no active railroad";
@@ -53,7 +53,7 @@ function HazardTable({ plan, newlyCrossed = [] }: { plan: WalkPlan; newlyCrossed
   return (
     <table className="data">
       <thead>
-        <tr><th>#</th><th>Road or track</th><th>Listed as</th><th>Nearest traffic light / public rail crossing</th><th>Crossed segment: ped. crashes / deaths</th><th>Whole road on City list: ped. crashes / deaths</th></tr>
+        <tr><th>#</th><th>Road or track</th><th>Listed as</th><th>Nearby traffic light / public rail crossing (access unverified)</th><th>Intersected segment: ped. crashes / deaths</th><th>Whole road on City list: ped. crashes / deaths</th></tr>
       </thead>
       <tbody>
         {plan.steps.map((step, i) => {
@@ -108,28 +108,27 @@ export default function Packet() {
   const d = useData();
   const { t, setLang } = useT();
   const tp = t.packet;
-  const [params] = useSearchParams();
-  const home: LngLat = [Number(params.get("lng")), Number(params.get("lat"))];
-  const stop: LngLat = params.get("slat") ? [Number(params.get("slng")), Number(params.get("slat"))] : home;
-  const addr = params.get("addr") ?? coord(home);
-  const r = useMemo(() => analyzeAddress(home, d.ds), [home[0], home[1], d.ds]);
+  const w = useWalk();
+  const stop = w?.stop;
   const [stopLabel, setStopLabel] = useState<string | null>(null);
   useEffect(() => {
-    reverseGeocode(stop).then(setStopLabel);
-  }, [stop[0], stop[1]]);
+    let active = true;
+    setStopLabel(null);
+    if (stop) reverseGeocode(stop).then((label) => { if (active) setStopLabel(label); }, () => {});
+    return () => { active = false; };
+  }, [stop?.[0], stop?.[1]]);
 
-  if (!Number.isFinite(home[0]) || !r.now)
+  if (!w?.r.now || !stop)
     return (
       <div className="page">
-        <p>This link has no usable home location. <Link to="/">Start from an address</Link>.</p>
+        <p>{t.plan.missing} <Link to="/">{t.plan.start}</Link>.</p>
       </div>
     );
 
-  const shuttle = r.oldZone ? shuttleFrom(d, Number(r.oldZone.Campus__Number)) : undefined;
-  const sw = shuttleWalk(r, shuttle);
-  const hz = r.now.hazards;
-  const plan = planWalk(home, r.now, d.ds);
-  const swPlan = sw && planWalk(home, sw, d.ds);
+  const { r, home, addr, params, shuttle, sw, swPlan } = w;
+  const now = w.r.now;
+  const hz = now.hazards;
+  const plan = w.nowPlan!;
   const roads = hz.filter((h) => h.kind === "road");
   const rails = hz.filter((h) => h.kind === "rail");
   const ped = roads.filter((h) => h.pedDangerous);
@@ -145,15 +144,16 @@ export default function Packet() {
   ].filter(Boolean);
 
   const copyText = [
-    `Walk Route Concerns: walk to ${r.now.school.name}, 2026–27.`,
+    `Walk Route Concerns: walk to ${now.school.name}, 2026–27.`,
     `Home address: ${addr} (${coord(home)}).`,
-    r.closedZone && r.old && `This address was zoned to ${oldName}, which closed after 2025–26. It is now zoned to ${r.now.school.name}.`,
-    `Walk to ${r.now.school.name}: ${mi(r.now.distance)} in a straight line. It crosses ${crossList(plan)}.`,
-    sw && swPlan && `While HISD's closure shuttle runs (2026–27 and 2027–28), the walk to its pickup at ${oldName} is ${mi(sw.distance)} in a straight line and crosses ${crossList(swPlan)}.`,
+    r.closedZone && r.old && `This address was zoned to ${oldName}, which closed after 2025–26. It is now zoned to ${now.school.name}.`,
+    `Walk to ${now.school.name}: ${routeDistanceText(now, DICTS.en)}. Potential map intersections: ${crossList(plan)}.`,
+    sw && swPlan && `While HISD's closure shuttle runs (2026–27 and 2027–28), the walk to its pickup at ${oldName} is ${routeDistanceText(sw, DICTS.en)}. Potential map intersections: ${crossList(swPlan)}.`,
+    ...[now, ...(sw ? [sw] : [])].map((route) => `${route.school.name}: ${DICTS.en.routing[route.routing?.status ?? "unavailable"]}${route.routing?.status === "ready" ? " " + DICTS.en.routing.endpoints(Math.round(route.routing.route.startGapM), Math.round(route.routing.route.endGapM)) : ""}`),
     `Proposed bus stop: ${stopLabel ?? coord(stop)} (${coord(stop)}).`,
     `Sources: HISD 2026–27 elementary boundaries and campus points; HISD Texas Railroads layer; City of Houston Vision Zero High Injury Network 2022; ` +
       `traffic signals from Houston TranStar's signal map; FRA Crossing Inventory. ` +
-      `Routes are straight lines, so a walk on streets crosses at least these. The family has a printed map.`,
+      `Walking geometry: openrouteservice / OpenStreetMap when available; otherwise explicitly labeled straight-line estimates. ${DICTS.en.routing.caveat} The family has a printed map.`,
   ].filter(Boolean).join("\n");
 
   return (
@@ -169,7 +169,7 @@ export default function Packet() {
         <h3>{tp.way1Title}</h3>
         <p>{tp.way1Before}<a href={FAMILY_FORM} target="_blank" rel="noreferrer">{tp.way1Link}</a>{tp.way1After}</p>
         <h3>{tp.way2Title}</h3>
-        <p>{tp.way2(r.now.school.name)}</p>
+        <p>{tp.way2(now.school.name)}</p>
         <p className="small">{tp.timing}</p>
         <CopyBox text={copyText} />
         {tp.printNote && <p className="small">{tp.printNote}</p>}
@@ -180,7 +180,7 @@ export default function Packet() {
         <div lang="en">
           <header className="packet-head">
             <p className="eyebrow">Walk-route concern: supporting evidence for HISD Transportation</p>
-            <h1>Walk to {r.now.school.name}: roads and railroads crossed</h1>
+            <h1>Walk to {now.school.name}: potential road and rail intersections</h1>
             <p className="small">Prepared {today} from published HISD and City of Houston data. This is evidence to attach to a request, not an eligibility decision.</p>
             <div className="fill-in">
               <span>Student name: <i /></span>
@@ -199,27 +199,31 @@ export default function Packet() {
                 {r.closedZone && r.old && (
                   <tr><th>2025–26 zoned school</th><td>{oldName}, {r.old.school.address}: closed after 2025–26. {mi(r.old.distance)} straight-line.</td></tr>
                 )}
-                <tr><th>2026–27 zoned school</th><td>{r.now.school.name}, {r.now.school.address}. {mi(r.now.distance)} straight-line{r.closedZone && r.old ? ` (${signedMi(r.now.distance - r.old.distance)})` : ""}.</td></tr>
+                <tr><th>2026–27 zoned school</th><td>{now.school.name}, {now.school.address}. {mi(now.distance)} straight-line{r.closedZone && r.old ? ` (${signedMi(now.distance - r.old.distance)})` : ""}.</td></tr>
               </tbody>
             </table>
           </section>
 
           <section className="conditions">
             <h2><span className="num">2</span> Dangerous conditions</h2>
+            <RouteStatus route={now} />
+            <p>{routeDistanceText(now, DICTS.en)}</p>
             {summary.length ? (
-              <p>The straight-line route from this home to {r.now.school.name} crosses {summary.join(", and ")}. A walking route on streets can only cross the same hazards or more.</p>
+              <p>The displayed geometry from this home to {now.school.name} has potential intersections with {summary.join(", and ")}. These are not confirmed at-grade crossings.</p>
             ) : (
-              <p>The straight-line route crosses no road on the City's High Injury Network and no active railroad. Describe other conditions below.</p>
+              <p>No intersections with listed roads or active railroads were found in the displayed geometry. Other hazards may exist; describe conditions below.</p>
             )}
             {hz.length > 0 && <HazardTable plan={plan} newlyCrossed={r.closedZone ? r.newlyCrossed : []} />}
-            {r.closedZone && r.newlyCrossed.length > 0 && <p className="small">* Not crossed by the straight-line route to the former school, {oldName}.</p>}
+            {r.closedZone && r.newlyCrossed.length > 0 && <p className="small">* Not intersected by the mapped walking route to the former school, {oldName}.</p>}
 
             {sw && (
               <div className="shuttle-walk">
                 <h3>Walk to the closure shuttle pickup (2026–27 and 2027–28)</h3>
+                <RouteStatus route={sw} />
+                <p>{routeDistanceText(sw, DICTS.en)}</p>
                 <p>
                   HISD's closure shuttle picks up at {oldName}, {sw.school.address}, {mi(sw.distance)} straight-line from this home. HISD hasn't
-                  published the stop's exact location or times. {sw.hazards.length ? "That walk crosses:" : "That walk crosses no road on the City's High Injury Network and no active railroad."}
+                  published the stop's exact location or times. {sw.hazards.length ? "Potential intersections in the displayed geometry:" : "No listed hazard intersections found in the displayed geometry."}
                 </p>
                 {swPlan && sw.hazards.length > 0 && <HazardTable plan={swPlan} />}
               </div>
@@ -245,18 +249,19 @@ export default function Packet() {
             <h2><span className="num">4</span> Map</h2>
             <MapBase className="map print-map" interactive={false}>
               <RouteLayers d={d} r={r} stop={stop} shuttle={sw ? shuttle : undefined} />
-              <FitTo points={[home, stop, r.now.school.loc, ...(r.old ? [r.old.school.loc] : []), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])]} />
+              <FitTo points={[...walkingFitPoints(r), stop, ...(sw && shuttle ? shuttlePoints([shuttle]) : [])]} />
             </MapBase>
             <p className="small">
-              ⌂ home · S proposed stop · 26 = {r.now.school.name} (solid blue line)
-              {r.old && r.closedZone ? ` · ${sw ? "bus pin" : "25"} = ${oldName}${sw ? ", the closure shuttle pickup" : ""} (dashed gray line)` : ""} · ○ where a line crosses a hazard
+              ⌂ home · S proposed stop · 26 = {now.school.name} (blue line)
+              {r.old && r.closedZone ? ` · ${sw ? "bus pin" : "25"} = ${oldName}${sw ? ", the closure shuttle pickup" : ""} (dashed gray line)` : ""} · ○ potential hazard intersection or mapped route endpoint
             </p>
+            <p className="small">{DICTS.en.routing.mapNote}</p>
             <MapLegend shuttle={!!sw} walks />
           </section>
 
           <footer className="packet-foot">
             <p><strong>How this reaches HISD.</strong> The family can file HISD's Transportation Support Request Form under "Walk Route Concerns," pasting a text version of this page (the form takes no uploads), and can give this printout to the campus. A principal can also start a hazardous-route request for the area under HISD policy CNA, Exhibit B.</p>
-            <p><strong>Method and limits.</strong> Routes are straight lines from home to campus, so they give a floor: a street route crosses at least as many hazards. Texas's hazardous-traffic test (Tex. Educ. Code §48.151) also depends on whether a walkway exists. Houston publishes no sidewalk data, so the family's description above is the only evidence for it. "Nearest traffic light" covers signals only: crossing guards, stop signs and marked crosswalks aren't in any public Houston layer. HISD's transportation department and board decide eligibility.</p>
+            <p><strong>Method and limits.</strong> Walking routes follow the mapped pedestrian network when available. Fallbacks are straight-line estimates; their hazard sets can differ. Intersections are geometric and may include bridges or tunnels. Access between pins and network endpoints is unverified. Nearby traffic controls are context, not instructions to leave the route. Straight-line distances remain separate for existing distance-rule estimates. Texas's hazardous-traffic test (Tex. Educ. Code §48.151) also depends on whether a walkway exists. Houston publishes no sidewalk data, so the family's description above is the only evidence for it. "Nearest traffic light" covers signals only: crossing guards, stop signs and marked crosswalks aren't in any public Houston layer. HISD's transportation department and board decide eligibility.</p>
             <p><strong>Sources.</strong> HISD GIS: elementary boundaries 2025–26 (edited {m.zones_old.lastEditDate}) and 2026–27 (edited {m.zones_new.lastEditDate}); campus points 2025–26 and 2026–27 (edited {m.schools_new.lastEditDate}); Texas Railroads, active segments (edited {m.rail.lastEditDate}). City of Houston Vision Zero: Ped Dangerous Roads (HIN 2022) and High Injury Network 2022. Traffic signals: City of Houston, TxDOT and Harris County via Houston TranStar's signal map (read {m.signals?.readOn ?? "unknown"}; the feed carries no date). Rail crossings: FRA Crossing Inventory (updated {m.rail_crossings?.lastEditDate ?? "unknown"}). Closure shuttle: HISD's announced pairings. Snapshot taken {m.fetchedAt.slice(0, 10)}.</p>
           </footer>
         </div>

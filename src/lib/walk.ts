@@ -3,17 +3,19 @@
 // shared or reloaded on its own.
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { type AddressResult, type Hazard, type RouteResult, analyzeAddress } from "./analyze";
+import { type AddressResult, type Hazard, type RouteResult } from "./analyze";
 import { type WalkPlan, planWalk, zonePossible } from "./crossings";
 import { type AppData, type ShuttleStat, type ZonePath, shuttleFrom, useData } from "./data";
 import type { LngLat } from "./geo";
+import { validPoint } from "./routing";
+import { useWalkingAddress } from "./useWalkingAddress";
 
 /** What the one-line answer counts: any active railroad, and how many distinct listed roads. */
 export const crossCounts = (hz: Hazard[]) => ({ rail: hz.some((h) => h.kind === "rail"), roads: hz.filter((h) => h.kind === "road").length });
 
 /**
  * The walk to the closure shuttle's pickup, while the shuttle runs (2026–27 and 2027–28). The pickup is the
- * 2025–26 campus, so it's the same straight line as the walk to last year's school.
+ * 2025–26 campus, so it reuses the walk to last year's school.
  */
 export const shuttleWalk = (r: AddressResult, s?: ShuttleStat) => (s && !s.sameSite && r.old ? r.old : undefined);
 
@@ -49,14 +51,14 @@ export function useWalk(): Walk | null {
   const d = useData();
   const [params] = useSearchParams();
   const lat = Number(params.get("lat")), lng = Number(params.get("lng"));
-  const ok = params.has("lat") && params.has("lng") && Number.isFinite(lat) && Number.isFinite(lng);
+  const ok = !!params.get("lat")?.trim() && !!params.get("lng")?.trim() && validPoint([lng, lat]);
   const slat = Number(params.get("slat")), slng = Number(params.get("slng"));
   const prekRaw = params.get("prek");
   const key = params.toString();
+  const r = useWalkingAddress(ok ? [lng, lat] : null, d.ds);
   return useMemo(() => {
-    if (!ok) return null;
+    if (!r) return null;
     const home: LngLat = [lng, lat];
-    const r = analyzeAddress(home, d.ds);
     const shuttle = r.oldZone ? shuttleFrom(d, Number(r.oldZone.Campus__Number)) : undefined;
     const sw = shuttleWalk(r, shuttle);
     const plans = walkPlans(d, r, shuttle);
@@ -64,13 +66,13 @@ export function useWalk(): Walk | null {
       home, r, shuttle, sw, plans,
       addr: params.get("addr") || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
       prek: prekRaw === "1" ? true : prekRaw === "0" ? false : null,
-      stop: params.has("slat") && Number.isFinite(slat) && Number.isFinite(slng) ? [slng, slat] : home,
+      stop: params.get("slat")?.trim() && params.get("slng")?.trim() && validPoint([slng, slat]) ? [slng, slat] : home,
       swPlan: sw ? plans[0] : undefined,
       nowPlan: r.now ? plans[plans.length - 1] : undefined,
       params: new URLSearchParams(params),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, d]);
+  }, [key, d, r]);
 }
 
 /**

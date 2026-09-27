@@ -11,6 +11,8 @@ import { DatesLine } from "../components/Notes";
 import { RouteLayers } from "../components/RouteLayers";
 import { shuttlePoints } from "../components/ShuttleLayer";
 import { Back, RouteStrip, ShareButton } from "../components/WalkCheck";
+import { RouteDistance, RouteStatus, routeSummaryText } from "../components/RouteStatus";
+import { walkingFitPoints } from "../lib/useWalkingAddress";
 import { schoolName } from "./Home";
 
 export function MissingWalk() {
@@ -52,7 +54,7 @@ export function WalkMap({ w, stop, plans = true }: { w: Walk; stop?: boolean; pl
   const [open, setOpen] = useState(false);
   const { r, shuttle, sw } = w;
   if (!r.now) return null;
-  const pts = [w.home, r.now.school.loc, ...(r.old ? [r.old.school.loc] : []), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])];
+  const pts = [...walkingFitPoints(r), ...(stop ? [w.stop] : []), ...(sw && shuttle ? shuttlePoints([shuttle]) : [])];
   return (
     <>
       <button type="button" className="btn secondary mob-only no-print" aria-expanded={open} onClick={() => setOpen(!open)}>
@@ -63,6 +65,7 @@ export function WalkMap({ w, stop, plans = true }: { w: Walk; stop?: boolean; pl
           <RouteLayers d={d} r={r} shuttle={shuttle} plans={plans ? w.plans : undefined} stop={stop ? w.stop : undefined} />
           <FitTo points={pts} />
         </MapBase>
+        <p className="small muted">{t.routing.mapNote}</p>
         <MapLegend shuttle={!!shuttle} walks plan={plans} />
       </div>
     </>
@@ -124,13 +127,15 @@ export default function WalkScreen() {
   const railOld = !!sw && crossCounts(sw.hazards).rail;
   const beyond2 = now.distance >= 2 * METERS_PER_MILE;
   const dest = shuttle ? shuttle.to.map((x) => (x.grades ? `${x.name} (${dataText(lang, x.grades)})` : x.name)).join(tr.and) : "";
-  const sms = wc.msg(w.addr, nowName, tr.crosses(c.rail, c.roads), shareUrl(lang));
+  const sms = wc.msg(w.addr, nowName, routeSummaryText(now, t), shareUrl(lang));
 
   return (
     <section className="screen has-bar">
       <Back />
       <p className="addr-line">{w.addr}{w.prek ? " · Pre-K" : ""}</p>
       <h1>{wc.verdict(nowName, c.rail, c.roads)}</h1>
+      <RouteStatus route={now} />
+      <p className="route-distance"><RouteDistance route={now} /></p>
       {w.prek && (
         <div className="card warm edge">
           <span className="v">{wc.prekTitle}</span>
@@ -145,12 +150,13 @@ export default function WalkScreen() {
               <div className="card tint">
                 <span className="k">{wc.lastYear}</span>
                 <span className="name">{schoolName(oldName)}</span>
-                <span className="muted small">{mi(r.old.distance)} · {wc.nCrossings(r.old.hazards.length)}</span>
+                <RouteStatus route={r.old} />
+                <span className="muted small"><RouteDistance route={r.old} /> · {wc.nCrossings(r.old.hazards.length)}</span>
               </div>
               <div className="card warm">
                 <span className="k">{wc.now}</span>
                 <span className="name">{schoolName(nowName)}</span>
-                <span className="muted small">{mi(now.distance)} · {wc.nCrossings(now.hazards.length)}</span>
+                <span className="muted small"><RouteDistance route={now} /> · {wc.nCrossings(now.hazards.length)}</span>
               </div>
             </div>
           )}
@@ -172,7 +178,8 @@ export default function WalkScreen() {
               {sw && w.swPlan && (
                 <>
                   <h2 style={{ fontSize: 18, marginTop: 6 }}>{wc.shuttleWalk(oldName)}</h2>
-                  <span><strong>{tr.crosses(railOld, crossCounts(sw.hazards).roads)}</strong> <span className="muted">({tr.miles(mi(sw.distance))})</span></span>
+                  <RouteStatus route={sw} />
+                  <span><strong>{tr.crosses(railOld, crossCounts(sw.hazards).roads)}</strong> <span className="muted">(<RouteDistance route={sw} />)</span></span>
                   {sw.hazards.length > 0 && <CrossingPlan plan={w.swPlan} />}
                 </>
               )}
@@ -181,11 +188,12 @@ export default function WalkScreen() {
 
           <WhoCanChange plans={w.plans} school={nowName} />
 
+          <p className="small muted">{t.routing.distanceBasis}</p>
           <div className={`card${beyond2 ? " tint" : ""}`}>
             <span className="k">{!beyond2 && sw ? tr.cliffLabel : tr.distanceLabel}</span>
             <span>{beyond2 ? tr.over2(mi(now.distance), nowName) : sw ? tr.cliff(mi(now.distance), nowName) : tr.under2(mi(now.distance), nowName)}</span>
           </div>
-          {sw && railOld !== c.rail && <p className="note rail">{railOld ? tr.shuttleAddsRail(nowName) : tr.shuttleAvoidsRail(nowName)}</p>}
+          {sw?.routing?.status === "ready" && now.routing?.status === "ready" && railOld !== c.rail && <p className="note rail">{t.routing.comparison}</p>}
           {(c.rail || railOld) && <p className="note rail"><strong>{tr.railLabel}:</strong> {tr.railNote}</p>}
           {(now.hazards.length > 0 || (sw?.hazards.length ?? 0) > 0) && <p className="small muted">{t.cross.caveat}</p>}
           <DatesLine />

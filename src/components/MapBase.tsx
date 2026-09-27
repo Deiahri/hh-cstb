@@ -16,7 +16,7 @@ export const COLORS = {
   // School-bus yellow, cased in dark amber so it stays visible over OSM's yellow roads.
   shuttle: "#facc15",
   shuttleInk: "#854d0e",
-  // Where to cross: the lights and rail crossings a walk plan names, and the walk drawn through them. Cyan, so it
+  // Nearby controls to review. Cyan, so it
   // isn't mistaken for the green "S" stop pin.
   plan: "#0891b2",
 };
@@ -102,7 +102,6 @@ export function MapLegend({ shuttle = false, walks = false, plan = false }: { sh
       {plan && (
         <>
           <li><span className="swatch dot" style={{ background: COLORS.plan }} /> {l.controls}</li>
-          <li><span className="swatch dotted" style={{ borderColor: COLORS.plan }} /> {l.path}</li>
         </>
       )}
       {shuttle && (

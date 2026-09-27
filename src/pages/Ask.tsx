@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useData } from "../lib/data";
 import type { LngLat } from "../lib/geo";
 import { shareUrl, useT } from "../lib/i18n";
-import { type Walk, crossCounts, useWalk, zoneStreets } from "../lib/walk";
+import { type Walk, useWalk, zoneStreets } from "../lib/walk";
 import { FitTo, MapBase, pinIcon } from "../components/MapBase";
 import { RouteLayers } from "../components/RouteLayers";
 import { hazardName } from "../components/HazardList";
 import { Back, ShareButton } from "../components/WalkCheck";
+import { RouteStatus, routeSummaryText } from "../components/RouteStatus";
+import { walkingFitPoints } from "../lib/useWalkingAddress";
 import { MissingWalk } from "./Walk";
 import { nextDeadline } from "./April15";
 
@@ -28,8 +30,13 @@ function PrincipalCard({ w }: { w: Walk }) {
 
 function SchoolShare({ w }: { w: Walk }) {
   const { lang, t } = useT();
-  const c = crossCounts(w.r.now!.hazards);
-  return <ShareButton title={t.wc.shareSchool} text={t.wc.msgSchool(w.r.now!.school.name, t.result.crosses(c.rail, c.roads), shareUrl(lang).replace(/#\/\w+/, "#/walk"))} label={t.wc.share} />;
+  return <ShareButton title={t.wc.shareSchool} text={t.wc.msgSchool(w.r.now!.school.name, routeSummaryText(w.r.now!, t), shareUrl(lang).replace(/#\/\w+/, "#/walk"))} label={t.wc.share} />;
+}
+
+function WalkStatuses({ w }: { w: Walk }) {
+  return <>{[w.r.now, w.sw].filter((r) => !!r).map((route) => <div key={route.school.nbr}>
+    <strong>{route.school.name}</strong><RouteStatus route={route} />
+  </div>)}</>;
 }
 
 /** Can any road on this walk get a City school zone? "none" when there are roads and none can; "noRoads" when there are none. */
@@ -50,6 +57,7 @@ export function Help() {
     <section className="screen">
       <Back />
       <h1>{wc.helpH1}</h1>
+      <WalkStatuses w={w} />
       <div className="cols">
         <div className="col">
           <p className="muted">{wc.helpSub}</p>
@@ -101,6 +109,7 @@ export function Bus() {
     <section className="screen has-bar">
       <Back />
       <h1>{wc.busH}</h1>
+      <WalkStatuses w={w} />
       <div className="cols">
         <div className="col">
           {w.prek && <div className="card warm edge"><span>{wc.busPrek}</span></div>}
@@ -109,6 +118,7 @@ export function Bus() {
           <ul className="inside-list">{items.map((i) => <li key={i}>{i}</li>)}</ul>
           <h2>{tr.stopTitle}</h2>
           <p>{tr.stopBody} <button type="button" className="linkbtn" onClick={() => setStop(null)}>{tr.resetStop}</button></p>
+          <p className="small muted">{t.routing.mapNote}</p>
           <div className="walk-map">
             <MapBase>
               <RouteLayers d={d} r={w.r} shuttle={w.shuttle} />
@@ -120,7 +130,7 @@ export function Bus() {
               >
                 <Tooltip>{t.lookup.dragStop}</Tooltip>
               </Marker>
-              <FitTo points={[w.home, w.r.now.school.loc, ...(w.r.old ? [w.r.old.school.loc] : [])]} />
+              <FitTo points={[...walkingFitPoints(w.r), w.stop]} />
             </MapBase>
           </div>
         </div>
@@ -156,6 +166,7 @@ export function SchoolZone() {
     <section className="screen has-bar">
       <Back />
       <h1>{wc.zoneH}</h1>
+      <WalkStatuses w={w} />
       <div className="cols">
         <div className="col">
           <div className="stat warm">

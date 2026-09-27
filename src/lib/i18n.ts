@@ -52,6 +52,23 @@ const en = {
     dragStop: "Suggested stop: drag me",
   },
 
+  routing: {
+    loading: "Finding a walking route. Showing a straight-line estimate for now.",
+    unavailable: "Walking route unavailable. Dashed lines and listed hazards are straight-line estimates, not directions.",
+    ready: "Estimated walking route · openrouteservice / OpenStreetMap contributors",
+    distance: (x: string) => `${x} along the mapped walking route`,
+    caveat: "Listed hazards are potential intersections on a flat map. Bridges, tunnels, sidewalks and access need checking; a nearby light is not a crossing instruction.",
+    endpoints: (a: number, b: number) => `The mapped route starts ${a} m from the home pin and ends ${b} m from the campus pin. Access across these gaps is unverified and excluded from walking distance.`,
+    endpoint: "Mapped walking route endpoint; connection to the pin is unverified",
+    possible: "Potential intersections with listed roads or railroads:",
+    noHits: "No intersections with the listed hazards were found in this geometry. Other hazards may exist.",
+    control: (label: string, distance: string) => `Nearby control: ${label}, ${distance} in a straight line from the mapped intersection. A walking path to it has not been verified.`,
+    noControl: "No nearby control found in the available data. Check local crossings and access.",
+    comparison: "The two walks show different potential rail intersections. Confirm actual crossings locally.",
+    distanceBasis: "The distance-rule estimate below still uses straight-line distance. Routed walking distance is shown separately; HISD decides eligibility.",
+    mapNote: "Street geometry is shown when routing succeeds; dashed estimates are used when it fails. Endpoint circles mark the mapped network, not a verified entrance.",
+  },
+
   result: {
     outside: "This spot is outside HISD's elementary school zones.",
     headlineClosed: (old: string, now: string) => `${old} closed. This home's elementary school is now ${now}.`,
@@ -59,13 +76,13 @@ const en = {
     wasLastYear: (was: string) => ` Last year it was ${was}.`,
     walkShuttle: (old: string) => `Walk to the shuttle at ${old}`,
     walkShuttleWhen: "Through the 2027–28 school year",
-    walkDirect: (now: string) => `Walk straight to ${now}`,
+    walkDirect: (now: string) => `Walk directly to ${now}`,
     walkDirectWhen: "If you skip the shuttle, and for everyone after it ends",
     walkOnly: (now: string) => `Walk to ${now}`,
     miles: (x: string) => `about ${x} in a straight line`,
     crosses: (rail: boolean, roads: number) => {
       const parts = [rail && "train tracks", roads > 0 && plural(roads, "dangerous road", "dangerous roads")].filter(Boolean);
-      return parts.length ? `Crosses ${parts.join(" and ")}.` : "Crosses no train tracks and no road on the City's dangerous-road lists.";
+      return parts.length ? `Potential map intersections: ${parts.join(" and ")}.` : "No intersections with listed hazards found in this geometry.";
     },
     details: "See each road and track",
     shuttleAddsRail: (now: string) => `The walk to the shuttle crosses train tracks. Walking straight to ${now} doesn't.`,
@@ -170,14 +187,14 @@ const en = {
     eyebrow: "Walk plan",
     title: (school: string) => `Walk plan to ${school}`,
     forHome: (addr: string) => `For the home at ${addr}.`,
-    first: "First: walk it once with your child, before a school day, the way this page shows. Stop at each place to cross.",
+    first: "First: check the route, entrances and crossings locally before using it with your child.",
     walkShuttle: (old: string) => `Walk to the shuttle at ${old}, through the 2027–28 school year`,
-    walkDirect: (now: string) => `Walk straight to ${now}`,
+    walkDirect: (now: string) => `Walk directly to ${now}`,
     walkOnly: (now: string) => `Walk to ${now}`,
     noCrossings:
       "This walk crosses no train tracks and no road on the City's dangerous-road lists. Walk it once anyway to see the corners.",
     doOnce: "Three things to do once",
-    do1: "Walk the route once with your child, crossing where this page says.",
+    do1: "Check the route and actual crossing access before walking with your child.",
     do2Shuttle: (old: string) =>
       `While the shuttle runs (through 2027–28), ask the school or HISD's closure family line, 713-556-7121, where at ${old} it stops and when.`,
     do2: (now: string) => `Ask ${now} whether there's a crossing guard on your child's way, and where.`,
@@ -196,7 +213,7 @@ const en = {
     ped: "Road the City lists as dangerous for people walking (2022)",
     hin: "High-injury road (City of Houston, 2022)",
     rail: "Active train tracks (HISD map layer)",
-    controls: "Traffic light or public rail crossing on the walk",
+    controls: "Nearby traffic light or public rail crossing (context only)",
     path: "Walk through the lights and crossings",
   },
 
@@ -215,7 +232,7 @@ const en = {
   notes: {
     title: "Good to know.",
     body:
-      "Lines go straight from home to school. A walk on real streets crosses at least these roads and tracks, often more. " +
+      "Address pages use a walking route when available and label straight-line fallbacks. Street routes may cross different hazards. " +
       "This page gathers evidence. It doesn't decide who gets a bus. HISD does.",
     more: "More detail",
     law:
@@ -306,17 +323,17 @@ const en = {
     verdict: (to: string, rail: boolean, roads: number) => {
       const parts = [rail && "train tracks", roads > 0 && plural(roads, "dangerous road", "dangerous roads")].filter(Boolean);
       return parts.length
-        ? `Your child's walk to ${to} crosses ${parts.join(" and ")}.`
-        : `Your child's walk to ${to} crosses no train tracks and no road on the City's dangerous-road lists.`;
+        ? `The mapped line to ${to} may intersect ${parts.join(" and ")}.`
+        : `No listed hazard intersections were found on the mapped line to ${to}. Other hazards may exist.`;
     },
     lastYear: "Last year",
     now: "Now",
     closedTag: "closed",
-    nCrossings: (n: number) => (n === 0 ? "nothing to cross" : plural(n, "crossing", "crossings")),
-    walk: "The walk, in order",
-    walkAria: (steps: string) => `The walk, in order: ${steps}`,
+    nCrossings: (n: number) => (n === 0 ? "no listed intersections found" : plural(n, "potential intersection", "potential intersections")),
+    walk: "Potential intersections, in route order",
+    walkAria: (steps: string) => `Schematic of potential intersections in route order, not directions: ${steps}`,
     home1: "Home",
-    whereToCross: "Where to cross",
+    whereToCross: "Nearby crossing controls to check",
     shuttleTitle: "Closure shuttle, through the 2027–28 school year",
     shuttleWalk: (old: string) => `The walk to the shuttle at ${old}`,
     shuttleSame: "It crosses the same roads and tracks as last year's walk.",
@@ -325,7 +342,7 @@ const en = {
       "HISD's transportation page says Pre-K 3 and Pre-K 4 students don't get HISD bus service unless an IEP or 504 plan includes it. " +
       "The closure shuttle's announcement says K–12 and doesn't name Pre-K. Ask the principal what help there is.",
     showMap: "Show the map",
-    mapAlt: "Map: home, both schools, and each road and track the walks cross",
+    mapAlt: "Map: original home and school pins, route geometry and potential hazard intersections",
     ask: "Ask for a change",
     askZone: "Ask for a school zone",
     print: "Print a walk plan",
@@ -336,7 +353,7 @@ const en = {
     zoned: "Zoned school",
     same: "Same as last year",
     was: (s: string) => `Last year: ${s}`,
-    seeWalk: "See what this walk crosses",
+    seeWalk: "Check this walking route",
     seeClosed: "See the schools that closed",
     another: "Try another address",
     know: (names: string) => `Know a family near ${names}?`,
@@ -349,7 +366,7 @@ const en = {
     zoneNone:
       "Under the City's rules, none of the roads on this walk can get a school zone. Ask the principal to request a crossing guard, " +
       "and ask the City for a crosswalk or a traffic-signal study through 311.",
-    zoneNoRoads: "This walk crosses no road on the City's dangerous-road lists, so there's no street to ask about.",
+    zoneNoRoads: "No intersections with the City's listed roads were found in this geometry. Other streets may still need review.",
     deadlinePill: "Applications close April 15",
     inside: "See what's inside",
     give: "Give it to",
@@ -370,7 +387,7 @@ const en = {
     zoneDeadline: (y: number) => `Applications close April 15, ${y}`,
     zoneDeadlineSub:
       "The principal applies to Houston Public Works. An application in April 2027 is the one that can have signs up before the shuttle ends.",
-    streets: "Roads on this walk",
+    streets: "Potential road intersections",
     path: {
       borders: "Borders the school. The City's rules allow a zone here.",
       thoroughfare: "A major street on the City's plan. The City's rules allow a zone here.",
@@ -448,6 +465,23 @@ const es: Dict = {
     dragStop: "Parada sugerida: muévame",
   },
 
+  routing: {
+    loading: "Buscando un camino peatonal. Por ahora se muestra una estimación en línea recta.",
+    unavailable: "Camino peatonal no disponible. Las líneas discontinuas y los peligros listados son estimaciones en línea recta, no indicaciones.",
+    ready: "Camino peatonal estimado · openrouteservice / colaboradores de OpenStreetMap",
+    distance: (x: string) => `${x} por el camino peatonal del mapa`,
+    caveat: "Los peligros listados son posibles intersecciones en un mapa plano. Hay que revisar puentes, túneles, aceras y acceso; un semáforo cercano no es una indicación para cruzar.",
+    endpoints: (a: number, b: number) => `El camino del mapa empieza a ${a} m del punto de la casa y termina a ${b} m del punto de la escuela. El acceso por estos espacios no está verificado y no se incluye en la distancia peatonal.`,
+    endpoint: "Extremo del camino peatonal del mapa; la conexión al punto no está verificada",
+    possible: "Posibles intersecciones con calles o vías del tren listadas:",
+    noHits: "No se encontraron intersecciones con los peligros listados en esta geometría. Puede haber otros peligros.",
+    control: (label: string, distance: string) => `Control cercano: ${label}, a ${distance} en línea recta de la intersección del mapa. No se ha verificado un camino peatonal hasta él.`,
+    noControl: "No se encontró un control cercano en los datos disponibles. Revise los cruces y el acceso localmente.",
+    comparison: "Los dos caminos muestran distintas posibles intersecciones con vías del tren. Confirme los cruces reales localmente.",
+    distanceBasis: "La estimación de la regla de distancia de abajo sigue usando la línea recta. La distancia peatonal se muestra por separado; HISD decide la elegibilidad.",
+    mapNote: "Se muestra el camino por calles cuando está disponible; si falla, se usan estimaciones discontinuas. Los círculos marcan la red del mapa, no una entrada verificada.",
+  },
+
   result: {
     outside: "Este punto está fuera de las zonas de primaria de HISD.",
     headlineClosed: (old: string, now: string) => `${old} cerró. La escuela primaria de esta casa ahora es ${now}.`,
@@ -461,7 +495,7 @@ const es: Dict = {
     miles: (x: string) => `unas ${x} en línea recta`,
     crosses: (rail: boolean, roads: number) => {
       const parts = [rail && "vías del tren", roads > 0 && plural(roads, "calle peligrosa", "calles peligrosas")].filter(Boolean);
-      return parts.length ? `Cruza ${parts.join(" y ")}.` : "No cruza vías del tren ni calles de las listas de calles peligrosas de la Ciudad.";
+      return parts.length ? `Posibles intersecciones en el mapa: ${parts.join(" y ")}.` : "No se encontraron intersecciones con peligros listados en esta geometría.";
     },
     details: "Ver cada calle y vía",
     shuttleAddsRail: (now: string) => `El camino al autobús de enlace cruza vías del tren. Caminar directo a ${now} no las cruza.`,
@@ -568,14 +602,14 @@ const es: Dict = {
     eyebrow: "Plan del camino",
     title: (school: string) => `Plan del camino a ${school}`,
     forHome: (addr: string) => `Para la casa en ${addr}.`,
-    first: "Primero: haga el camino una vez con su hijo, antes de un día de clases, como lo muestra esta página. Deténganse en cada lugar para cruzar.",
+    first: "Primero: revise el camino, las entradas y los cruces localmente antes de usarlo con su hijo.",
     walkShuttle: (old: string) => `Camino al autobús de enlace en ${old}, hasta el final del año escolar 2027–28`,
     walkDirect: (now: string) => `Camino directo a ${now}`,
     walkOnly: (now: string) => `Camino a ${now}`,
     noCrossings:
       "Este camino no cruza vías del tren ni calles de las listas de calles peligrosas de la Ciudad. Hágalo una vez de todos modos para ver las esquinas.",
     doOnce: "Tres cosas para hacer una vez",
-    do1: "Haga el camino una vez con su hijo, cruzando donde dice esta página.",
+    do1: "Revise el camino y el acceso real a los cruces antes de caminar con su hijo.",
     do2Shuttle: (old: string) =>
       `Mientras funcione el autobús de enlace (hasta 2027–28), pregunte en la escuela o en la línea de HISD para familias sobre los cierres, 713-556-7121, dónde para en ${old} y a qué hora.`,
     do2: (now: string) => `Pregunte en ${now} si hay un guardia de cruce en el camino de su hijo, y dónde.`,
@@ -594,7 +628,7 @@ const es: Dict = {
     ped: "Calle que la Ciudad considera peligrosa para peatones (2022)",
     hin: "Calle de alto riesgo (Ciudad de Houston, 2022)",
     rail: "Vías del tren activas (capa del mapa de HISD)",
-    controls: "Semáforo o cruce público de tren en el camino",
+    controls: "Semáforo o cruce público de tren cercano (solo como referencia)",
     path: "Camino por los semáforos y cruces",
   },
 
@@ -613,8 +647,8 @@ const es: Dict = {
   notes: {
     title: "Para tener en cuenta.",
     body:
-      "Las líneas van rectas de la casa a la escuela. Un camino por calles reales cruza por lo menos estas calles y vías, y muchas " +
-      "veces más. Esta página reúne evidencia. No decide quién recibe autobús. Eso lo decide HISD.",
+      "Las páginas de direcciones usan caminos peatonales cuando están disponibles e identifican las estimaciones en línea recta. " +
+      "Los caminos por calles pueden cruzar otros peligros. Esta página reúne evidencia. HISD decide quién recibe autobús.",
     more: "Más detalles",
     law:
       "La prueba de Texas para un camino peligroso (Código de Educación de Texas §48.151) también pregunta si hay acera (banqueta). " +
@@ -704,17 +738,17 @@ const es: Dict = {
     verdict: (to: string, rail: boolean, roads: number) => {
       const parts = [rail && "vías del tren", roads > 0 && plural(roads, "calle peligrosa", "calles peligrosas")].filter(Boolean);
       return parts.length
-        ? `El camino de su hijo a ${to} cruza ${parts.join(" y ")}.`
-        : `El camino de su hijo a ${to} no cruza vías del tren ni calles de las listas de calles peligrosas de la Ciudad.`;
+        ? `La línea del mapa a ${to} puede intersectar ${parts.join(" y ")}.`
+        : `No se encontraron intersecciones con peligros listados en la línea del mapa a ${to}. Puede haber otros peligros.`;
     },
     lastYear: "El año pasado",
     now: "Ahora",
     closedTag: "cerró",
-    nCrossings: (n: number) => (n === 0 ? "nada que cruzar" : plural(n, "cruce", "cruces")),
-    walk: "El camino, en orden",
-    walkAria: (steps: string) => `El camino, en orden: ${steps}`,
+    nCrossings: (n: number) => (n === 0 ? "sin intersecciones listadas" : plural(n, "posible intersección", "posibles intersecciones")),
+    walk: "Posibles intersecciones, en orden",
+    walkAria: (steps: string) => `Esquema de posibles intersecciones en orden; no son indicaciones: ${steps}`,
     home1: "Casa",
-    whereToCross: "Dónde cruzar",
+    whereToCross: "Controles de cruce cercanos para revisar",
     shuttleTitle: "Autobús de enlace por el cierre, hasta el final del año escolar 2027–28",
     shuttleWalk: (old: string) => `El camino al autobús de enlace en ${old}`,
     shuttleSame: "Cruza las mismas calles y vías que el camino del año pasado.",
@@ -723,7 +757,7 @@ const es: Dict = {
       "La página de transporte de HISD dice que los estudiantes de Pre-K 3 y Pre-K 4 no reciben autobús de HISD, a menos que un plan IEP o 504 lo incluya. " +
       "El anuncio del autobús de enlace dice K–12 y no menciona Pre-K. Pregunte a la dirección qué ayuda hay.",
     showMap: "Ver el mapa",
-    mapAlt: "Mapa: la casa, las dos escuelas y cada calle y vía que cruzan los caminos",
+    mapAlt: "Mapa: ubicaciones originales de casa y escuelas, geometría del camino y posibles intersecciones",
     ask: "Pedir un cambio",
     askZone: "Pedir una zona escolar",
     print: "Imprimir un plan del camino",
@@ -734,7 +768,7 @@ const es: Dict = {
     zoned: "Escuela asignada",
     same: "Igual que el año pasado",
     was: (s: string) => `El año pasado: ${s}`,
-    seeWalk: "Ver qué cruza este camino",
+    seeWalk: "Revisar este camino peatonal",
     seeClosed: "Ver las escuelas que cerraron",
     another: "Probar otra dirección",
     know: (names: string) => `¿Conoce a una familia cerca de ${names}?`,
@@ -747,7 +781,7 @@ const es: Dict = {
     zoneNone:
       "Según las reglas de la Ciudad, ninguna calle de este camino puede tener zona escolar. Pida a la dirección que solicite un guardia de cruce, " +
       "y pida a la Ciudad un paso peatonal o un estudio de semáforo por el 311.",
-    zoneNoRoads: "Este camino no cruza calles de las listas de calles peligrosas de la Ciudad, así que no hay calle por la cual preguntar.",
+    zoneNoRoads: "No se encontraron intersecciones con calles listadas en esta geometría. Puede haber otras calles que revisar.",
     deadlinePill: "Las solicitudes cierran el 15 de abril",
     inside: "Ver qué incluye",
     give: "Entréguelo a",
@@ -768,7 +802,7 @@ const es: Dict = {
     zoneDeadline: (y: number) => `Las solicitudes cierran el 15 de abril de ${y}`,
     zoneDeadlineSub:
       "La dirección de la escuela la envía a Obras Públicas de Houston. Una solicitud en abril de 2027 es la que puede tener letreros antes de que termine el autobús de enlace.",
-    streets: "Calles de este camino",
+    streets: "Posibles intersecciones con calles",
     path: {
       borders: "Está junto a la escuela. Las reglas de la Ciudad permiten una zona aquí.",
       thoroughfare: "Una calle principal en el plan de la Ciudad. Las reglas de la Ciudad permiten una zona aquí.",
