@@ -76,11 +76,14 @@ export default function April15() {
       <p className="deadline no-print"><strong>{deadline.days} days</strong> until April 15, {deadline.year}</p>
       <h1>Before April 15: school zones for the new walks</h1>
       <p className="lede">
-        The City's school-zone process was built for schools that stay put. It waits for a school's principal to apply,
-        and it asks for "observation or evidence of students walking." Neither exists before a school moves: this year's
-        new walks began in August, four months after the last deadline. This page does the homework for each receiving
-        school: the streets its new walkers cross, what the City's own layers say about each one, and a filled-in draft of
-        HPW's application for the principal to review and sign. That's one application per school, through the normal channel.
+        The City's school-zone process was built for schools that stay put. A school's principal applies by April 15, and
+        on a street that doesn't border the school HPW asks for "observation or evidence of students walking." The 2026
+        deadline came before anyone walked the new routes. By April 15, 2027 they'll have been walked for eight months, but
+        only by families who skip HISD's shuttle, which still runs from each old campus. A count this year shows fewer walkers
+        than fall 2028 will, when the shuttle is gone. This page does the homework for each receiving school: the streets its
+        new walkers cross, what the City's own layers say about each one, and a filled-in draft of HPW's application, with a
+        line for the school's own count, for the principal to review and sign. That's one application per school, through the
+        normal channel.
       </p>
 
       <ol className="timeline" aria-label="Dates">
@@ -89,7 +92,7 @@ export default function April15() {
         <li><span className="when">Aug 2026</span> New walks begin. HISD's shuttle runs from each old campus.</li>
         <li className="key"><span className="when">Apr 15, 2027</span> Deadline for 2027–28, the shuttle's last year. Council updates the ordinance in July; signs follow.</li>
         <li><span className="when">End of 2027–28</span> The shuttle ends. The 2-mile bus rule applies again.</li>
-        <li className="key"><span className="when">Apr 15, 2028</span> Deadline for 2028–29, the first year everyone walks these streets.</li>
+        <li className="key"><span className="when">Apr 15, 2028</span> Deadline for 2028–29, the first year without the shuttle.</li>
       </ol>
       <p className="small muted">
         Signing the City's 2023 batch of 38 schools took about 11 months (City Council committee slides, Sept 2023). An application
@@ -290,10 +293,21 @@ function Draft({ s, minPoints, onPrint }: { s: ReceivingSchoolRequests; minPoint
         <h4>Attachment: why these streets</h4>
         <p>
           The {zone} Elementary zone closed after 2025–26. Since August 2026, {pct(s.shareOfZone)} of its area is zoned to {title(s.name)}.
-          HISD's shuttle runs from the old {zone} campus through the 2027–28 school year. Families who skip it walk these streets now, and every family
-          does from fall 2028. These walks didn't exist before the April 15, 2026 deadline, so there could be no observation of students
-          walking them then.
+          HISD's shuttle runs from the old {zone} campus through the 2027–28 school year, so the students walking these streets now are the
+          ones who skip it. From fall 2028, with no shuttle, every student from that area who walks to school crosses them. Today's count
+          is a floor.
         </p>
+        {requested.some((r) => r.path === "thoroughfare-collector") && (
+          <p>
+            <strong>Observed:</strong> <Blank note="number" /> students walking or biking across{" "}
+            {requested.filter((r) => r.path === "thoroughfare-collector").map((r) => r.name).join(", ")}, on <Blank note="date" />,{" "}
+            <Blank note="times" />.{" "}
+            <span className="small muted">
+              HPW asks for "observation or evidence of students walking or riding bicycles" on a street that doesn't border the
+              school. A staff count at intake and dismissal is one way to show it.
+            </span>
+          </p>
+        )}
         <ul>
           {s.streets.map((r) => (
             <li key={r.id}>

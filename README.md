@@ -70,7 +70,9 @@ and pushes families with a car into driving. So each crossing now leads with an 
 
 The site's after-the-shuttle report found a handoff gap. HISD owns the pickup buildings and the shuttle; the City owns the
 streets, the school zones and the crossing-guard funding. Only a school's principal can apply for a City school zone, by April
-15, with "observation or evidence of students walking," and the new walks began four months after the 2026 deadline.
+15, with "observation or evidence of students walking" on a street that doesn't border the school. The new walks began four months
+after the 2026 deadline. By the 2027 deadline they've been walked for eight months, but only by families who skip the shuttle, so a
+count then is a floor. Each draft has a line for the school's own count.
 - **Before April 15** (`/april-15`): the streets each receiving school's new walkers cross that their walk to the old campus
   didn't, with crashes, the nearest traffic lights, and the City's class for the street. Each street is sorted by HPW's written
   path to a zone: it "borders the school," or it's "a thoroughfare or collector," on a City-owned street, or neither. Then comes
