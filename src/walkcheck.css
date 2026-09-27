@@ -261,3 +261,28 @@ a.bar:hover .hd b { color: var(--green); }
   .card, .route, .stat, .screen .crossing-plan li { border: 1px solid #bbb !important; background: #fff !important; color: #000 !important; break-inside: avoid; }
   .bar .fill { animation: none; transform: none; }
 }
+
+/* ---- AI panels: the result explainer, the walkway helper, the staff Q&A (docs/ai-assistant) ---- */
+.ai-card { gap: 10px; margin: 16px 0; }
+.ai-card.is-open { border-color: var(--green); }
+.ai-notice { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--note-bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+.ai-log { display: grid; gap: 10px; }
+.ai-log:empty { display: none; }
+.ai-msg { display: grid; gap: 2px; }
+.ai-msg p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-msg.user p { color: var(--mute); }
+.ai-msg.assistant { padding-left: 10px; border-left: 3px solid var(--green); }
+.ai-msg .k, .ai-card .k { font-size: 13px; font-weight: 600; color: var(--mute); }
+.ai-busy { margin: 0; }
+.ai-form { display: grid; gap: 8px; }
+.ai-form .input, .walkway .input { font-size: 16px; padding: 12px; resize: vertical; }
+.ai-card .btn { padding: 12px 16px; font-size: 16px; }
+.ai-card .chips .chip { text-align: left; font-size: 14px; }
+.walkway-cmp { display: grid; gap: 12px; }
+@media (min-width: 700px) { .walkway-cmp { grid-template-columns: 1fr 1fr; } }
+.walkway-cmp p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.walkway-used { margin: 0; padding: 10px 12px; border-left: 3px solid var(--green); background: var(--green-tint); }
+.cite { display: inline; padding: 0 .4em; margin: 0 .1em; border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+  color: var(--accent); font: inherit; font-size: .85em; white-space: nowrap; }
+button.cite { cursor: pointer; }
+button.cite:hover, a.cite:hover { border-color: var(--accent); }

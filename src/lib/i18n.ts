@@ -144,7 +144,7 @@ const en = {
     noneWithin: (far: string) => `There's none within ${far}.`,
     whoLabel: "Who can change this",
     whoRoad: (school: string) =>
-      `The City. Ask the principal of ${school} to ask the City for a crossing guard here. If the street qualifies, the ` +
+      `The City. Ask the principal of ${school} to ask the City for a crossing guard here. If the City's rules allow a school zone on the street, the ` +
       `principal can also apply for a school zone (applications close April 15). You can report the crossing to the City through 311.`,
     // A local street that doesn't border the school can't get a City school zone (HPW), so don't offer one.
     whoRoadNoZone: (school: string) =>
@@ -280,6 +280,40 @@ const en = {
   },
 
   // Walk Check screens (from the Walk Check wireframes): one question or one answer per screen, phone first.
+  ai: {
+    notice:
+      "This is an AI assistant (Anthropic's Claude), not a person, HISD or the City. It answers only from this page's result " +
+      "and can be wrong, so check anything important with the school or HISD. This site doesn't save what you type. Don't type " +
+      "your child's name.",
+    demo: "Demo mode: no AI key is set, so the answers are canned.",
+    askTitle: "Ask about this result",
+    askIntro: "Ask what this page means for your child, in your own words.",
+    start: "Ask a question",
+    suggestions: ["Why does it say my child crosses these roads?", "Where should we cross?", "What happens when the shuttle ends?", "Does Pre-K get a bus?"],
+    placeholder: "Type your question",
+    send: "Ask",
+    you: "You",
+    bot: "Assistant (AI)",
+    thinking: "Reading your result…",
+    error: "The assistant isn't answering right now. Everything else on this page still works.",
+    done: "That's the end of this chat. Reload the page to start a new one.",
+    walkwayLink: "Help me describe the sidewalk for HISD",
+    walkwayTitle: "Describe the walk in your own words",
+    walkwayIntro:
+      "HISD's form asks about sidewalks, and Houston has no sidewalk map, so your words are the evidence. Write what you see, " +
+      "in any language. The assistant writes it as one English sentence for the form. You check it before it's used.",
+    walkwayLabel: "What is the walk like?",
+    walkwayPlaceholder: "For example: no sidewalk on Lyons, the kids walk in the street next to the trucks",
+    walkwayWrite: "Write it for HISD",
+    walkwayYours: "Your words",
+    walkwayDraft: "For HISD's form (in English)",
+    walkwayCheck: "Check it says only what you said. You can change it.",
+    walkwayUse: "Use this sentence",
+    walkwayUsed: "Added to the text for HISD below and to the printed page.",
+    walkwayRemove: "Take it out",
+    walkwayAgain: "Write it again",
+  },
+
   wc: {
     brand: "Walk Check",
     home: "Walk Check home",
@@ -580,7 +614,7 @@ const es: Dict = {
     noneWithin: (far: string) => `No hay ninguno a menos de ${far}.`,
     whoLabel: "Quién puede cambiar esto",
     whoRoad: (school: string) =>
-      `La Ciudad. Pida a la dirección de ${school} que solicite a la Ciudad un guardia de cruce aquí. Si la calle califica, la ` +
+      `La Ciudad. Pida a la dirección de ${school} que solicite a la Ciudad un guardia de cruce aquí. Si las reglas de la Ciudad permiten una zona escolar en la calle, la ` +
       `dirección también puede solicitar una zona escolar (las solicitudes cierran el 15 de abril). Usted puede reportar el cruce a la Ciudad por el 311.`,
     whoRoadNoZone: (school: string) =>
       `La Ciudad. Pida a la dirección de ${school} que solicite a la Ciudad un guardia de cruce aquí. También puede pedir a la ` +
@@ -714,6 +748,41 @@ const es: Dict = {
     copied: "Copiado",
     copyFailed: "Seleccione el texto y cópielo.",
     printNote: "La página impresa está en inglés porque la lee el personal de HISD.",
+  },
+
+  ai: {
+    notice:
+      "Este es un asistente de IA (Claude, de Anthropic), no una persona, ni HISD ni la Ciudad. Contesta solo con el resultado " +
+      "de esta página y se puede equivocar; confirme lo importante con la escuela o con HISD. Este sitio no guarda lo que usted " +
+      "escribe. No escriba el nombre de su hijo.",
+    demo: "Modo de prueba: no hay clave de IA, así que las respuestas son fijas.",
+    askTitle: "Pregunte sobre este resultado",
+    askIntro: "Pregunte qué significa esta página para su hijo, con sus propias palabras.",
+    start: "Hacer una pregunta",
+    suggestions: ["¿Por qué dice que mi hijo cruza estas calles?", "¿Dónde debemos cruzar?", "¿Qué pasa cuando termine el autobús de enlace?", "¿Pre-K tiene autobús?"],
+    placeholder: "Escriba su pregunta",
+    send: "Preguntar",
+    you: "Usted",
+    bot: "Asistente (IA)",
+    thinking: "Leyendo su resultado…",
+    error: "El asistente no contesta ahora. Todo lo demás en esta página sigue funcionando.",
+    done: "Aquí termina esta conversación. Vuelva a cargar la página para empezar otra.",
+    walkwayLink: "Ayúdeme a describir la banqueta para HISD",
+    walkwayTitle: "Describa el camino con sus propias palabras",
+    walkwayIntro:
+      "El formulario de HISD pregunta por las banquetas, y Houston no tiene un mapa de banquetas, así que sus palabras son la " +
+      "evidencia. Escriba lo que ve, en cualquier idioma. El asistente lo escribe en una oración en inglés para el formulario. " +
+      "Usted la revisa antes de usarla.",
+    walkwayLabel: "¿Cómo es el camino?",
+    walkwayPlaceholder: "Por ejemplo: no hay banqueta en Lyons, los niños caminan en la calle junto a los camiones",
+    walkwayWrite: "Escribirlo para HISD",
+    walkwayYours: "Sus palabras",
+    walkwayDraft: "Para el formulario de HISD (en inglés)",
+    walkwayCheck: "Revise que diga solo lo que usted dijo. Puede cambiarla.",
+    walkwayUse: "Usar esta oración",
+    walkwayUsed: "Se agregó al texto para HISD de abajo y a la página impresa.",
+    walkwayRemove: "Quitarla",
+    walkwayAgain: "Escribirla otra vez",
   },
 
   wc: {

@@ -11,6 +11,7 @@ import { DatesLine } from "../components/Notes";
 import { RouteLayers } from "../components/RouteLayers";
 import { shuttlePoints } from "../components/ShuttleLayer";
 import { Back, RouteStrip, ShareButton } from "../components/WalkCheck";
+import { AskResult } from "../components/AskResult";
 import { schoolName } from "./Home";
 
 export function MissingWalk() {
@@ -180,6 +181,7 @@ export default function WalkScreen() {
           )}
 
           <WhoCanChange plans={w.plans} school={nowName} />
+          <AskResult w={w} />
 
           <div className={`card${beyond2 ? " tint" : ""}`}>
             <span className="k">{!beyond2 && sw ? tr.cliffLabel : tr.distanceLabel}</span>

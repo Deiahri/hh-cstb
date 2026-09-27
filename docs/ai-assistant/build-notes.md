@@ -3,7 +3,13 @@ title: Build notes
 order: 3
 ---
 
-These are notes for building ideas 1, 3 and 6. Nothing in the app has changed yet.
+These are notes for building ideas 1, 3 and 6.
+
+**Status (2026-09-27): built.** Idea 1 is on `/walk`, idea 3 on `/packet`, idea 6 on `/corridors`, `/april-15` and
+`/april-15/:nbr`. The proxy is a Cloudflare Pages Function (`functions/api/ai.ts`). Every guardrail below is in code
+(`functions/_lib/guard.ts`), with tests. The default model is `claude-opus-5`, set by `AI_MODEL`. Answer quality from the real
+model hasn't been checked yet: there was no API key, so the build was tested with canned replies (`AI_MOCK=1`). The README's
+"AI assistant" section has the details.
 
 ## Architecture
 

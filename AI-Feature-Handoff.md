@@ -125,4 +125,5 @@ doesn't exist yet, and no sibling topic existed as of 00:01.
 - **Still to do where the site lives:** copy the folder over, add a row to the Topics table in `research/README.md`,
   and add the research-folder memory line.
 - Build notes add an Opus 5.5 column (Opus 5 × 0.8, not from the script).
-- Nothing in the app changed.
+- ~~Nothing in the app changed.~~ Later the same day, ideas 1, 3 and 6 were built on the `ui-test` branch (see the
+  README's "AI assistant" section). Real-model answers are still untested: no API key was available.

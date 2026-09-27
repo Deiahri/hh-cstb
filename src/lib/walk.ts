@@ -48,6 +48,23 @@ export const walkQuery = (p: LngLat, addr: string, extra: Record<string, string>
 export const firstScreen = (p: LngLat, addr: string, d: AppData) =>
   `/${analyzeAddress(p, d.ds).closedZone ? "prek" : "walk"}?${walkQuery(p, addr)}`;
 
+/** One home, analysed: both walks, the shuttle and the where-to-cross plans. Pure, so the tests can run it too. */
+export function analyzeWalk(d: AppData, home: LngLat, o: { addr: string; prek: boolean | null; stop?: LngLat; params?: URLSearchParams }): Walk {
+  const r = analyzeAddress(home, d.ds);
+  const shuttle = r.oldZone ? shuttleFrom(d, Number(r.oldZone.Campus__Number)) : undefined;
+  const sw = shuttleWalk(r, shuttle);
+  const plans = walkPlans(d, r, shuttle);
+  return {
+    home, r, shuttle, sw, plans,
+    addr: o.addr,
+    prek: o.prek,
+    stop: o.stop ?? home,
+    swPlan: sw ? plans[0] : undefined,
+    nowPlan: r.now ? plans[plans.length - 1] : undefined,
+    params: new URLSearchParams(o.params),
+  };
+}
+
 /** The address in the URL, analysed. Null when the link carries no usable location. */
 export function useWalk(): Walk | null {
   const d = useData();
@@ -59,20 +76,12 @@ export function useWalk(): Walk | null {
   const key = params.toString();
   return useMemo(() => {
     if (!ok) return null;
-    const home: LngLat = [lng, lat];
-    const r = analyzeAddress(home, d.ds);
-    const shuttle = r.oldZone ? shuttleFrom(d, Number(r.oldZone.Campus__Number)) : undefined;
-    const sw = shuttleWalk(r, shuttle);
-    const plans = walkPlans(d, r, shuttle);
-    return {
-      home, r, shuttle, sw, plans,
+    return analyzeWalk(d, [lng, lat], {
       addr: params.get("addr") || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
       prek: prekRaw === "1" ? true : prekRaw === "0" ? false : null,
-      stop: params.has("slat") && Number.isFinite(slat) && Number.isFinite(slng) ? [slng, slat] : home,
-      swPlan: sw ? plans[0] : undefined,
-      nowPlan: r.now ? plans[plans.length - 1] : undefined,
-      params: new URLSearchParams(params),
-    };
+      stop: params.has("slat") && Number.isFinite(slat) && Number.isFinite(slng) ? [slng, slat] : undefined,
+      params,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, d]);
 }

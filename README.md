@@ -22,6 +22,8 @@ npm run streets   # pull City street class (MTFP) and road centerline around the
 npm run compute   # grid-sample the closed zones → zones.json, corridors.json, shuttles.json, zone_requests.json, ../VERIFY.md
 npm run dev       # http://localhost:5173
 npm run build     # static site in dist/ (HashRouter, relative paths — host anywhere)
+npm test          # AI guardrails, request checks, and the AI grounding on each closed zone's sample point
+npm run dev:full  # build + `wrangler pages dev` on :8788: the site plus the AI proxy (needs a .dev.vars, see below)
 ```
 
 The snapshot in `public/data` is already there, so `npm run dev` works offline without the fetch steps.
@@ -122,6 +124,36 @@ rather than shipped beside it, so there's one engine (`analyzeAddress`/`planWalk
   zone on phones. Its cooperative map gestures weren't: Leaflet here already zooms and pans by wheel, trackpad and touch, and
   the walk map stays folded on phones. Its to-do list is in `docs/improvements.md`.
 
+## AI assistant (2026-09-27)
+
+Built from the research in `docs/ai-assistant/` (ideas 1, 3 and 6, the ones it says to build). Everything else on the site
+stays static and works without it; the AI parts appear only when `GET /api/ai` answers that the proxy is on.
+- **Ask about this result** (`/walk`, idea 1): a chat box under "who can change it". It's grounded on the page's own result
+  for that home (`src/lib/ai/grounding.ts`): the schools, distances, each crossing and the page's "where to cross" sentence, the
+  shuttle, the 2-mile rule, Pre-K. **No address and no coordinates are sent**; the proxy refuses a request that carries any.
+- **Describe the walk for HISD** (`/packet`, idea 3): the family writes what the walk is like in any language; the assistant
+  drafts one English sentence for the Description box of HISD's form. Their words and the draft sit side by side, and only a tap
+  on "Use this sentence" adds it to the copy box and to the printed page's "Walkway conditions" block. Nothing is submitted.
+- **Ask the data** (`/corridors`, `/april-15`) and **Draft the narrative** (`/april-15/:nbr`), idea 6, for staff: answers
+  from `corridors.json`, `zone_requests.json` and `zones.json`, which the proxy reads from the site itself. Every number carries
+  its row id; ids are chips that select the row, and ids that aren't in the data are dropped before the answer arrives.
+
+**The proxy** is one Cloudflare Pages Function, `functions/api/ai.ts`, deployed with the site (`wrangler.toml`). It holds the
+key, builds the prompts on the server (`functions/_lib/prompts.ts`), and checks every answer in code (`functions/_lib/guard.ts`):
+the copy rules' words ("safe", "qualifies", "seguro", "califica"…), a reading-level check on family answers, and staff
+citations. A failed check gets one retry with a note, then a fixed answer that points to HISD's closure line. It stores
+nothing and logs only the mode, the outcome and the retry count. Model: `claude-opus-5` unless `AI_MODEL` says otherwise
+(`claude-sonnet-5` and `claude-haiku-4-5` cost less; test them on sample addresses first). Costs are in
+`docs/ai-assistant/build-notes.md`.
+
+To run it: copy `.dev.vars.example` to `.dev.vars`, set `ANTHROPIC_API_KEY` (or `AI_MOCK=1` for canned demo answers with no
+key), then `npm run dev:full`. `npm run dev` proxies `/api` to it on :8788. To deploy: `npx wrangler pages secret put
+ANTHROPIC_API_KEY`, and add a Cloudflare rate-limiting rule on `/api/ai`, since anyone can call it (the proxy only refuses other
+websites' pages). The "this is AI" notice shows before the first message (Texas HB 149 §552.051 asks that of a government's AI;
+it's shown either way). Spanish answers sit under the page's existing "not professionally reviewed" banner.
+- **Not verified yet:** answer quality from the real model. The build was tested end to end with `AI_MOCK=1` and unit tests;
+  no API key was available. Try each closed zone's sample point in English and Spanish before a demo.
+
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.
@@ -135,6 +167,9 @@ rather than shipped beside it, so there's one engine (`analyzeAddress`/`planWalk
 - `src/lib/analyze.ts`: `analyzeAddress()`, the single analysis the precompute and the UI both run.
 - `src/lib/crossings.ts`: which signals and rail crossings belong to a crossed road or track, `planWalk()` (the nearest control, direction and detour per crossing), and `zonePossible()`. Ported from `research/warning-families/crossing-options.mts`.
 - `src/lib/walk.ts`: `useWalk()`, the address in the URL analysed once for every screen, and `zoneStreets()`.
+- `functions/api/ai.ts`, `functions/_lib/`: the AI proxy, its prompts, checks and demo replies. `src/lib/ai/`: the request
+  types, the page's grounding for one home, and the client. `src/components/AiPanel.tsx`, `AskResult.tsx`,
+  `WalkwayHelper.tsx`, `StaffAsk.tsx`: the AI boxes.
 - `src/components/WalkCheck.tsx` and `src/walkcheck.css`: the logo, splash, walk strip, bars and share sheet.
 - `src/components/CrossingPlan.tsx`: the where-to-cross list and the once-per-page "who can change this".
 - `src/components/ShuttleLayer.tsx`: the shuttle layer on the Closed zones map and the address check.

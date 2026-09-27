@@ -7,6 +7,7 @@ import { dist, pct } from "../lib/format";
 import { COLORS, FitTo, MapBase, MapLegend, pinIcon } from "../components/MapBase";
 import "../april15.css";
 import { Caveats, DataVintage } from "../components/Notes";
+import { NarrativeDraft, StaffAsk } from "../components/StaffAsk";
 
 // The City's School Coordination Program (HPW application, effective Sept 1, 2023; read 2026-09-26). Quoted, not
 // paraphrased, where the page leans on it. Rows in ../../VERIFY.md.
@@ -98,6 +99,18 @@ export default function April15() {
         Signing the City's 2023 batch of 38 schools took about 11 months (City Council committee slides, Sept 2023). An application
         in April 2027 is the one that can have signs up before the shuttle ends.
       </p>
+
+      <StaffAsk
+        suggestions={[
+          "Which receiving schools have a street on a written path to a school zone, and which streets?",
+          "Which streets are on neither path, and what can the school ask for there instead?",
+          "Which school's new walkers cross the most streets with no traffic light within 500 m?",
+        ]}
+        pick={(id) => {
+          if (!rows.some(({ r }) => r.id === id)) return null;
+          return () => setSel(id);
+        }}
+      />
 
       <h2>The streets, by receiving school</h2>
       <p>
@@ -241,6 +254,7 @@ export function DraftPage() {
         Streets a newly zoned walk crosses, sorted by HPW's written paths. Public data fills it in; the principal adds the contact
         lines, bell times, the school's own count and the signature, then sends it to Houston Public Works by April 15.
       </p>
+      <NarrativeDraft nbr={s.nbr} />
       <Draft s={s} minPoints={minPoints} onPrint={() => window.print()} />
     </div>
   );

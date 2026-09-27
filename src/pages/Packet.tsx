@@ -11,6 +11,7 @@ import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { shuttlePoints } from "../components/ShuttleLayer";
 import { RouteLayers } from "../components/RouteLayers";
 import { shuttleWalk } from "../lib/walk";
+import { WalkwayHelper } from "../components/WalkwayHelper";
 
 // HISD's family-facing request form. It has a "Walk Route Concerns" subcategory, one Description box and no upload
 // (read 2026-09-25; see the measuring-the-request report). The principal's route is CNA(EXHIBIT), Exhibit B.
@@ -114,6 +115,8 @@ export default function Packet() {
   const addr = params.get("addr") ?? coord(home);
   const r = useMemo(() => analyzeAddress(home, d.ds), [home[0], home[1], d.ds]);
   const [stopLabel, setStopLabel] = useState<string | null>(null);
+  // The family's own walkway sentence, once they confirm the helper's draft. Kept in memory only.
+  const [walkway, setWalkway] = useState<string | null>(null);
   useEffect(() => {
     reverseGeocode(stop).then(setStopLabel);
   }, [stop[0], stop[1]]);
@@ -150,6 +153,7 @@ export default function Packet() {
     r.closedZone && r.old && `This address was zoned to ${oldName}, which closed after 2025–26. It is now zoned to ${r.now.school.name}.`,
     `Walk to ${r.now.school.name}: ${mi(r.now.distance)} in a straight line. It crosses ${crossList(plan)}.`,
     sw && swPlan && `While HISD's closure shuttle runs (2026–27 and 2027–28), the walk to its pickup at ${oldName} is ${mi(sw.distance)} in a straight line and crosses ${crossList(swPlan)}.`,
+    walkway && `Walkway conditions (family's description): ${walkway}`,
     `Proposed bus stop: ${stopLabel ?? coord(stop)} (${coord(stop)}).`,
     `Sources: HISD 2026–27 elementary boundaries and campus points; HISD Texas Railroads layer; City of Houston Vision Zero High Injury Network 2022; ` +
       `traffic signals from Houston TranStar's signal map; FRA Crossing Inventory. ` +
@@ -171,6 +175,7 @@ export default function Packet() {
         <h3>{tp.way2Title}</h3>
         <p>{tp.way2(r.now.school.name)}</p>
         <p className="small">{tp.timing}</p>
+        <WalkwayHelper used={walkway} onUse={setWalkway} />
         <CopyBox text={copyText} />
         {tp.printNote && <p className="small">{tp.printNote}</p>}
       </section>
@@ -226,8 +231,14 @@ export default function Packet() {
             )}
 
             <div className="write-in">
-              <p><strong>Walkway conditions (family to complete).</strong> Is there a sidewalk along the route? Where does the child cross? Traffic, trucks, lighting, crossing guards:</p>
-              <i /><i /><i />
+              {walkway ? (
+                <p><strong>Walkway conditions (family's description).</strong> {walkway}</p>
+              ) : (
+                <>
+                  <p><strong>Walkway conditions (family to complete).</strong> Is there a sidewalk along the route? Where does the child cross? Traffic, trucks, lighting, crossing guards:</p>
+                  <i /><i /><i />
+                </>
+              )}
             </div>
           </section>
 

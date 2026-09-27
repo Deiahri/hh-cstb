@@ -7,6 +7,7 @@ import { dist, pct } from "../lib/format";
 import { DICTS } from "../lib/i18n";
 import { COLORS, FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { Caveats, DataVintage, DatesLine } from "../components/Notes";
+import { StaffAsk } from "../components/StaffAsk";
 
 type SortKey = "control" | "pointsNewlyCrossed" | "pedCrashes" | "pedDeaths" | "name";
 
@@ -98,6 +99,23 @@ export default function Corridors() {
         each with what the City can do there: crossing guards, school zones, signals, crosswalks, sidewalks. The City can act on
         this list whatever HISD decides about buses.
       </p>
+      <StaffAsk
+        suggestions={[
+          "Which corridors have no traffic light nearby, and which receiving schools' walks cross them?",
+          "Which of these streets could get a City school zone under HPW's written rules?",
+          "Where do the new walks cross active rail with no public crossing close by?",
+        ]}
+        pick={(id) => {
+          // A street-request id is "<school nbr>|<corridor key>".
+          const key = id.includes("|") ? id.slice(id.indexOf("|") + 1) : id;
+          if (!corridors.some((c) => c.key === key)) return null;
+          return () => {
+            setBoth(true);
+            setSel(key);
+            document.querySelector(".corridor-split")?.scrollIntoView({ block: "start" });
+          };
+        }}
+      />
       <label className="small toggle">
         <input type="checkbox" checked={both} onChange={(e) => setBoth(e.target.checked)} /> Also show roads and tracks the walk to
         the old campus crosses too (not new, but still on today's walks)
