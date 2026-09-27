@@ -1,8 +1,12 @@
 import { type ReactNode, useEffect, useState } from "react";
-import { HashRouter, NavLink, Route, Routes } from "react-router-dom";
+import { HashRouter, Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { type AppData, DataContext, loadAppData } from "./lib/data";
 import { DICTS, type Lang, LangContext, initialLang, persistLang, useT } from "./lib/i18n";
-import Lookup from "./pages/Lookup";
+import { Logo, Splash } from "./components/WalkCheck";
+import Home from "./pages/Home";
+import WalkScreen, { Prek } from "./pages/Walk";
+import { Bus, Help, SchoolZone } from "./pages/Ask";
+import { SchoolDetail, Schools } from "./pages/Schools";
 import Packet from "./pages/Packet";
 import Plan from "./pages/Plan";
 import Overview from "./pages/Overview";
@@ -23,6 +27,56 @@ function EnglishOnly({ children }: { children: ReactNode }) {
   );
 }
 
+function Header() {
+  const { lang, setLang, t } = useT();
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > 4);
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  return (
+    <header className={`top no-print${scrolled ? " is-scrolled" : ""}`}>
+      <Link className="brand" to="/" aria-label={t.wc.home}>
+        <Logo className="on-green" />
+        <span>{t.wc.brand}</span>
+      </Link>
+      <nav className="topnav" aria-label="Site">
+        <NavLink to="/schools">{t.wc.nav.schools}</NavLink>
+        <NavLink to="/april-15">{t.wc.nav.principals}</NavLink>
+      </nav>
+      <div className="lang" role="group" aria-label="Language / Idioma">
+        {(["en", "es"] as Lang[]).map((l) => (
+          <button key={l} type="button" lang={l} className={`lang-btn${lang === l ? " is-on" : ""}`} aria-pressed={lang === l} onClick={() => setLang(l)}>
+            {l === "en" ? "English" : "Español"}
+          </button>
+        ))}
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  const { t } = useT();
+  const s = t.wc.staffLinks;
+  return (
+    <footer className="site-foot no-print">
+      <span className="mob-only"><Link to="/schools">{t.wc.nav.schools}</Link> · <Link to="/april-15">{t.wc.nav.principals}</Link></span>
+      <span>{t.wc.staff}</span>
+      <Link to="/zones">{s.zones}</Link>
+      <Link to="/corridors">{s.corridors}</Link>
+      <Link to="/april-15">{s.april15}</Link>
+    </footer>
+  );
+}
+
+/** New screen, top of the page. */
+function ScrollTop() {
+  const { pathname } = useLocation();
+  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  return null;
+}
+
 export default function App() {
   const [data, setData] = useState<AppData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,25 +95,10 @@ export default function App() {
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>
+      <Splash ready={!!data || !!error} />
       <HashRouter>
-        <header className="topbar no-print">
-          <NavLink to="/" className="brand">{t.brand}</NavLink>
-          <nav>
-            <NavLink to="/" end>{t.nav.check}</NavLink>
-            <NavLink to="/zones">{t.nav.zones}</NavLink>
-            <NavLink to="/corridors">{t.nav.corridors}</NavLink>
-            <NavLink to="/april-15">{t.nav.april15}</NavLink>
-          </nav>
-          <button
-            type="button"
-            className="button lang-toggle"
-            lang={lang === "en" ? "es" : "en"}
-            title={t.langToggleTitle}
-            onClick={() => setLang(lang === "en" ? "es" : "en")}
-          >
-            {t.langToggle}
-          </button>
-        </header>
+        <ScrollTop />
+        <Header />
         {t.unreviewed && <p className="lang-banner no-print">{t.unreviewed}</p>}
         <main>
           {error && <div className="page"><p className="error">{error}</p></div>}
@@ -67,16 +106,25 @@ export default function App() {
           {data && (
             <DataContext.Provider value={data}>
               <Routes>
-                <Route path="/" element={<Lookup />} />
+                <Route path="/" element={<Home />} />
+                <Route path="/prek" element={<Prek />} />
+                <Route path="/walk" element={<WalkScreen />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/bus" element={<Bus />} />
+                <Route path="/schoolzone" element={<SchoolZone />} />
+                <Route path="/schools" element={<Schools />} />
+                <Route path="/schools/:nbr" element={<SchoolDetail />} />
                 <Route path="/packet" element={<Packet />} />
                 <Route path="/plan" element={<Plan />} />
                 <Route path="/zones" element={<EnglishOnly><Overview /></EnglishOnly>} />
                 <Route path="/corridors" element={<EnglishOnly><Corridors /></EnglishOnly>} />
                 <Route path="/april-15" element={<EnglishOnly><April15 /></EnglishOnly>} />
+                <Route path="*" element={<Home />} />
               </Routes>
             </DataContext.Provider>
           )}
         </main>
+        <Footer />
       </HashRouter>
     </LangContext.Provider>
   );

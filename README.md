@@ -86,6 +86,22 @@ count then is a floor. Each draft has a line for the school's own count.
 - **Not built, on purpose:** a sale alert, a live shuttle tracker, a "get a bus" button and a transit planner.
 - VERIFY's last section lists every street's path, and its on-screen-claims table lists the HPW rules and the surplus vote.
 
+## Walk Check design (2026-09-27)
+
+The family screens now follow the Walk Check wireframes (Figma → static prototype): cream and green, Atkinson Hyperlegible
+Next, a bottom action bar on phones, a share sheet, and one question or answer per screen. The prototype resolved addresses by
+ZIP code and hardcoded its numbers, principals and council meetings; here every screen runs on `analyzeAddress()` and the
+precomputed zone files, and the names it had no source for are left out ("the principal of Kennedy ES", not a name).
+Its copy was rewritten to the rules in `src/lib/i18n.ts` (no "safe," no "qualify").
+- `/` address (geocoder, map pick, sample points) → `/prek` (closed zones only) → `/walk`: the one-line answer, last year vs
+  now, the walk as a strip, where to cross, the shuttle walk, who can change it, the 2-mile cliff, and the map.
+- `/help` → `/bus` (what the HISD page holds, drag the suggested stop, then `/packet`) and `/schoolzone` (each road on the
+  walk against HPW's written paths, then the principal's draft on `/april-15`).
+- `/schools` and `/schools/:nbr`: before → now bars per closed zone, shares of **area**, said on screen.
+- A Pre-K answer leads with the school zone, since HISD's page gives Pre-K no bus.
+- Old `/?lat=…&lng=…` links redirect to `/walk`. Staff pages (Closed zones, Corridors, Before April 15) are linked in the footer
+  and keep their layout; they pick up the new palette through the shared tokens. Dark mode is kept.
+
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.
@@ -98,10 +114,12 @@ count then is a floor. Each draft has a line for the school's own count.
 - `src/lib/geo.ts`: point-in-polygon, haversine, segment intersection. Shared by the scripts and the browser.
 - `src/lib/analyze.ts`: `analyzeAddress()`, the single analysis the precompute and the UI both run.
 - `src/lib/crossings.ts`: which signals and rail crossings belong to a crossed road or track, `planWalk()` (the nearest control, direction and detour per crossing), and `zonePossible()`. Ported from `research/warning-families/crossing-options.mts`.
+- `src/lib/walk.ts`: `useWalk()`, the address in the URL analysed once for every screen, and `zoneStreets()`.
+- `src/components/WalkCheck.tsx` and `src/walkcheck.css`: the logo, splash, walk strip, bars and share sheet.
 - `src/components/CrossingPlan.tsx`: the where-to-cross list and the once-per-page "who can change this".
 - `src/components/ShuttleLayer.tsx`: the shuttle layer on the Closed zones map and the address check.
 - `src/lib/i18n.ts`: every family-facing sentence in English and Spanish, the copy rules, and display-time translation of the shuttle flags.
-- `src/pages/`: Lookup (home), Plan (the family's walk plan, print), Packet (HISD, print), Overview (`/zones`), Corridors, April15 (`/april-15`).
+- `src/pages/`: Home, Walk (Pre-K question, answer, not-a-closed-zone), Ask (help, bus, school zone), Schools, Plan (the family's walk plan, print), Packet (HISD, print), Overview (`/zones`), Corridors, April15 (`/april-15`).
 - `src/components/PickupCards.tsx` and `src/lib/pickups.ts`: the seven pickup cards and their fixed facts. `src/april15.css` styles both, apart from `styles.css`.
 
 ## Limits (also shown in the UI)

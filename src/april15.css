@@ -66,7 +66,7 @@
 
 /* ---- Print one draft: everything else on the page stays off paper ---- */
 @media print {
-  body.print-draft .topbar, body.print-draft .lang-banner, body.print-draft .april15 > :not(.drafts) { display: none !important; }
+  body.print-draft .top, body.print-draft .site-foot, body.print-draft .lang-banner, body.print-draft .april15 > :not(.drafts) { display: none !important; }
   body.print-draft .drafts > :not(.print-target) { display: none !important; }
   body.print-draft .drafts { margin: 0; }
   body.print-draft .draft-app { border: 0; }

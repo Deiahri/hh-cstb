@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { CircleMarker, GeoJSON, Marker, Tooltip } from "react-leaflet";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { type ReceivingSchoolRequests, type StreetRequest, type ZonePath, segmentFeatures, useData } from "../lib/data";
 import { type LngLat } from "../lib/geo";
 import { dist, pct } from "../lib/format";
@@ -24,7 +24,7 @@ const nonCity = (r: StreetRequest) => !!r.streetClass?.owner && r.streetClass.ow
 const title = (school: string) => school.replace(/ ES$/, " Elementary School");
 
 /** The next April 15 from today, and the days until it. */
-function nextDeadline(now = new Date()) {
+export function nextDeadline(now = new Date()) {
   let y = Math.max(2027, now.getFullYear());
   let d = new Date(y, 3, 15);
   if (d.getTime() < new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) d = new Date(++y, 3, 15);
@@ -48,7 +48,12 @@ export default function April15() {
   const d = useData();
   const { schools, minPoints } = d.zoneRequests;
   const [sel, setSel] = useState<string | null>(null);
-  const [open, setOpen] = useState<Set<number>>(new Set());
+  // The family's school-zone screen links here with { openDraft: <receiving school nbr> }.
+  const openDraft = (useLocation().state as { openDraft?: number } | null)?.openDraft;
+  const [open, setOpen] = useState<Set<number>>(() => new Set(openDraft ? [openDraft] : []));
+  useEffect(() => {
+    if (openDraft) document.getElementById(`draft-${openDraft}`)?.scrollIntoView({ block: "start" });
+  }, [openDraft]);
   const [printing, setPrinting] = useState<number | null>(null);
   const deadline = nextDeadline();
 
@@ -199,7 +204,7 @@ export default function April15() {
       </p>
       <div className="drafts">
         {schools.map((s) => (
-          <details key={s.nbr} className={`draft-app${printing === s.nbr ? " print-target" : ""}`} open={open.has(s.nbr)}
+          <details key={s.nbr} id={`draft-${s.nbr}`} className={`draft-app${printing === s.nbr ? " print-target" : ""}`} open={open.has(s.nbr)}
             onToggle={(e) => { const isOpen = (e.currentTarget as HTMLDetailsElement).open; setOpen((o) => { const n = new Set(o); if (isOpen) n.add(s.nbr); else n.delete(s.nbr); return n; }); }}>
             <summary>
               <strong>{s.name}</strong>{" "}

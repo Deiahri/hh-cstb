@@ -9,7 +9,8 @@ import { coord, dist, mi, signedMi } from "../lib/format";
 import { DICTS, LangContext, useT } from "../lib/i18n";
 import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { shuttlePoints } from "../components/ShuttleLayer";
-import { RouteLayers, shuttleWalk } from "./Lookup";
+import { RouteLayers } from "../components/RouteLayers";
+import { shuttleWalk } from "../lib/walk";
 
 // HISD's family-facing request form. It has a "Walk Route Concerns" subcategory, one Description box and no upload
 // (read 2026-09-25; see the measuring-the-request report). The principal's route is CNA(EXHIBIT), Exhibit B.
@@ -158,7 +159,7 @@ export default function Packet() {
   return (
     <div className="page packet">
       <div className="no-print packet-actions">
-        <Link to={`/?${params}`} className="button">{tp.back}</Link>
+        <Link to={`/walk?${params}`} className="button">{tp.back}</Link>
         <button type="button" className="button primary" onClick={() => window.print()}>{tp.print}</button>
       </div>
 

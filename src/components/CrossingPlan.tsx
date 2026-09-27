@@ -58,7 +58,7 @@ export function CrossingPlan({ plan, crashes = true }: { plan: WalkPlan; crashes
           const h = step.hazard;
           const { text } = stepText(step, t, lang);
           return (
-            <li key={h.key} className={step.near ? "near" : "far"}>
+            <li key={h.key} className={`${step.near ? "near" : "far"} ${h.kind}`}>
               <div className="hz-name">{hazardName(h, t)}</div>
               <Tags h={h} t={t} />
               <p className="cross-line">{text}</p>

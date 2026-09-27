@@ -9,7 +9,8 @@ import { CrossingPlan, WhoCanChange } from "../components/CrossingPlan";
 import { FitTo, MapBase, MapLegend } from "../components/MapBase";
 import { DatesLine } from "../components/Notes";
 import { shuttlePoints } from "../components/ShuttleLayer";
-import { RouteLayers, shuttleWalk, walkPlans } from "./Lookup";
+import { RouteLayers } from "../components/RouteLayers";
+import { shuttleWalk, walkPlans } from "../lib/walk";
 
 /**
  * The family's one-page walk plan, in their language: walk it once first, then each crossing with where to cross,
@@ -48,7 +49,7 @@ export default function Plan() {
     // Five or more crossings across both walks (about 7% of the sampled area) print smaller, so the plan stays on one page.
     <div className={`page packet walk-plan${plans.reduce((n, p) => n + p.steps.length, 0) >= 5 ? " dense" : ""}`}>
       <div className="no-print packet-actions">
-        <Link to={`/?${params}`} className="button">{tp.back}</Link>
+        <Link to={`/walk?${params}`} className="button">{tp.back}</Link>
         <button type="button" className="button primary" onClick={() => window.print()}>{tp.print}</button>
       </div>
 
