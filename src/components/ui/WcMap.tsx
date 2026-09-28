@@ -143,7 +143,7 @@ export function WcMap({ kind, height, r: result, c: check, onPick }: Props) {
         // A route starts and ends on the street network, a little off the pins: those gaps, thin and dashed.
         if (r.path) addLine(m, "walk-gap", fc([lineF([r.home, r.path[0]]), lineF([r.path[r.path.length - 1], r.recv.loc])]), { "line-color": "#1F6E5A", "line-width": 1.5, "line-dasharray": [2, 2], "line-opacity": 0.7 });
         addLine(m, "walk", fc([lineF(animate ? [r.home, r.home] : walkLine)]), { "line-color": "#1F6E5A", "line-width": 4, "line-opacity": 0.95 });
-        const marks = r.now.map((c, i) => marker(m, c.at, `x${c.kind === "rail" ? " rail" : ""}`, String(i + 1)));
+        const marks = r.now.map((c) => marker(m, c.at, `x${c.kind === "rail" ? " rail" : ""}`));
         const lights = r.now.filter((c) => c.control.has && c.control.loc);
         m.addSource("lights", { type: "geojson", data: fc(lights.map((c) => ptF(c.control.loc!, { n: c.control.name }))) });
         m.addLayer({ id: "lights", type: "circle", source: "lights", paint: { "circle-radius": 5, "circle-color": "#1F6E5A", "circle-stroke-color": "#fff", "circle-stroke-width": 2 } });

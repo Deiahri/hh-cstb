@@ -87,7 +87,22 @@ main:has(.has-bar)+.site-foot{padding-bottom:calc(var(--bar-h) + 24px)}
 .verdict.ok .verdict-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--green);color:var(--white);font-size:20px}
 .verdict-body{display:grid;gap:10px;min-width:0}
 .verdict h1{font-size:26px}
-.verdict ul{margin:0;padding-left:20px;display:grid;gap:6px;font-weight:600;color:var(--ink)}
+
+/* the wait: a pedestrian walking in place while the sidewalk slides by */
+.checking{justify-items:center;padding-top:22vh;text-align:center;gap:12px}
+.checking .walker{color:var(--green)}
+.btn .walker{margin-right:10px}
+.walker-leg,.walker-arm{transform-box:view-box;animation:wc-swing .9s ease-in-out infinite alternate}
+.walker-leg{transform-origin:50px 58px}
+.walker-arm{transform-origin:50px 34px;animation-direction:alternate-reverse}
+.walker-leg.back{animation-direction:alternate-reverse;opacity:.55}
+.walker-arm.back{animation-direction:alternate;opacity:.55}
+.walker-body{animation:wc-bob .45s ease-in-out infinite alternate}
+.walker-ground{opacity:.4;animation:wc-slide .9s linear infinite}
+@keyframes wc-swing{from{transform:rotate(28deg)}to{transform:rotate(-28deg)}}
+@keyframes wc-bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+@keyframes wc-slide{to{stroke-dashoffset:44}}
+@media (prefers-reduced-motion:reduce){.walker *{animation:none !important}}
 .verdict p{margin:0;opacity:.9}
 .screen.narrow{max-width:520px}
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -212,6 +227,7 @@ h1.pair .was::after{height:3px;top:54%}
 .mk.x{transition:transform var(--dur) var(--ease-out),box-shadow var(--dur) var(--ease-out)}
 .mkwrap.is-hot .mk.x{transform:scale(1.35);box-shadow:0 0 0 6px rgba(31,110,90,.25),0 1px 4px rgba(0,0,0,.25)}
 .mkwrap.is-hot{z-index:2}
+.xrow.bare{grid-template-columns:1fr}
 .xrow .n{width:30px;height:30px;border-radius:50%;background:var(--amber);color:var(--ink);font-weight:800;font-size:15px;display:grid;place-items:center}
 .xrow.rail .n{background:var(--ink);color:var(--white);border-radius:6px}
 .xbody{display:grid;gap:6px}

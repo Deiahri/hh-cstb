@@ -7,9 +7,10 @@ import { geocode } from "../lib/geocode";
 import type { LngLat } from "../lib/geo";
 import { closedZones, short } from "../lib/ui/model";
 import { walkLink } from "../lib/ui/useUiWalk";
-import { Arrow, Back, useUi } from "../components/ui/bits";
+import { Arrow, Back, Steps, useUi } from "../components/ui/bits";
 import { useShare } from "../components/ui/ShareSheet";
 import { WcMap } from "../components/ui/WcMap";
+import { Walker } from "../components/ui/Checking";
 
 /** Days to the next April 15, and its year. */
 export function daysToApril15(): [number, number] {
@@ -69,13 +70,14 @@ export default function Home() {
       <div className="hero">
         <div className="hero-copy">
           <h1>{L.h_check}</h1>
+          <Steps list={L.how} />
         </div>
         <form className="form" onSubmit={submit}>
           <div className="field">
             <label className="label" htmlFor="addr">{L.addr}</label>
             <input className="input" id="addr" name="addr" autoComplete="street-address" placeholder={L.addr_ph} value={q} onChange={(e) => setQ(e.target.value)} />
           </div>
-          <button className="btn" type="submit" disabled={busy}>{busy ? L.checking : L.go}</button>
+          <button className="btn" type="submit" disabled={busy}>{busy ? <><Walker size={26} />{L.checking}</> : L.go}</button>
           {err && <p className="err">{L.notfound}</p>}
           <Link className="linkbtn" to="/pick">{L.pick}</Link>
           <p className="small muted try">{L.trya}</p>

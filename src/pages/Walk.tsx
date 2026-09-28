@@ -3,7 +3,7 @@
 import { type Ref, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useData } from "../lib/data";
-import { type UiCheck, type UiCrossing, type UiResult, crossList, crossingAdvice, dataDates, mi, problemLine, short, toCheck, whoFor } from "../lib/ui/model";
+import { type UiCheck, type UiCrossing, type UiResult, crossList, crossingAdvice, dataDates, mi, short, toCheck, whoFor } from "../lib/ui/model";
 import { type UiWalk, useUiWalk } from "../lib/ui/useUiWalk";
 import { AskResult } from "../components/AskResult";
 import { ActionBar, Back, PrintDoc, useUi } from "../components/ui/bits";
@@ -27,8 +27,7 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
   const tags = c.kind === "rail" ? [L.tag_rail] : [c.ped ? L.tag_ped : null, L.tag_hin].filter(Boolean);
   const { ask, who } = whoFor(c, school, L);
   return (
-    <li className={`xrow ${c.kind}`} data-x={i} onClick={(e) => !(e.target as HTMLElement).closest("details,a,button") && ctl.current?.show(i)}>
-      <span className="n">{i + 1}</span>
+    <li className={`xrow bare ${c.kind}`} data-x={i} onClick={(e) => !(e.target as HTMLElement).closest("details,a,button") && ctl.current?.show(i)}>
       <div className="xbody">
         <h3>
           {c.kind === "rail" ? `${lang === "es" ? "Vías de tren" : "Train tracks"} · ${c.name}` : c.name}{" "}
@@ -42,7 +41,7 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
   );
 }
 
-/** The answer first: green when the walk crosses nothing on the City's lists, red with each problem when it crosses anything. */
+/** The answer first: green when the walk crosses nothing on the City's lists, red with a count when it crosses anything. */
 function Verdict({ school, list, anchor }: { school: string; list: UiCrossing[]; anchor?: Ref<HTMLHeadingElement> }) {
   const { L } = useUi();
   const name = L.elem(short(school));
@@ -51,8 +50,7 @@ function Verdict({ school, list, anchor }: { school: string; list: UiCrossing[];
     <div className={`verdict ${risk ? "risk" : "ok"}`} role="status">
       <span className="verdict-icon" aria-hidden="true">{risk ? "⚠️" : "✓"}</span>
       <div className="verdict-body">
-        <h1 ref={anchor}>{risk ? L.risk_h(name) : L.ok_h(name)}</h1>
-        {risk && <ul>{list.map((c) => <li key={c.key}>{problemLine(c, L)}</li>)}</ul>}
+        <h1 ref={anchor}>{risk ? L.risk_h(name, list.length) : L.ok_h(name)}</h1>
         <p className="small">{L.disc_short}</p>
       </div>
     </div>
