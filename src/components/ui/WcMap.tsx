@@ -242,7 +242,7 @@ export function WalkMap({ r, c, height }: { r?: UiResult; c?: UiCheck; height: n
         <ul>
           <li><i className="l-walk" />{w?.path ? L.map_walk : L.map_line}</li>
           {w?.closed && <li><i className="l-pick" />{L.map_pick}</li>}
-          <li><i className="l-x">1</i>{L.map_x}</li>
+          <li><i className="l-x" />{L.map_x}</li>
           <li><i className="l-light" />{L.map_light}</li>
           <li><i className="l-road" />{L.map_road}</li>
           <li><i className="l-rail" />{L.map_rail}</li>

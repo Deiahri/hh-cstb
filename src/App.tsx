@@ -59,7 +59,10 @@ function useSplash(ready: boolean) {
     } catch {
       /* show it */
     }
-    if (seen) return sp.remove();
+    if (seen) {
+      sp.remove();
+      return;
+    }
     if (!ready) return;
     const a = setTimeout(() => sp.classList.add("is-gone"), 1300);
     const b = setTimeout(() => sp.remove(), 1900);
@@ -75,7 +78,11 @@ function CheckRedirect() {
 
 function ScrollTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  // Braces on purpose: an effect must return nothing or a cleanup, and some browser extensions make scrollTo return
+  // a number, which React then calls on the next navigation ("1 is not a function", a blank page).
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return null;
 }
 
