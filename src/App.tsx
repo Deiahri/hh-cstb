@@ -13,8 +13,10 @@ import { Bus, Help, SchoolZone } from "./pages/Requests";
 import Zones, { Sources, ZonePage } from "./pages/Zones";
 import { April15, Corridors, Data, Draft } from "./pages/Staff";
 import Packet from "./pages/Packet";
+import Sensors from "./pages/Sensors";
+import Sim from "./pages/Sim";
 
-const STAFF = ["/data", "/corridors", "/april15", "/draft"];
+const STAFF = ["/data", "/corridors", "/april15", "/draft", "/sensors", "/sim"];
 
 function Header({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
   const L = UI[lang];
@@ -139,6 +141,8 @@ export default function App() {
                     <Route path="/corridors" element={<Corridors />} />
                     <Route path="/april15" element={<April15 />} />
                     <Route path="/draft/:nbr" element={<Draft />} />
+                    <Route path="/sensors" element={<Sensors />} />
+                    <Route path="/sim" element={<Sim />} />
                     <Route path="/schools" element={<Navigate to="/zones" replace />} />
                     <Route path="/schools/:nbr" element={<Redirect to={(p) => `/zone/${p.nbr}`} />} />
                     <Route path="/april-15" element={<Navigate to="/april15" replace />} />

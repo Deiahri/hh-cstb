@@ -8,11 +8,13 @@
     "grounds": "tsx scripts/fetch-grounds.ts",
     "crossings": "tsx scripts/fetch-crossings.ts",
     "streets": "tsx scripts/fetch-streets.ts",
+    "trainwatch": "tsx scripts/fetch-trainwatch.ts",
     "compute": "tsx scripts/compute.ts",
+    "live:log": "tsx scripts/trainwatch-log.ts",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsx --test server/lib/*.test.ts src/lib/*.test.ts src/lib/ai/*.test.ts src/lib/ui/*.test.ts",
+    "test": "tsx --test server/lib/*.test.ts src/lib/*.test.ts src/lib/ai/*.test.ts src/lib/ui/*.test.ts src/lib/sim/*.test.ts",
     "dev:server": "npm --prefix server run dev"
   },
   "dependencies": {

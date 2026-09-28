@@ -43,7 +43,7 @@ const en = {
       plan_title:'Walk plan',plan_to:(n: A)=>`Walk plan to ${n}`,plan_for:'Home',doc_cross:(n: A)=>`${n} crossing${n===1?'':'s'}`,doc_none:'nothing to cross',plan_order:'Where to cross',plan_nothing:'Nothing on the City’s lists',plan_anyway:'Walk it once to see the corners.',plan_tracks:'Train tracks',
       plan_shuttle:(from: A, addr: A, m: A, x: A)=>`<b>Free HISD shuttle through 2027–28.</b> Pickup: ${from}, ${addr}, ${m} mi. The walk there ${x}. Times: HISD, ${HISD_LINE}.`,plan_xnone:'crosses nothing on the City’s lists',plan_xsome:(l: A)=>`crosses ${l}`,
       plan_bring:(school: A, who: A, phone: A)=>`<b>Bus stop or school zone?</b> Take this page to ${school}. Ask for ${who}${phone?' · '+phone:''}.`,plan_principal:'the principal',plan_foot:'Straight lines, not streets. Traffic lights only.',plan_foot_route:'Walking route on mapped streets. Traffic lights only.',plan_dates:(a: A, b: A)=>`City crash lists 2022 · HISD rail ${a} · signals ${b}`,
-      src_use:['Schools','Closed zones','Zone for an address','Roads dangerous for walking','High-injury roads','Train tracks','Traffic lights','Public rail crossings','School zone rules','Shuttle stops'],
+      src_use:['Schools','Closed zones','Zone for an address','Roads dangerous for walking','High-injury roads','Train tracks','Traffic lights','Public rail crossings','Live train on a crossing','School zone rules','Shuttle stops'],
       closed:'Schools that closed',see:'See the walk',
       src_link:'Sources',
       prek_h:'Pre-K?',prek_why:'Different bus rules.',yes:'Yes',yes_s:'Pre-K 3 or 4',no:'No',no_s:'K–5',
@@ -86,6 +86,10 @@ const en = {
       pickup_h:'Walk to the shuttle',pickup_b:(n: A, a: A)=>`${n}, ${a}. Roads crossed:`,
       pick_h:'Tap your home',use:'Use this spot',spot:'Map spot',
       plan_h:'Walk plan',bring:'Bus stop or school zone?',bring_b:(n: A, p: A)=>`Take this to the front office. Ask for ${n}${p?' · '+p:''}.`,
+      live_at:(s: A)=>`City train sensor at ${s}`,live_near:(s: A, f: A, dir: A)=>`City train sensor at ${s}, ${f} ft ${dir}`,
+      live_no:'no train there now.',live_blocked:'a train is blocking the crossing now.',live_for:(m: number)=>`Blocked about ${m} min.`,
+      live_est:(e: A)=>`City estimate: ${String(e).toLowerCase()} to clear.`,live_never:'Never cross between or under a stopped train. Wait, or use another public crossing.',
+      live_checked:(t: A)=>`Checked ${t}.`,live_stale:'The City’s sensor feed didn’t answer. This may be out of date.',live_loading:'Checking the City’s train sensor…',live_src:'Train Watch, City of Houston',
       staff_h:'Staff',staff_only:'English only.',sources_h:'Sources',
       src_cols:['Source','Used for','Date']
     }
@@ -122,7 +126,7 @@ const es: UiDict = {
       plan_title:'Plan del camino',plan_to:(n: A)=>`Plan del camino a ${n}`,plan_for:'Casa',doc_cross:(n: A)=>`${n} cruce${n===1?'':'s'}`,doc_none:'nada que cruzar',plan_order:'Dónde cruzar',plan_nothing:'Nada de las listas de la Ciudad',plan_anyway:'Camínelo una vez para ver las esquinas.',plan_tracks:'Vías de tren',
       plan_shuttle:(from: A, addr: A, m: A, x: A)=>`<b>Autobús gratis de HISD hasta 2027–28.</b> Recoge: ${from}, ${addr}, ${m} mi. El camino ahí ${x}. Horarios: HISD, ${HISD_LINE}.`,plan_xnone:'no cruza nada de las listas de la Ciudad',plan_xsome:(l: A)=>`cruza ${l}`,
       plan_bring:(school: A, who: A, phone: A)=>`<b>¿Parada o zona escolar?</b> Lleve esta página a ${school}. Pregunte por ${who}${phone?' · '+phone:''}.`,plan_principal:'el director',plan_foot:'Líneas rectas, no calles. Solo semáforos.',plan_foot_route:'Ruta a pie por calles del mapa. Solo semáforos.',plan_dates:(a: A, b: A)=>`Choques de la Ciudad 2022 · vías HISD ${a} · semáforos ${b}`,
-      src_use:['Escuelas','Zonas cerradas','Zona de una dirección','Calles peligrosas para peatones','Calles con muchos choques','Vías de tren','Semáforos','Cruces públicos de vías','Reglas de zona escolar','Paradas del autobús'],
+      src_use:['Escuelas','Zonas cerradas','Zona de una dirección','Calles peligrosas para peatones','Calles con muchos choques','Vías de tren','Semáforos','Cruces públicos de vías','Tren en un cruce, en vivo','Reglas de zona escolar','Paradas del autobús'],
       closed:'Escuelas que cerraron',see:'Ver el camino',
       src_link:'Fuentes',
       prek_h:'¿Pre-K?',prek_why:'Otras reglas de autobús.',yes:'Sí',yes_s:'Pre-K 3 o 4',no:'No',no_s:'K–5',
@@ -165,6 +169,10 @@ const es: UiDict = {
       pickup_h:'Camino al autobús',pickup_b:(n: A, a: A)=>`${n}, ${a}. Calles que cruza:`,
       pick_h:'Toque su casa',use:'Usar este punto',spot:'Punto del mapa',
       plan_h:'Plan del camino',bring:'¿Parada o zona escolar?',bring_b:(n: A, p: A)=>`Lleve esto a la oficina. Pregunte por ${n}${p?' · '+p:''}.`,
+      live_at:(s: A)=>`Sensor de trenes de la Ciudad en ${s}`,live_near:(s: A, f: A, dir: A)=>`Sensor de trenes de la Ciudad en ${s}, a ${f} pies al ${dir}`,
+      live_no:'no hay tren ahí ahora.',live_blocked:'un tren está bloqueando el cruce ahora.',live_for:(m: number)=>`Bloqueado unos ${m} min.`,
+      live_est:(e: A)=>`Cálculo de la Ciudad: ${String(e).toLowerCase()} para despejar.`,live_never:'Nunca cruce entre los vagones ni por debajo de un tren detenido. Espere, o use otro cruce público.',
+      live_checked:(t: A)=>`Revisado a las ${t}.`,live_stale:'La fuente de sensores de la Ciudad no respondió. Puede no estar al día.',live_loading:'Revisando el sensor de trenes de la Ciudad…',live_src:'Train Watch, Ciudad de Houston',
       staff_h:'Personal',staff_only:'Solo en inglés.',sources_h:'Fuentes',
       src_cols:['Fuente','Uso','Fecha']
     };

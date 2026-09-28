@@ -96,5 +96,13 @@
     "count": 3414,
     "lastEditDate": "2026-09-25",
     "fetchedAt": "2026-09-27T00:09:15.607Z"
+  },
+  "trainwatch": {
+    "label": "Train Watch rail-crossing sensors (City of Houston)",
+    "url": "https://www.houstontx.gov/trainwatch/",
+    "count": 56,
+    "lastEditDate": null,
+    "fetchedAt": "2026-09-27T19:31:51.435Z",
+    "readOn": "2026-09-27"
   }
 }

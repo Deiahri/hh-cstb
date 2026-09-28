@@ -198,6 +198,42 @@ never changes after it shows. With no key, an error or a timeout, the walks are 
 so. To turn it on: set `ORS_API_KEY` on `hh-cstb-api` (and in `server/.env` locally). Home coordinates go to our API and
 on to ORS; nothing is stored. Method and limits: `docs/walking-routes.md`.
 
+## Live rail sensors and the shuttle simulation (2026-09-27)
+
+**Train Watch, live.** The City's Train Watch map (houstontx.gov/trainwatch) runs on a public ArcGIS layer with no key
+(`Train_Watch_Layer/FeatureServer/0`, refreshed about every 30 s). Each sensor's `code` is its FRA crossing id, the
+same id as `rail_crossings.json`, so it joins without any geometry matching.
+- `npm run trainwatch` pulls the 56 sensors into `trainwatch.json`. It ranks every public rail crossing the closed
+  zones' walks are told to use into `sensor_gaps.json` (add `-- --offline` to re-rank without the network).
+  As of 2026-09-27, the walks use 56 crossings, 39 of them at street level. **Only one, Cavalcade St, has a sensor.** The
+  busiest ones with no sensor: Pleasantville Dr (277 sample points), Cornell (102), Jensen Dr (98), Dorsett St (88).
+- **Walk page:** a rail crossing with a sensor within 1 km shows "a train is blocking the crossing right now", or "no train there right now",
+  with the City's estimate and "never cross between or under a stopped train." It polls only while such a crossing is
+  on screen, pauses in a hidden tab, and never prints. English and Spanish.
+- **`/sensors`** (staff, linked from the staff nav): live status, the ranked list of where the next sensors would cover the most walks, and a
+  map.
+- **`npm run live:log`** records each blockage at the watched crossings (raw log in `data/live/`, gitignored).
+  `-- --summarize` writes `public/data/live/history.json`: bell-window counts per crossing for `/sensors`.
+
+**`/sim`, a simulated morning on the closure shuttles** (staff nav). There's one bus per pairing in `shuttles.json`.
+- **Telematics:** GPS, speed and doors. Each bus stops at every at-grade crossing (49 CFR 392.10).
+- **Routes:** each route uses the nearest public road crossing of each track. Buses drive straight lines between
+  crossings, since the walking routes cover people on foot, not buses.
+- **SMARTtag re-creation:** riders tap on at the pickup and off at the school, and the driver keys in a tap when a
+  badge is missing. **Riders, tags and counts are invented.** Real SMARTtag records are HISD's and are FERPA education
+  records, and none are used.
+- **Dispatch agent** (`src/lib/sim/agent.ts`, rules in code so a reroute never waits on a model):
+  - It looks 1.2 km ahead. If a crossing is blocked (live Train Watch, or the demo's train at Pleasantville Dr), it
+    re-plans through another public crossing when that costs less time than the City's estimate, and holds otherwise.
+  - It logs unexplained stops.
+  - It drafts a parent notice when a bus runs 2+ minutes late, and sends nothing.
+  - At the school, it compares taps on with taps off, and the roster with taps on.
+  - Every entry gets an id (`[E15]`).
+- **Day report:** `/api/ai` mode `dispatch` reads only that log and cites entries. It runs the same word checks and
+  retry as the other modes, refuses coordinates, and has an `AI_MOCK=1` reply (`server/ai.ts`, `server/lib/`).
+- Tests: `src/lib/sim/sim.test.ts` covers the live parsing, the bell-window math, and a full demo morning (one reroute, a
+  stall, a late notice, a missed tap-off, a no-show and a manual tap), plus a morning with no events.
+
 ## Layout
 
 - `scripts/fetch-data.ts`: paginated ArcGIS REST pulls. Layer ids are irregular (6, 1, 0, 1, …), and HISD's railroad service is spelled `Texas_Rainroads`.

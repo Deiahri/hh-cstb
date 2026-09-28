@@ -11,6 +11,7 @@ import { PlanDoc } from "../components/ui/docs";
 import { useShare } from "../components/ui/ShareSheet";
 import { WalkMap, WalkMapProvider, usePhone, useWalkMapCtl } from "../components/ui/WcMap";
 import { Checking } from "../components/ui/Checking";
+import { LiveRail } from "../components/ui/LiveRail";
 
 /** The message the Share button sends: where the walk goes, what it crosses, and the link back. */
 export function shareMessage(u: UiWalk, r: UiResult, lang: "en" | "es") {
@@ -38,6 +39,7 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
           {tags.join(" · ")}{c.kind === "road" ? ` · ${L.crashes(c.pc, c.pd)}` : ""}
         </p>
         <p className="adv">{crossingAdvice(c, L)}</p>
+        <LiveRail c={c} />
         <details className="who"><summary>{ask}</summary><p>{who}</p></details>
       </div>
     </li>

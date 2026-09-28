@@ -16,6 +16,10 @@ export function mockReply(mode: AiMode, lang: AiLang, ctx: WalkGrounding | undef
         : `DRAFT: Demo draft (no AI key set). In our words: "${lastUser.trim().replace(/\s+/g, " ").slice(0, 200)}"`;
     case "staff":
       return `Demo answer (no AI key set). The first corridor in the data is ${staff?.firstId ?? "unknown"} [${staff?.firstId ?? "unknown"}].`;
+    case "dispatch": {
+      const first = staff?.firstId ?? "E1";
+      return `Demo report (no AI key set). The morning's route log starts at [${first}]. Set ANTHROPIC_API_KEY for the written report.`;
+    }
     case "narrative":
       return `Demo draft (no AI key set). Students from our former zone now walk to ${staff?.school ?? "our school"} and cross ${staff?.firstStreet ?? "the streets listed"}.\n\nOur own count of students walking across these streets: ____`;
   }

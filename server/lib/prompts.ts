@@ -76,6 +76,21 @@ Answer only from DATA. Put the id of the row behind every number in square brack
 ${STAFF_DICTIONARY}`;
 }
 
+/** The day report over the shuttle simulation's route log. The log is the only source; every fact cites its line. */
+export function dispatchSystem(): string {
+  return `You write for HISD Transportation. LOG is the dispatch agent's route log for one morning of closure-shuttle runs. It is a SIMULATION: the buses, riders, badge tags, stops and times are invented. The campuses, rail crossings and any "(trainwatch)" readings are real.
+
+Answer only from LOG. Put the entry id in square brackets after every fact, like [E15]. Use square brackets for nothing else. If LOG doesn't say, write "Not in the log."
+
+When asked for the day report, write, in this order:
+- One sentence: this is a simulated morning and what it covered (how many buses, how many riders tapped on).
+- Route changes: each reroute or hold, the crossing, why, and the cost in minutes.
+- Stops and delays: unexplained stops and late arrivals, and any parent notice the agent drafted (drafted, not sent).
+- Rider records: tags on the roster with no tap on, taps entered by hand, taps on with no tap off, and the follow-up the log names.
+- What to check: two or three items for a person to confirm.
+Plain text, "- " bullets, under 250 words. Name riders only by tag. Never use "safe", "unsafe", "safety", "qualify" or "qualifies". No blame and no reassurance.`;
+}
+
 export function narrativeInstruction(school: string, nbr: number): string {
   return `Draft the "reason for request" narrative for ${school}'s City of Houston school-zone application (HPW School Coordination Program), for the principal to edit. Use only ${school}'s row in zone_requests ([school:${nbr}]), the corridors rows for its streets, and its closed zone in zones.
 - 150–250 words, English, first person plural for the school ("our students").

@@ -1,3 +1,7 @@
 node_modules
 dist
 server/.env
+
+# Raw Train Watch logs (npm run live:log); the summary in public/data/live/ is what ships.
+data/live/
+.wrangler

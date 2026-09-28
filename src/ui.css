@@ -528,3 +528,41 @@ a.bar:hover .hd b{color:var(--green)}
 .cite{display:inline;padding:0 .4em;margin:0 .1em;border:1px solid var(--line);border-radius:6px;background:var(--white);color:var(--green);font:inherit;font-size:.85em;font-weight:600;white-space:nowrap;text-decoration:none}
 button.cite{cursor:pointer}
 .cite:hover{border-color:var(--green)}
+
+/* ---- Live rail status on the walk (components/ui/LiveRail.tsx) ---- */
+.live-line{position:relative;margin:8px 0 4px;padding:8px 12px 8px 28px;border-radius:10px;background:var(--white);border:1px solid var(--line);font-size:15px}
+.live-line p{margin:0 0 3px}
+.live-line p:last-child{margin-bottom:0}
+.live-line .live-dot{position:absolute;left:11px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--green)}
+.live-line.is-blocked{background:#FDECEA;border-color:#9A2F1F}
+.live-line.is-blocked .live-dot{background:#9A2F1F;animation:live-pulse 1.6s ease-in-out infinite}
+@keyframes live-pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.live-line.is-blocked .live-dot{animation:none}}
+@media print{.live-line{display:none}}
+
+/* ---- Staff: rail sensors and the shuttle simulation (pages/Sensors.tsx, pages/Sim.tsx) ---- */
+.facts.four{grid-template-columns:repeat(4,1fr)}
+.facts.four dt{font-size:34px}
+@media (max-width:899px){.facts.four{grid-template-columns:repeat(2,1fr)}}
+.btn.inline{display:inline-flex;width:auto;padding:10px 18px;font-size:16px}
+.tag-demo{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:2px 7px;border-radius:6px;background:var(--amber-tint);color:var(--amber-ink);vertical-align:middle}
+.st-blocked{color:#9A2F1F}
+.tbl tr.is-sel td{background:var(--green-tint)}
+.brief{white-space:pre-wrap;background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:15px}
+.sim-banner{background:var(--amber-tint);color:var(--amber-ink);border-radius:10px;padding:10px 14px;margin:0}
+.sim-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:6px 0}
+.sim-controls label{font-size:15px}
+.sim-clock{font-variant-numeric:tabular-nums;font-size:26px;font-weight:800;margin-left:auto}
+.sim-split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:899px){.sim-split{grid-template-columns:1fr}}
+.sim-map,.sim-side{min-width:0}
+.sim-log{list-style:none;padding:0;margin:0;max-height:520px;overflow-y:auto;display:grid;gap:6px}
+.sim-log li{background:var(--white);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:6px 10px;font-size:14px}
+.sim-log li.k-reroute{border-left-color:var(--green)}
+.sim-log li.k-hold,.sim-log li.k-stop{border-left-color:#9A2F1F}
+.sim-log li.k-late{border-left-color:var(--amber)}
+.sim-log li.k-reconcile,.sim-log li.k-roster{border-left-color:#6D4FB3}
+.sim-taps{list-style:none;padding:0;margin:0;font-variant-numeric:tabular-nums;font-size:14px}
+.sim-taps li{padding:3px 0;border-bottom:1px dashed var(--line)}
+.mk.simbus{background:var(--amber);border-radius:6px}
+.mk.simbus.is-holding{background:#9A2F1F}

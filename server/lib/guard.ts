@@ -90,5 +90,10 @@ export function validateRequest(body: unknown): { ok: true; req: AiRequest } | {
     if (/\b29\.\d{4,}|-9[45]\.\d{4,}/.test(ctx)) return { ok: false, reason: "context" };
   }
   if (b.mode === "narrative" && !Number.isInteger(b.nbr)) return { ok: false, reason: "nbr" };
+  if (b.mode === "dispatch") {
+    if (typeof b.log !== "string" || !b.log.trim() || b.log.length > LIMITS.maxLogChars) return { ok: false, reason: "log" };
+    // The log is the simulation's; it names tags, never people. Coordinates aren't forwarded either.
+    if (/\b29\.\d{4,}|-9[45]\.\d{4,}/.test(b.log)) return { ok: false, reason: "log" };
+  }
   return { ok: true, req: b as unknown as AiRequest };
 }

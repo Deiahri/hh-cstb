@@ -3,12 +3,14 @@ import { createContext, useContext } from "react";
 import { type Dataset, type RawData, buildDataset } from "./analyze";
 import type { LngLat } from "./geo";
 import type { RailKind } from "./crossings";
+import type { CrossingHistory, TrainWatchSnapshot } from "./live";
 
 /** `readOn` (Houston date) is set on lists that carry no edit date of their own (the signal feed), so the page can say when it was read. */
 export interface LayerMeta { label: string; url: string; count: number; lastEditDate: string | null; fetchedAt?: string; readOn?: string }
 type SnapshotLayer = "schools_old" | "schools_new" | "zones_old" | "zones_new" | "rail" | "ped_hin" | "hin";
 export type Meta = {
   fetchedAt: string; campus_grounds?: LayerMeta; signals?: LayerMeta; rail_crossings?: LayerMeta; mtfp?: LayerMeta; centerline?: LayerMeta;
+  trainwatch?: LayerMeta;
 } & Record<SnapshotLayer, LayerMeta>;
 
 export interface HazardShares { ped: number; hin: number; rail: number; combined: number }
@@ -145,6 +147,23 @@ export interface ReceivingSchoolRequests {
 }
 export interface ZoneRequests { generatedAt: string; streetContextAt: string | null; minPoints: number; schools: ReceivingSchoolRequests[] }
 
+/** scripts/fetch-trainwatch.ts: every rail crossing the walks use, and whether a Train Watch sensor watches it. */
+export interface SensorGapRow {
+  id: string; label: string; railroad: string; kind: RailKind; canBlock: boolean; monitored: boolean;
+  points: number; pickup: number; school: number; zones: string[]; receiving: string[]; loc: LngLat;
+}
+export interface SensorGaps {
+  generatedAt: string; trainWatchAt: string; method: string;
+  source: { label: string; page: string; layer: string };
+  totals: {
+    points: number; railPoints: number; railSteps: number; stepsWithSensor: number; stepsToldToUseSensor: number;
+    pointsWithSensor: number; crossingsUsed: number; atGradeUsed: number; monitoredUsed: number; sensorsCitywide: number;
+  };
+  crossings: SensorGapRow[];
+  nearbySensors: { id: string; street: string; xing: string | null }[];
+}
+/** scripts/trainwatch-log.ts --summarize: bell-time blockages per watched crossing. */
+export interface LiveHistory { generatedAt: string; from: string | null; to: string | null; demo: boolean; windows: { key: string; from: string; to: string }[]; crossings: CrossingHistory[] }
 export interface AppData {
   raw: RawData;
   ds: Dataset;
@@ -154,6 +173,10 @@ export interface AppData {
   corridors: CorridorStat[];
   shuttles: Shuttles;
   zoneRequests: ZoneRequests;
+  /** Optional: the live layer's snapshot and what the logger, counters and agent wrote. Absent files mean "not run yet". */
+  trainwatch?: TrainWatchSnapshot | null;
+  sensorGaps?: SensorGaps | null;
+  liveHistory?: LiveHistory | null;
 }
 
 const url = (f: string) => `${import.meta.env.BASE_URL}data/${f}`;
@@ -162,9 +185,21 @@ const get = async (f: string) => {
   if (!r.ok) throw new Error(`Could not load ${f} (HTTP ${r.status}). Run \`npm run data && npm run compute\`.`);
   return r.json();
 };
+/** A file that may not exist yet: null instead of an error, so the app runs before the live scripts do. */
+const maybe = async <T,>(f: string): Promise<T | null> => {
+  try {
+    const r = await fetch(url(f));
+    return r.ok ? ((await r.json()) as T) : null;
+  } catch {
+    return null;
+  }
+};
 
 export async function loadAppData(): Promise<AppData> {
   const keys = ["schools_old", "schools_new", "zones_old", "zones_new", "rail", "ped_hin", "hin"] as const;
+  const live = Promise.all([
+    maybe<TrainWatchSnapshot>("trainwatch.json"), maybe<SensorGaps>("sensor_gaps.json"), maybe<LiveHistory>("live/history.json"),
+  ]);
   const [layers, meta, zj, corridors, shuttles, signals, railXings, zoneRequests] = await Promise.all([
     Promise.all(keys.map((k) => get(`${k}.geojson`))),
     get("meta.json"),
@@ -176,7 +211,11 @@ export async function loadAppData(): Promise<AppData> {
     get("zone_requests.json"),
   ]);
   const raw = { ...Object.fromEntries(keys.map((k, i) => [k, layers[i]])), signals, rail_crossings: railXings } as unknown as RawData;
-  return { raw, ds: buildDataset(raw), meta, totals: zj.totals, zones: zj.zones, corridors, shuttles, zoneRequests };
+  const [trainwatch, sensorGaps, liveHistory] = await live;
+  return {
+    raw, ds: buildDataset(raw), meta, totals: zj.totals, zones: zj.zones, corridors, shuttles, zoneRequests,
+    trainwatch, sensorGaps, liveHistory,
+  };
 }
 
 export const DataContext = createContext<AppData | null>(null);
