@@ -61,7 +61,7 @@ export function PlanDoc({ r, addr, dates }: { r: UiResult; addr: string; dates: 
       </ol>
       <div className="doc-note" dangerouslySetInnerHTML={{ __html: L.plan_shuttle(esc(r.closed.name), esc(r.closed.address), mi(r.distBeforeM), esc(xb)) }} />
       <div className="doc-note outline" dangerouslySetInnerHTML={{ __html: L.plan_bring(esc(r.recv.name), esc(L.plan_principal), undefined) }} />
-      <footer className="doc-foot"><span>{r.path ? L.plan_foot_route : L.plan_foot}</span><span>{L.plan_dates(dates.rail, dates.signals)}</span></footer>
+      <footer className="doc-foot"><span>{r.path ? L.plan_foot_route : L.plan_foot} {L.disc_short}</span><span>{L.plan_dates(dates.rail, dates.signals)}</span></footer>
     </article>
   );
 }

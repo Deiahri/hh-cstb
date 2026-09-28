@@ -1,8 +1,9 @@
-/* Walk Check — light, phone-first, printable. One accent (green), one warning (amber). */
+/* Walk Check — light, phone-first, printable. One accent (green), one warning (amber), one alarm (red, the walk verdict). */
 :root{
   --paper:#FAF6EE; --ink:#22302C; --mute:#566460; --line:#DDD5C7; --line-soft:#EAE4D8;
   --green:#1F6E5A; --green-ink:#164F41; --green-tint:#E1F0E8; --green-soft:#D6EBE2;
   --amber:#E9A23B; --amber-road:#D9822B; --amber-tint:#FFEFD3; --amber-ink:#7A4B00;
+  --red:#9A2F1F; --red-tint:#FBE7E2; --red-ink:#6E2014;
   --white:#FFFFFF;
   --r:12px; --r-lg:16px;
   --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
@@ -71,19 +72,23 @@ b{font-weight:700}
 .lang-btn{border:0;background:transparent;padding:7px 12px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;transition:background var(--dur-fast) ease,color var(--dur-fast) ease}
 .lang-btn.is-on{background:var(--green);color:var(--white)}
 
-/* one-time offer of the other language */
-.langbar{position:sticky;top:60px;z-index:9;display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 20px;background:var(--green-tint);border-bottom:1px solid var(--line);font-size:15px;transform:translateY(-8px);opacity:0;transition:transform var(--dur) var(--ease-out),opacity var(--dur) var(--ease-out)}
-.langbar.is-in{transform:none;opacity:1}
-.langbar-go{border:0;background:var(--green);color:var(--white);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
-.langbar-x{border:0;background:transparent;color:var(--mute);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
-.langbar-x:hover{background:var(--white);color:var(--ink)}
-@media (min-width:900px){.langbar{top:74px}}
-
 /* screens */
 .app{min-height:calc(100dvh - 60px)}
 .app.is-loading{opacity:.6}
 .screen{max-width:720px;margin:0 auto;padding:16px 20px 48px;display:grid;gap:24px;animation:enter var(--dur) var(--ease-out)}
-.screen.has-bar{padding-bottom:calc(var(--bar-h) + 24px)}
+.screen.has-bar{padding-bottom:24px}
+main:has(.has-bar)+.site-foot{padding-bottom:calc(var(--bar-h) + 24px)}
+
+/* the walk's verdict: green when nothing on the City's lists, red with the list of problems */
+.verdict{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:16px;border:2px solid;border-radius:var(--r-lg)}
+.verdict.ok{background:var(--green-tint);border-color:var(--green);color:var(--green-ink)}
+.verdict.risk{background:var(--red-tint);border-color:var(--red);color:var(--red-ink)}
+.verdict-icon{font-size:26px;line-height:1.15;font-weight:800}
+.verdict.ok .verdict-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--green);color:var(--white);font-size:20px}
+.verdict-body{display:grid;gap:10px;min-width:0}
+.verdict h1{font-size:26px}
+.verdict ul{margin:0;padding-left:20px;display:grid;gap:6px;font-weight:600;color:var(--ink)}
+.verdict p{margin:0;opacity:.9}
 .screen.narrow{max-width:520px}
 @keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .back{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--green);padding:4px 0;background:none;border:0;cursor:pointer;justify-self:start;margin-bottom:-12px}
@@ -121,7 +126,7 @@ b{font-weight:700}
 .input{width:100%;border:2px solid var(--line);border-radius:var(--r);background:var(--white);padding:16px;font:inherit;font-size:18px;color:var(--ink);transition:border-color var(--dur-fast) ease}
 .input::placeholder{color:var(--mute)}
 .input:focus{border-color:var(--green);outline:0}
-.err{color:#9A2F1F;font-weight:600}
+.err{color:var(--red);font-weight:600}
 .btn{display:flex;align-items:center;justify-content:center;width:100%;border-radius:var(--r);padding:17px 16px;font-size:18px;font-weight:700;border:2px solid var(--green);background:var(--green);color:var(--white);cursor:pointer;text-align:center;
   transition:transform var(--dur-fast) var(--ease-out),background var(--dur-fast) ease}
 .btn:hover{background:var(--green-ink);border-color:var(--green-ink);text-decoration:none}
@@ -473,7 +478,8 @@ a.bar:hover .hd b{color:var(--green)}
 }
 
 /* ---- added in the React port ---- */
-.unreviewed{max-width:1040px;margin:0 auto;padding:8px 20px 24px;text-align:center}
+.site-foot{max-width:1040px;margin:0 auto;padding:16px 20px 24px;text-align:center;border-top:1px solid var(--line-soft)}
+.site-foot p{margin:0 0 6px}
 .tbl tr.is-hit td{animation:wc-hit 2.4s var(--ease-out)}
 @keyframes wc-hit{0%,40%{background:var(--amber-tint)}100%{background:transparent}}
 .copybox{display:grid;gap:10px;margin:var(--s5) 0}

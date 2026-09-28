@@ -1,9 +1,9 @@
 // The answer: what the walk crosses, in order, where to cross each one, the shuttle, and what happens after it. A home in
 // any other HISD elementary zone gets the same walk, map and crossings, without the closure parts (last year, shuttle).
-import { useEffect, useRef, useState } from "react";
+import { type Ref, useEffect, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useData } from "../lib/data";
-import { type UiCheck, type UiCrossing, type UiResult, crossList, crossingAdvice, dataDates, mi, short, toCheck, whoFor } from "../lib/ui/model";
+import { type UiCheck, type UiCrossing, type UiResult, crossList, crossingAdvice, dataDates, mi, problemLine, short, toCheck, whoFor } from "../lib/ui/model";
 import { type UiWalk, useUiWalk } from "../lib/ui/useUiWalk";
 import { AskResult } from "../components/AskResult";
 import { ActionBar, Back, PrintDoc, useUi } from "../components/ui/bits";
@@ -39,6 +39,23 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
         <details className="who"><summary>{ask}</summary><p>{who}</p></details>
       </div>
     </li>
+  );
+}
+
+/** The answer first: green when the walk crosses nothing on the City's lists, red with each problem when it crosses anything. */
+function Verdict({ school, list, anchor }: { school: string; list: UiCrossing[]; anchor?: Ref<HTMLHeadingElement> }) {
+  const { L } = useUi();
+  const name = L.elem(short(school));
+  const risk = list.length > 0;
+  return (
+    <div className={`verdict ${risk ? "risk" : "ok"}`} role="status">
+      <span className="verdict-icon" aria-hidden="true">{risk ? "⚠️" : "✓"}</span>
+      <div className="verdict-body">
+        <h1 ref={anchor}>{risk ? L.risk_h(name) : L.ok_h(name)}</h1>
+        {risk && <ul>{list.map((c) => <li key={c.key}>{problemLine(c, L)}</li>)}</ul>}
+        <p className="small">{L.disc_short}</p>
+      </div>
+    </div>
   );
 }
 
@@ -111,7 +128,6 @@ function OpenWalkBody({ u, c }: { u: UiWalk; c: UiCheck }) {
   const list = useRef<HTMLOListElement>(null);
   useScrollSpy(list, phone);
   const to = short(c.school.name);
-  const roads = c.crossings.filter((x) => x.kind === "road").length, rails = c.crossings.length - roads;
   const mins = Math.round((c.distM / 1609.344 / 2.5) * 60);
   const link = `${location.origin}${location.pathname}#${u.to("walk")}`;
   const cross = c.crossings.length ? crossList(c.crossings, lang) : lang === "es" ? "nada de las listas de la Ciudad" : "nothing on the City’s lists";
@@ -123,7 +139,7 @@ function OpenWalkBody({ u, c }: { u: UiWalk; c: UiCheck }) {
     <section className="screen has-bar">
       {u.shared && <p className="shared">{L.shared_h} <Link to="/">{L.shared_b} ›</Link></p>}
       <Back />
-      <h1>{L.verdict(to, roads, rails)}</h1>
+      <Verdict school={c.school.name} list={c.crossings} />
       <p className="summary"><span>{mi(c.distM)} mi</span><span>{L.mins(mins)}</span><span>{c.crossings.length ? L.crossings(c.crossings.length) : L.nothing}</span></p>
       <AddrLine u={u} />
 
@@ -182,7 +198,7 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
         <b>{L.walkto} {to}</b><span>{r.now.length ? L.crossings(r.now.length) : L.nothing} · {mi(r.distNowM)} mi</span>
       </div>
       <Back />
-      <h1 ref={anchor}>{L.verdict(to, r.roads, r.rails)}</h1>
+      <Verdict school={r.recv.name} list={r.now} anchor={anchor} />
       <p className="summary"><span>{mi(r.distNowM)} mi</span><span>{L.mins(mins)}</span><span>{r.now.length ? L.crossings(r.now.length) : L.nothing}</span><span>{L.shuttle_s}</span></p>
       <AddrLine u={u} />
       <div className="grade" role="group" aria-label={L.grade_q}>

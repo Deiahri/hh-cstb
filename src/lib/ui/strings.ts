@@ -12,9 +12,18 @@ const en = {
       // home
       h_check:'Check my child’s walk to school',addr:'Home address',addr_ph:'1234 Main St',go:'Safety check',checking:'Checking…',
       // the home, header and not-in-zone blocks of the full layout
-      how:['Type your address','See what the walk crosses and where to cross','Give your principal the request'],staff:[{h:'Closed zones data',b:'Per closed zone: how much farther the walk is, and what share now crosses a dangerous road or active rail.',href:'#/data'},{h:'Corridors',b:'Every road and track a new walk crosses, sorted so the places with no traffic light come first, with what the City can do there.',href:'#/corridors'},{h:'Before April 15',b:'The streets by receiving school, the City’s written paths for a school zone, and a filled-in draft application for each principal.',href:'#/april15'}],trya:'Or try a spot in a closed school’s area:',other_lang:'¿Prefiere español?',other_go:'Cambiar a español',dismiss:'Cerrar',seeclosed:'See the schools that closed',know:'Know a family near Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson or Ross?',src_h:'Where the data comes from',
+      staff:[{h:'Closed zones data',b:'Per closed zone: how much farther the walk is, and what share now crosses a dangerous road or active rail.',href:'#/data'},{h:'Corridors',b:'Every road and track a new walk crosses, sorted so the places with no traffic light come first, with what the City can do there.',href:'#/corridors'},{h:'Before April 15',b:'The streets by receiving school, the City’s written paths for a school zone, and a filled-in draft application for each principal.',href:'#/april15'}],trya:'Or try a spot in a closed school’s area:',seeclosed:'See the schools that closed',know:'Know a family near Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson or Ross?',src_h:'Where the data comes from',
       demo:'Use a demo address',pick:'Pick on a map',examples:'Examples',ex_sub:'Homes in the 7 closed school zones',
       bad_addr:(ex: A)=>`Add a house number and street. Example: ${ex}`,notfound:'Address not found. Try the demo or pick on a map.',
+      // the verdict at the top of a walk, its list of problems, and the disclaimer
+      elem:(n: A)=>`${n} Elementary`,
+      ok_h:(s: A)=>`${s}: no issues found on the City’s danger lists.`,
+      risk_h:(s: A)=>`${s}: we have identified potentially dangerous risks.`,
+      prob_road:(n: A, why: A)=>`Crosses ${n}: ${why}.`,prob_rail:(n: A, why: A)=>`Crosses ${n} train tracks: ${why}.`,
+      p_nolight:'no traffic light within 800 ft',p_light:(f: A, d: A)=>`traffic light ${f} ft ${d}`,
+      p_nox:'no public rail crossing within 800 ft',p_xing:(f: A, d: A, g: A)=>`public crossing ${f} ft ${d}${g}`,
+      disc_short:'Public data only. Walk the route yourself.',
+      disc:'Walk Check is an independent, informational tool built from public City of Houston and HISD data, which can be incomplete or out of date. It is not run by or affiliated with HISD or the City of Houston. It does not guarantee that any route is free of danger and is not professional advice. Always walk the route with your child and follow HISD and City guidance.',
       // result
       v_red:'Danger',v_red_s:'Crossings with no traffic light',v_yellow:'Careful',v_yellow_s:'Cross only at the lights',v_green:'Clear',v_green_s:'No dangerous crossings',
       your_school:'School',dangers:'Danger points',none:'None',contacts:'Who to call',call_hisd:'Call HISD',email_city:'Email the City',school_office:'School office',
@@ -91,9 +100,17 @@ export type UiDict = typeof en;
 const es: UiDict = {
       h_check:'Revise el camino de su hijo a la escuela',addr:'Dirección',addr_ph:'1234 Main St',go:'Revisar',checking:'Revisando…',
       // the home, header and not-in-zone blocks of the full layout
-      how:['Escriba su dirección','Vea qué cruza el camino y dónde cruzar','Entregue la solicitud a su director'],staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],trya:'O pruebe un punto en la zona de una escuela cerrada:',other_lang:'Prefer English?',other_go:'Switch to English',dismiss:'Close',seeclosed:'Ver las escuelas que cerraron',know:'¿Conoce a una familia cerca de Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson o Ross?',src_h:'De dónde salen los datos',
+      staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],trya:'O pruebe un punto en la zona de una escuela cerrada:',seeclosed:'Ver las escuelas que cerraron',know:'¿Conoce a una familia cerca de Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson o Ross?',src_h:'De dónde salen los datos',
       demo:'Usar dirección de ejemplo',pick:'Marcar en el mapa',examples:'Ejemplos',ex_sub:'Casas en las 7 zonas cerradas',
       bad_addr:(ex: A)=>`Escriba número y calle. Ejemplo: ${ex}`,notfound:'No se encontró. Use el ejemplo o marque en el mapa.',
+      elem:(n: A)=>`Primaria ${n}`,
+      ok_h:(s: A)=>`${s}: nada en las listas de peligro de la Ciudad.`,
+      risk_h:(s: A)=>`${s}: identificamos posibles riesgos peligrosos.`,
+      prob_road:(n: A, why: A)=>`Cruza ${n}: ${why}.`,prob_rail:(n: A, why: A)=>`Cruza las vías de ${n}: ${why}.`,
+      p_nolight:'sin semáforo a 800 pies',p_light:(f: A, d: A)=>`semáforo a ${f} pies al ${DIR_ES[d]}`,
+      p_nox:'sin cruce público de vías a 800 pies',p_xing:(f: A, d: A, g: A)=>`cruce público a ${f} pies al ${DIR_ES[d]}${g}`,
+      disc_short:'Solo datos públicos. Camine la ruta usted mismo.',
+      disc:'Walk Check es una herramienta independiente e informativa hecha con datos públicos de la Ciudad de Houston y de HISD, que pueden estar incompletos o desactualizados. No es de HISD ni de la Ciudad de Houston, ni está afiliada a ellos. No garantiza que ninguna ruta esté libre de peligro y no es asesoría profesional. Siempre camine la ruta con su hijo y siga las indicaciones de HISD y de la Ciudad.',
       v_red:'Peligro',v_red_s:'Cruces sin semáforo',v_yellow:'Cuidado',v_yellow_s:'Cruce solo en los semáforos',v_green:'Despejado',v_green_s:'Sin cruces peligrosos',
       your_school:'Escuela',dangers:'Puntos de peligro',none:'Ninguno',contacts:'A quién llamar',call_hisd:'Llamar a HISD',email_city:'Escribir a la Ciudad',school_office:'Oficina de la escuela',
       shuttle_line:(from: A)=>`Autobús gratis desde ${from} hasta 2028`,askbus:'Pedir autobús',details:'Todos los detalles',

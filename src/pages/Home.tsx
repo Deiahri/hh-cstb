@@ -7,7 +7,7 @@ import { geocode } from "../lib/geocode";
 import type { LngLat } from "../lib/geo";
 import { closedZones, short } from "../lib/ui/model";
 import { walkLink } from "../lib/ui/useUiWalk";
-import { Arrow, Back, Steps, useUi } from "../components/ui/bits";
+import { Arrow, Back, useUi } from "../components/ui/bits";
 import { useShare } from "../components/ui/ShareSheet";
 import { WcMap } from "../components/ui/WcMap";
 
@@ -69,7 +69,6 @@ export default function Home() {
       <div className="hero">
         <div className="hero-copy">
           <h1>{L.h_check}</h1>
-          <Steps list={L.how} />
         </div>
         <form className="form" onSubmit={submit}>
           <div className="field">

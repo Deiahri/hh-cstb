@@ -199,6 +199,19 @@ export function crossingAdvice(c: UiCrossing, L: UiDict): string {
   return k.has ? L.adv_x(k.name, ft(k.d!), k.dir, k.gates ? L.gates : k.flashers ? L.flash : "") : L.adv_nox(k.name ?? "", k.d ? mi(k.d) : "");
 }
 
+/** One problem on the walk, for the warning at the top: what it crosses, why it's on the list, and the nearest light or crossing. */
+export function problemLine(c: UiCrossing, L: UiDict): string {
+  const k = c.control;
+  const low = (t: string) => t[0].toLowerCase() + t.slice(1);
+  if (c.kind === "rail") {
+    const at = k.has ? L.p_xing(ft(k.d!), k.dir, k.gates ? L.gates : k.flashers ? L.flash : "") : L.p_nox;
+    return L.prob_rail(c.name, [low(L.tag_rail), at].join(", "));
+  }
+  const why = [c.ped ? L.tag_ped : null, L.tag_hin].filter((t): t is string => !!t).map(low);
+  why.push(k.has ? L.p_light(ft(k.d!), k.dir) : L.p_nolight);
+  return L.prob_road(c.name, why.join(", "));
+}
+
 /** "N Main St, train tracks": a list of crossings in running text. */
 export const crossList = (list: UiCrossing[], lang: "en" | "es") =>
   list.map((c) => (c.kind === "rail" ? (lang === "es" ? "vías de tren" : "train tracks") : c.name)).join(", ");
