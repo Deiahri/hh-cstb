@@ -232,6 +232,8 @@ h1.pair .was::after{height:3px;top:54%}
 .xrow.rail .n{background:var(--ink);color:var(--white);border-radius:6px}
 .xbody{display:grid;gap:6px}
 .xrow .tags{font-size:14px}
+/* the City's "dangerous for walking" list: the one tag a parent should not miss */
+.tag-ped{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--red);color:var(--white);font-weight:700;font-size:13px;line-height:1.35;margin-right:2px}
 .xrow .adv{font-size:17px}
 details.who{font-size:15px}
 details.who summary{list-style:none;cursor:pointer;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}

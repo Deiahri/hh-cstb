@@ -24,7 +24,7 @@ export function shareMessage(u: UiWalk, r: UiResult, lang: "en" | "es") {
 function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: string }) {
   const { lang, L } = useUi();
   const ctl = useWalkMapCtl();
-  const tags = c.kind === "rail" ? [L.tag_rail] : [c.ped ? L.tag_ped : null, L.tag_hin].filter(Boolean);
+  const tags = c.kind === "rail" ? [L.tag_rail] : [L.tag_hin];
   const { ask, who } = whoFor(c, school, L);
   return (
     <li className={`xrow bare ${c.kind}`} data-x={i} onClick={(e) => !(e.target as HTMLElement).closest("details,a,button") && ctl.current?.show(i)}>
@@ -33,7 +33,10 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
           {c.kind === "rail" ? `${lang === "es" ? "Vías de tren" : "Train tracks"} · ${c.name}` : c.name}{" "}
           <button type="button" className="showmap" onClick={(e) => { e.stopPropagation(); ctl.current?.show(i); }}>{L.showmap} ›</button>
         </h3>
-        <p className="tags muted">{tags.join(" · ")}{c.kind === "road" ? ` · ${L.crashes(c.pc, c.pd)}` : ""}</p>
+        <p className="tags muted">
+          {c.kind === "road" && c.ped && <><span className="tag-ped">{L.tag_ped}</span>{" "}</>}
+          {tags.join(" · ")}{c.kind === "road" ? ` · ${L.crashes(c.pc, c.pd)}` : ""}
+        </p>
         <p className="adv">{crossingAdvice(c, L)}</p>
         <details className="who"><summary>{ask}</summary><p>{who}</p></details>
       </div>
