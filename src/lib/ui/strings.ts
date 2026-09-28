@@ -16,9 +16,8 @@ const en = {
       demo:'Use a demo address',pick:'Pick on a map',examples:'Examples',ex_sub:'Homes in the 7 closed school zones',
       bad_addr:(ex: A)=>`Add a house number and street. Example: ${ex}`,notfound:'Address not found. Try the demo or pick on a map.',
       // the verdict at the top of a walk, and the disclaimer
-      elem:(n: A)=>`${n} Elementary`,
-      ok_h:(s: A)=>`${s}: no issues found on the City’s danger lists.`,
-      risk_h:(s: A, n: A)=>`${s}: we have identified ${n} potentially dangerous risk${n===1?'':'s'}.`,
+      ok_h:'No issues found.',
+      risk_h:(n: A)=>`We have identified ${n} potentially dangerous risk${n===1?'':'s'}.`,
       disc_short:'Public data only. Walk the route yourself.',
       disc:'Walk Check is an independent, informational tool built from public City of Houston and HISD data, which can be incomplete or out of date. It is not run by or affiliated with HISD or the City of Houston. It does not guarantee that any route is free of danger and is not professional advice. Always walk the route with your child and follow HISD and City guidance.',
       // result
@@ -100,9 +99,8 @@ const es: UiDict = {
       how:['Escriba su dirección','Vea qué cruza el camino y dónde cruzar','Entregue la solicitud a su director'],staff:[{h:'Datos de las zonas cerradas',b:'Por zona cerrada: cuánto más largo es el camino y qué parte ahora cruza una calle peligrosa o una vía activa.',href:'#/data'},{h:'Corredores',b:'Cada calle y vía que cruza un camino nuevo, primero los lugares sin semáforo, con lo que la Ciudad puede hacer ahí.',href:'#/corridors'},{h:'Antes del 15 de abril',b:'Las calles por escuela receptora, las reglas escritas de la Ciudad para una zona escolar y un borrador de solicitud para cada director.',href:'#/april15'}],trya:'O pruebe un punto en la zona de una escuela cerrada:',seeclosed:'Ver las escuelas que cerraron',know:'¿Conoce a una familia cerca de Burrus, Port Houston, Alcott, Briscoe, Franklin, Henderson o Ross?',src_h:'De dónde salen los datos',
       demo:'Usar dirección de ejemplo',pick:'Marcar en el mapa',examples:'Ejemplos',ex_sub:'Casas en las 7 zonas cerradas',
       bad_addr:(ex: A)=>`Escriba número y calle. Ejemplo: ${ex}`,notfound:'No se encontró. Use el ejemplo o marque en el mapa.',
-      elem:(n: A)=>`Primaria ${n}`,
-      ok_h:(s: A)=>`${s}: nada en las listas de peligro de la Ciudad.`,
-      risk_h:(s: A, n: A)=>n===1?`${s}: identificamos 1 posible riesgo peligroso.`:`${s}: identificamos ${n} posibles riesgos peligrosos.`,
+      ok_h:'No se encontraron problemas.',
+      risk_h:(n: A)=>n===1?'Identificamos 1 posible riesgo peligroso.':`Identificamos ${n} posibles riesgos peligrosos.`,
       disc_short:'Solo datos públicos. Camine la ruta usted mismo.',
       disc:'Walk Check es una herramienta independiente e informativa hecha con datos públicos de la Ciudad de Houston y de HISD, que pueden estar incompletos o desactualizados. No es de HISD ni de la Ciudad de Houston, ni está afiliada a ellos. No garantiza que ninguna ruta esté libre de peligro y no es asesoría profesional. Siempre camine la ruta con su hijo y siga las indicaciones de HISD y de la Ciudad.',
       v_red:'Peligro',v_red_s:'Cruces sin semáforo',v_yellow:'Cuidado',v_yellow_s:'Cruce solo en los semáforos',v_green:'Despejado',v_green_s:'Sin cruces peligrosos',

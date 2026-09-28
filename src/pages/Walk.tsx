@@ -42,15 +42,14 @@ function CrossingRow({ c, i, school }: { c: UiCrossing; i: number; school: strin
 }
 
 /** The answer first: green when the walk crosses nothing on the City's lists, red with a count when it crosses anything. */
-function Verdict({ school, list, anchor }: { school: string; list: UiCrossing[]; anchor?: Ref<HTMLHeadingElement> }) {
+function Verdict({ list, anchor }: { list: UiCrossing[]; anchor?: Ref<HTMLHeadingElement> }) {
   const { L } = useUi();
-  const name = L.elem(short(school));
   const risk = list.length > 0;
   return (
     <div className={`verdict ${risk ? "risk" : "ok"}`} role="status">
       <span className="verdict-icon" aria-hidden="true">{risk ? "⚠️" : "✓"}</span>
       <div className="verdict-body">
-        <h1 ref={anchor}>{risk ? L.risk_h(name, list.length) : L.ok_h(name)}</h1>
+        <h1 ref={anchor}>{risk ? L.risk_h(list.length) : L.ok_h}</h1>
         <p className="small">{L.disc_short}</p>
       </div>
     </div>
@@ -137,7 +136,7 @@ function OpenWalkBody({ u, c }: { u: UiWalk; c: UiCheck }) {
     <section className="screen has-bar">
       {u.shared && <p className="shared">{L.shared_h} <Link to="/">{L.shared_b} ›</Link></p>}
       <Back />
-      <Verdict school={c.school.name} list={c.crossings} />
+      <Verdict list={c.crossings} />
       <p className="summary"><span>{mi(c.distM)} mi</span><span>{L.mins(mins)}</span><span>{c.crossings.length ? L.crossings(c.crossings.length) : L.nothing}</span></p>
       <AddrLine u={u} />
 
@@ -196,7 +195,7 @@ function WalkBody({ u, r }: { u: UiWalk; r: UiResult }) {
         <b>{L.walkto} {to}</b><span>{r.now.length ? L.crossings(r.now.length) : L.nothing} · {mi(r.distNowM)} mi</span>
       </div>
       <Back />
-      <Verdict school={r.recv.name} list={r.now} anchor={anchor} />
+      <Verdict list={r.now} anchor={anchor} />
       <p className="summary"><span>{mi(r.distNowM)} mi</span><span>{L.mins(mins)}</span><span>{r.now.length ? L.crossings(r.now.length) : L.nothing}</span><span>{L.shuttle_s}</span></p>
       <AddrLine u={u} />
       <div className="grade" role="group" aria-label={L.grade_q}>
